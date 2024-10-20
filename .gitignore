@@ -1,0 +1,5 @@
+.idea
+installs/
+obj/
+uchat_server
+*.db
