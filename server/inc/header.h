@@ -7,6 +7,7 @@
 #include "env.h"
 #include "database.h"
 #include "server/server.h"
+#include "handlers/handlers.h"
 #include "websocket.h"
 #include "json_web_token.h"
 #include <string.h>
@@ -18,6 +19,7 @@ typedef struct {
     t_sql sql;
     void (*execute_sql)(const char *sql);
 	t_server server;
+	t_handlers handlers;
     t_websocket websocket;
     t_jwt jwt;
 } t_vendor;

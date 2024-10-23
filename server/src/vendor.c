@@ -11,6 +11,7 @@ void init_vendor(t_vendor *vendor) {
     vendor->database = init_database();
     vendor->sql = sqlite;
     vendor->server = init_server();
+    vendor->handlers = init_handlers();
     vendor->websocket = init_websocket();
     vendor->jwt = init_jwt();
 }
