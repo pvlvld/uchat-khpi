@@ -1,0 +1,60 @@
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/Inter-Regular.ttf') format('truetype'); /* путь к вашему шрифту */
+    font-weight: normal;
+    font-style: normal;
+}
+
+window {
+    background-color: #262626;
+}
+* {
+    box-shadow: none;
+    border: none;
+    outline: none;
+    font-family: Inter, sans-serif;
+    margin: 0;
+    padding: 0;
+    /*border-radius: 50%;*/
+}
+
+#sidebar {
+    /*background-color: red;*/
+}
+
+#search-wrapper {
+    box-shadow: 0 4px 4px 0 rgba(23, 23, 23, 0.75);
+    padding: 6px 12px;
+}
+
+#search {
+    border-radius: 8px;
+    padding: 0 12px;
+    background: #404040;
+    border: 1px solid #404040;
+    color: #fff;
+}
+
+#right-box {
+    background-color: #171717;
+    border-left: 1px solid #404040;
+    border-top: 1px solid #404040;
+    border-radius: 12px 0 0 0;
+}
+
+#fixed-height-box {
+    background: red;
+}
+
+#avatar-wrapper {
+    margin-top: 10px;
+    background: blue;
+}
+
+#avatar {
+    border-radius: 50%; /* Округляем */
+    background-position: center center;
+    background-size: cover;
+    /*background: url("../../person_img.jpg");*/
+    /*background-color: red;*/
+}
