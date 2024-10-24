@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../../libraries/cJSON/build/include/cjson/cJSON.h"
+#include "../../libraries/cJSON/cJSON.h"
 #include "env.h"
 #include "database.h"
 #include "server/server.h"
