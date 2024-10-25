@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
     int status;
 
     // Создание нового приложения GTK
-    app = gtk_application_new("org.example.GtkApplication", G_APPLICATION_DEFAULT_FLAGS);
+    app = gtk_application_new("org.example.GtkApplication", 0);
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
     // Запуск приложения

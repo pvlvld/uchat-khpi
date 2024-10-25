@@ -11,6 +11,7 @@ GtkWidget *sidebar_create_avatar(int avatar_id, const gchar *image_path) {
     gchar avatar_class_str[64];
     g_snprintf(avatar_class_str, sizeof(avatar_class_str), "avatar-class-%d", avatar_id);
     gtk_widget_set_name(avatar, "avatar");
+    gtk_style_context_add_class(gtk_widget_get_style_context(avatar), avatar_class_str);
     gtk_widget_set_size_request(avatar, 48, 48);
 
     gchar css[512];
