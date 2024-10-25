@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 120 #79
+BreakBeforeBraces: Custom
+BraceWrapping:
+    AfterEnum: false
+    AfterStruct: false
+    SplitEmptyFunction: false
+    AfterCaseLabel: false
+    AfterFunction: false
+    AfterNamespace: false
+    BeforeWhile: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
