@@ -1,6 +1,6 @@
 CC = clang
 
-# Path for header files
+# Path for header files, including GTK3+ via pkg-config
 CFLAGS = -std=c11 \
          -Wall \
          -Wextra \
@@ -10,15 +10,14 @@ CFLAGS = -std=c11 \
          -I../libraries/sqlite/include \
          -I../libraries/cJSON/build/include \
          -I./inc \
-         `pkg-config --cflags gtk4`
+         $(shell pkg-config --cflags gtk+-3.0)  # Добавляем флаги GTK3+
 
-# Path for libraries
+# Path for libraries, including GTK3+ via pkg-config
 LDFLAGS = -L../libraries/sqlite/lib \
           -L../libraries/cJSON/build/lib \
           -lsqlite3 \
-          -lssl \
           -lcjson \
-          `pkg-config --libs gtk4` \
+          $(shell pkg-config --libs gtk+-3.0) \
           -Wl,-rpath,../libraries/sqlite/lib \
           -Wl,-rpath,../libraries/cJSON/build/lib
 
@@ -34,19 +33,9 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D) # Create the necessary subdirectories in obj
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Main goal: install GTK4 first, then build the project
-all: gtk4 $(TARGET)
+all: $(TARGET)
 
-# Verify and install GTK4 if not found
-gtk4:
-	@if ! pkg-config --exists gtk4; then \
-	    echo "GTK4 not found. Installing..."; \
-	    sudo apt-get update && sudo apt-get install -y libgtk-4-dev; \
-	else \
-	    echo "GTK4 is already installed."; \
-	fi
-
-# Build target after checking GTK4
+# Build target after checking GTK3+
 $(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
@@ -54,4 +43,4 @@ $(TARGET): $(OBJ)
 clean:
 	rm -rf $(OBJ_DIR) $(TARGET)
 
-.PHONY: all clean gtk4
+.PHONY: all clean

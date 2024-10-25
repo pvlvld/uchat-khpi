@@ -30,17 +30,23 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_vexpand(label, TRUE);
 
     // Добавление метки в правую панель
-    gtk_box_append(GTK_BOX(right_box), label);
-    gtk_box_append(GTK_BOX(box), sidebar);
-    gtk_box_append(GTK_BOX(box), right_box);
+    gtk_box_pack_start(GTK_BOX(right_box), label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(box), sidebar, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), right_box, TRUE, TRUE, 0);
 
     // Применение цветового стиля через CSS
     GtkCssProvider *css_provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_path(css_provider, "resources/styles/style.css"); // Загрузка из файла
+    GError *error = NULL;
+    gtk_css_provider_load_from_path(css_provider, "resources/styles/style.css", &error); // Загрузка из файла
+
+    if (error) {
+        g_printerr("Error loading CSS file: %s\n", error->message);
+        g_error_free(error);
+    }
 
     // Применение CSS к основному контейнеру
-    GdkDisplay *display = gdk_display_get_default();
-    gtk_style_context_add_provider_for_display(display,
+    GdkScreen *screen = gdk_screen_get_default();
+    gtk_style_context_add_provider_for_screen(screen,
         GTK_STYLE_PROVIDER(css_provider),
         GTK_STYLE_PROVIDER_PRIORITY_USER);
 
@@ -48,10 +54,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
     gtk_widget_set_name(right_box, "right-box");
 
     // Добавление боксов в окно
-    gtk_window_set_child(GTK_WINDOW(window), box);
+    gtk_container_add(GTK_CONTAINER(window), box);
 
     // Отображение окна
-    gtk_window_present(GTK_WINDOW(window));
+    gtk_widget_show_all(window);
 
     // Освобождение ресурсов
     g_object_unref(css_provider);
@@ -73,3 +79,4 @@ int main(int argc, char **argv) {
 
     return status;
 }
+
