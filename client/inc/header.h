@@ -5,6 +5,7 @@
 #include <gdk/gdk.h>
 #include "components/components.h"
 #include "sidebar.h"
+#include <unistd.h>
 
 typedef struct {
     t_components components;

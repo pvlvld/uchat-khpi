@@ -14,8 +14,11 @@ GtkWidget *sidebar_create_avatar(int avatar_id, const gchar *image_path) {
     gtk_style_context_add_class(gtk_widget_get_style_context(avatar), avatar_class_str);
     gtk_widget_set_size_request(avatar, 48, 48);
 
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+
     gchar css[512];
-    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s');}", avatar_class_str, image_path);
+    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s/resources/images/static/%s');}", avatar_class_str, cwd, image_path);
 
     // Устанавливаем выравнивание
     gtk_widget_set_halign(avatar_wrapper, GTK_ALIGN_CENTER);

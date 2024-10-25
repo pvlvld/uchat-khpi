@@ -88,10 +88,9 @@ GtkWidget *sidebar_init(void) {
 
     // Заполнение растягиваемого блока элементами
     for (int i = 0; i < 10; i++) {
-        GtkWidget *avatar = create_chatblock(i, "/home/roman/Desktop/gitlab/uchat/client/resources/images/static/person_img.jpg");
+        GtkWidget *avatar = create_chatblock(i, "person_img.jpg");
         gtk_box_pack_start(GTK_BOX(stretchable_box), avatar, FALSE, FALSE, 0); // Используем gtk_box_pack_start для добавления
     }
-
     // Установка свойства vexpand для scrolled_window
     gtk_widget_set_vexpand(scrolled_window, TRUE); // Это позволяет окну прокрутки занимать доступное пространство
 
