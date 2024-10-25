@@ -1,10 +1,3 @@
-@font-face {
-    font-family: 'Inter';
-    src: url('../fonts/Inter-Regular.ttf') format('truetype'); /* путь к вашему шрифту */
-    font-weight: normal;
-    font-style: normal;
-}
-
 window {
     background-color: #262626;
 }
@@ -12,7 +5,7 @@ window {
     box-shadow: none;
     border: none;
     outline: none;
-    font-family: Inter, sans-serif;
+    font-family: "Ubuntu Sans", sans-serif;
     margin: 0;
     padding: 0;
     /*border-radius: 50%;*/
@@ -42,19 +35,35 @@ window {
     border-radius: 12px 0 0 0;
 }
 
-#fixed-height-box {
-    background: red;
+#chatblock {
+    padding: 12px;
+    transition: background .3s ease;
+}
+#chatblock:hover {
+    background: #022C22;
 }
 
 #avatar-wrapper {
-    margin-top: 10px;
-    background: blue;
 }
 
 #avatar {
     border-radius: 50%; /* Округляем */
     background-position: center center;
     background-size: cover;
-    /*background: url("../../person_img.jpg");*/
-    /*background-color: red;*/
+}
+
+#chat-name {
+    font-size: 16px;
+    color: #d9d9d9;
+}
+#chat-time {
+    font-size: 14px;
+    color: #d9d9d9;
+}
+#chat-message {
+    font-size: 12px;
+    color: #A3A3A3;
+}
+#chatblock-text {
+    margin-left: 8px;
 }

@@ -15,11 +15,9 @@ static void custom_input_handler(GtkEntry *entry, gpointer user_data) {
 GtkWidget *create_scrolled_left_box(void) {
     GtkWidget *scrolled_window = gtk_scrolled_window_new();
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window),
-                                   GTK_POLICY_NEVER,
-                                   GTK_POLICY_AUTOMATIC);
+                                   GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 
-    GtkWidget *sidebar = init_sidebar();
-
+    GtkWidget *sidebar = vendor.sidebar.init();
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled_window), sidebar);
 
     return scrolled_window;
@@ -34,47 +32,54 @@ static GtkWidget *init_search(void) {
     return entry_wrapper;
 }
 
-GtkWidget *create_avatar_with_wrapper(int avatar_id, const gchar *image_path) {
-    // Создаем контейнер для аватара
-    GtkWidget *avatar_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_name(avatar_wrapper, "avatar-wrapper");  // Идентификатор для CSS
+GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
+    GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_name(chatblock, "chatblock");
+    gtk_widget_set_size_request(chatblock, 177, -1);
+    GtkWidget *avatar_wrapper = vendor.sidebar.create_avatar(avatar_id, image_path);
 
-    // Создаем красный блок (представляющий аватар)
-    GtkWidget *avatar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_name(avatar, "avatar");  // Идентификатор для CSS
+    GtkWidget *chatblock_text = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_name(chatblock_text, "chatblock-text");
 
-    gchar avatar_class_str[64];
-    g_snprintf(avatar_class_str, sizeof(avatar_class_str), "avatar-class-%d", avatar_id);
-    gtk_widget_set_name(avatar, "avatar");
-    gtk_widget_add_css_class(avatar, avatar_class_str);  // Идентификатор для CSS
-    gtk_widget_set_size_request(avatar, 48, 48);  // Устанавливаем размер блока
+    GtkWidget *chatblock_text_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    gtk_widget_set_name(chatblock_text_header, "chat-header");
 
-    gchar css[512];
-    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s');}", avatar_class_str, image_path);
+    GtkWidget *chat_name = gtk_label_new("Chat name");
+    gtk_widget_set_name(chat_name, "chat-name");
+    gtk_label_set_lines(GTK_LABEL(chat_name), 1);
+    gtk_label_set_ellipsize(GTK_LABEL(chat_name), PANGO_ELLIPSIZE_END);
 
-    // Устанавливаем выравнивание для аватара
-    gtk_widget_set_halign(avatar_wrapper, GTK_ALIGN_CENTER); // Начальное выравнивание по горизонтали
-    gtk_widget_set_valign(avatar_wrapper, GTK_ALIGN_CENTER); // Начальное выравнивание по вертикали
+    GtkWidget *chat_time = gtk_label_new("00:00");
+    gtk_widget_set_name(chat_time, "chat-time");
 
-    GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_string(provider, css);
-    gtk_style_context_add_provider_for_display(
-        gdk_display_get_default(),
-        GTK_STYLE_PROVIDER(provider),
-        GTK_STYLE_PROVIDER_PRIORITY_USER
-    );
+    // Spacer to push chat_time to the right
+    GtkWidget *spacer = gtk_label_new(""); // Create an empty label for spacing
+    gtk_widget_set_hexpand(spacer, TRUE);  // Allow spacer to expand horizontally
+    gtk_widget_set_size_request(spacer, 0, -1); // Make spacer flexible
 
+    GtkWidget *chat_message = gtk_label_new("The information on who successfully completed the marathon is almost ready, just a little bit left");
+    gtk_label_set_wrap(GTK_LABEL(chat_message), TRUE);
+    gtk_label_set_lines(GTK_LABEL(chat_message), 2);
+    gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_name(chat_message, "chat-message");
 
-    // Добавляем красный блок аватара в контейнер
-    gtk_box_append(GTK_BOX(avatar_wrapper), avatar);
+    // Добавление элементов в chatblock
+    gtk_box_append(GTK_BOX(chatblock), avatar_wrapper);
+    gtk_box_append(GTK_BOX(chatblock_text), chatblock_text_header);
+    gtk_box_append(GTK_BOX(chatblock_text), chat_message);
+    gtk_box_append(GTK_BOX(chatblock_text_header), chat_name);
+    gtk_box_append(GTK_BOX(chatblock_text_header), spacer);
+    gtk_box_append(GTK_BOX(chatblock_text_header), chat_time);
+    gtk_box_append(GTK_BOX(chatblock), chatblock_text);
 
-    return avatar_wrapper;
+    return chatblock;
 }
 
-GtkWidget *init_sidebar(void) {
+GtkWidget *sidebar_init(void) {
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(sidebar, "sidebar");
-    gtk_widget_set_size_request(sidebar, 260, -1);  // 260px ширина, высота авто
+    gtk_widget_set_size_request(sidebar, 260, -1);
+    gtk_widget_set_hexpand(sidebar, FALSE);
 
     GtkWidget *search = init_search();
     gtk_box_append(GTK_BOX(sidebar), search);
@@ -92,7 +97,7 @@ GtkWidget *init_sidebar(void) {
 
     // Заполнение растягиваемого блока элементами
     for (int i = 0; i < 10; i++) {
-        GtkWidget *avatar = create_avatar_with_wrapper(i, "/home/roman/Desktop/gitlab/uchat/client/resources/images/static/person_img.jpg");
+        GtkWidget *avatar = create_chatblock(i, "/home/roman/Desktop/gitlab/uchat/client/resources/images/static/person_img.jpg");
         gtk_box_append(GTK_BOX(stretchable_box), avatar);
     }
 
@@ -101,7 +106,7 @@ GtkWidget *init_sidebar(void) {
 
     // Фиксированный блок внизу
     GtkWidget *fixed_height_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_size_request(fixed_height_box, -1, 80);  // Высота 330px
+    gtk_widget_set_size_request(fixed_height_box, -1, 80);  // Высота 80px
     gtk_widget_set_name(fixed_height_box, "fixed-height-box");
 
     GtkWidget *fixed_label = gtk_label_new("Fixed Height Box");
@@ -110,4 +115,12 @@ GtkWidget *init_sidebar(void) {
     gtk_box_append(GTK_BOX(sidebar), fixed_height_box);
 
     return sidebar;
+}
+
+t_sidebar init_sidebar(void) {
+   t_sidebar sidebar = {
+       .init = sidebar_init,
+       .create_avatar = sidebar_create_avatar
+   };
+   return sidebar;
 }

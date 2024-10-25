@@ -2,13 +2,13 @@
 #define HEADER_H
 
 #include <gtk/gtk.h>
+#include <gdk/gdk.h>
 #include "components/components.h"
 #include "sidebar.h"
 
-GtkWidget *init_sidebar(void);
-
 typedef struct {
     t_components components;
+    t_sidebar sidebar;
 } t_vendor;
 
 extern t_vendor vendor;
