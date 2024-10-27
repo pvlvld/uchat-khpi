@@ -64,11 +64,20 @@ static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event) {
     return TRUE;
 }
 
-GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
+char *format_last_message(const char *sender_name, const char *message) {
+    // Pango
+    char *formatted_message = g_malloc(256);
+    snprintf(formatted_message, 256,
+        "<span foreground='#047857'><b>%s: </b></span>%s",
+        sender_name, message);
+    return formatted_message;
+}
+
+GtkWidget *create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(chatblock, "chatblock");
     gtk_widget_set_size_request(chatblock, 177, -1);
-    GtkWidget *avatar_wrapper = vendor.sidebar.create_avatar(avatar_id, image_path);
+    GtkWidget *avatar_wrapper = vendor.sidebar.create_avatar(chat_info);
 
     GtkWidget *chatblock_text = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(chatblock_text, "chatblock-text");
@@ -76,23 +85,28 @@ GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
     GtkWidget *chatblock_text_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(chatblock_text_header, "chat-header");
 
-    GtkWidget *chat_name = gtk_label_new("Chat name");
+    GtkWidget *chat_name = gtk_label_new(chat_info->name);
     gtk_widget_set_name(chat_name, "chat-name");
     gtk_label_set_lines(GTK_LABEL(chat_name), 1);
     gtk_label_set_ellipsize(GTK_LABEL(chat_name), PANGO_ELLIPSIZE_END);
 
-    GtkWidget *chat_time = gtk_label_new("00:00");
+    // Форматируем сообщение
+    char *formatted_last_message = format_last_message(chat_info->sender_name, chat_info->last_message);
+
+    // Создаем метку с разметкой
+    GtkWidget *chat_message = gtk_label_new(chat_info->type == 0 ? chat_info->last_message : formatted_last_message);
+    gtk_label_set_use_markup(GTK_LABEL(chat_message), TRUE); // Указываем, что нужно использовать разметку
+    gtk_label_set_line_wrap(GTK_LABEL(chat_message), TRUE);
+    gtk_label_set_lines(GTK_LABEL(chat_message), 2);
+    gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_name(chat_message, "chat-message");
+
+    GtkWidget *chat_time = gtk_label_new(format_timestamp(chat_info->timestamp));
     gtk_widget_set_name(chat_time, "chat-time");
 
     GtkWidget *spacer = gtk_label_new("");
     gtk_widget_set_hexpand(spacer, TRUE);
     gtk_widget_set_size_request(spacer, 0, -1);
-
-    GtkWidget *chat_message = gtk_label_new("The information on who successfully completed the marathon is almost ready, just a little bit left");
-    gtk_label_set_line_wrap(GTK_LABEL(chat_message), TRUE);
-    gtk_label_set_lines(GTK_LABEL(chat_message), 2);
-    gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
-    gtk_widget_set_name(chat_message, "chat-message");
 
     gtk_box_pack_start(GTK_BOX(chatblock), avatar_wrapper, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(chatblock_text), chatblock_text_header, TRUE, TRUE, 0);
@@ -109,6 +123,9 @@ GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
     g_signal_connect(event_box, "enter-notify-event", G_CALLBACK(enter_notify_event), NULL);
     g_signal_connect(event_box, "leave-notify-event", G_CALLBACK(leave_notify_event), NULL);
     gtk_container_add(GTK_CONTAINER(event_box), chatblock);
+
+    // Освобождение памяти
+    g_free(formatted_last_message);
 
     return event_box;
 }
@@ -132,10 +149,14 @@ GtkWidget *sidebar_init(void) {
 
     gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
 
-    for (int i = 0; i < 10; i++) {
-        GtkWidget *avatar = create_chatblock(i, "person_img.jpg");
+    t_chat_info **chats_info = parse_chats_info();
+    qsort(chats_info, 12, sizeof(t_chat_info *), compare_chats);
+
+    for (int i = 0; chats_info[i] != NULL; i++) {
+        GtkWidget *avatar = create_chatblock(chats_info[i]);
         gtk_box_pack_start(GTK_BOX(stretchable_box), avatar, FALSE, FALSE, 0);
     }
+
     gtk_widget_set_vexpand(scrolled_window, TRUE);
 
     GtkWidget *fixed_height_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
