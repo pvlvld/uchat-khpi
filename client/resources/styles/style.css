@@ -41,20 +41,29 @@ window {
 
 #chatblock {
     padding: 12px;
-    transition: background .3s ease;
 }
-#chatblock:hover {
-    background: #022C22;
+#chatblock-wrapper {
+    transition: background-color .3s ease;
+}
+#chatblock-wrapper.hover, #chatblock-wrapper.active {
+    background-color: #022C22;
 }
 
 #avatar-wrapper {
+    margin-right: 8px;
 }
 
 #avatar {
-    border-radius: 50%; /* Округляем */
     background-position: center center;
     background-size: cover;
 }
+.single {
+    background: url("../images/static/single_person.svg") center no-repeat;
+    border-radius: 12px;
+    /*fill: #262626;*/
+    border: 1px solid #262626;
+}
+
 
 #chat-name {
     font-size: 16px;
@@ -70,4 +79,19 @@ window {
 }
 #chatblock-text {
     margin-left: 8px;
+}
+#number-of-messages-wrapper {
+    margin-top: -20px;
+    margin-right: -8px;
+    border-radius: 12px;
+    padding: 2px 6px;
+    border: 1px solid #262626;
+    background: #047857;
+}
+#number-of-messages {
+    font-size: 12px;
+    color: #F5F5F5;
+    border: 1px solid #262626;
+    background: #047857;
+    border-radius: 12px;
 }

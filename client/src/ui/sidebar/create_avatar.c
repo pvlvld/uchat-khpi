@@ -2,8 +2,12 @@
 #include <gtk/gtk.h>
 
 GtkWidget *sidebar_create_avatar(int avatar_id, const gchar *image_path) {
-    GtkWidget *avatar_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_name(avatar_wrapper, "avatar-wrapper");
+    (void)avatar_id;
+    (void)image_path;
+
+    GtkWidget *fixed_container = gtk_fixed_new();
+    gtk_widget_set_size_request(fixed_container, 55, 48);
+    gtk_widget_set_name(fixed_container, "fixed-container");
 
     GtkWidget *avatar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_name(avatar, "avatar");
@@ -18,25 +22,28 @@ GtkWidget *sidebar_create_avatar(int avatar_id, const gchar *image_path) {
     getcwd(cwd, sizeof(cwd));
 
     gchar css[512];
-    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s/resources/images/static/%s');}", avatar_class_str, cwd, image_path);
+    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s/resources/images/static/%s'); border-radius: 50%%; }", avatar_class_str, cwd, image_path);
 
-    // Устанавливаем выравнивание
-    gtk_widget_set_halign(avatar_wrapper, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign(avatar_wrapper, GTK_ALIGN_CENTER);
+    gtk_fixed_put(GTK_FIXED(fixed_container), avatar, 0, 0);
 
-    // Создаем CSS провайдер
+    GtkWidget *group_type = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_name(avatar, "group-type");
+    gtk_style_context_add_class(gtk_widget_get_style_context(group_type), "single");
+    gtk_widget_set_size_request(group_type, 14, 14);
+    gtk_fixed_put(GTK_FIXED(fixed_container), group_type, 0, 0);
+
+    GtkWidget *number_of_messages = gtk_label_new("100");
+    gtk_widget_set_name(number_of_messages, "number-of-messages");
+    gtk_widget_set_size_request(number_of_messages, 30, 16);
+    gtk_fixed_put(GTK_FIXED(fixed_container), number_of_messages, 25, 32);
+
     GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider, css, -1, NULL); // Используйте gtk_css_provider_load_from_data для GTK 3
-
-    // Применяем CSS к основному экрану
+    gtk_css_provider_load_from_data(provider, css, -1, NULL);
     gtk_style_context_add_provider_for_screen(
-        gdk_screen_get_default(), // Изменено на gdk_screen_get_default()
+        gdk_screen_get_default(),
         GTK_STYLE_PROVIDER(provider),
         GTK_STYLE_PROVIDER_PRIORITY_USER
     );
 
-    // Вместо gtk_box_append используйте gtk_box_pack_start
-    gtk_box_pack_start(GTK_BOX(avatar_wrapper), avatar, TRUE, TRUE, 0);
-
-    return avatar_wrapper;
+    return fixed_container;
 }

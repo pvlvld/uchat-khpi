@@ -1,6 +1,8 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
+static GtkWidget *active_event_box = NULL;
+
 static void custom_input_handler(GtkEntry *entry, gpointer user_data) {
     const gchar *text = gtk_entry_get_text(entry);
     g_print("Custom Handler: Typed Text: %s\n", text);
@@ -9,7 +11,7 @@ static void custom_input_handler(GtkEntry *entry, gpointer user_data) {
         g_print("Supplemental Data: %s\n", (const gchar *)user_data);
     }
 
-    gtk_entry_set_text(entry, ""); // Очищаем поле ввода
+    gtk_entry_set_text(entry, "");
 }
 
 static GtkWidget *init_search(void) {
@@ -17,8 +19,49 @@ static GtkWidget *init_search(void) {
     gtk_widget_set_name(entry_wrapper, "search-wrapper");
     GtkWidget *entry = vendor.components.input.create("search", "Search", G_CALLBACK(custom_input_handler));
 
-    gtk_box_pack_start(GTK_BOX(entry_wrapper), entry, TRUE, TRUE, 0); // Изменено для GTK3
+    gtk_box_pack_start(GTK_BOX(entry_wrapper), entry, TRUE, TRUE, 0);
     return entry_wrapper;
+}
+
+static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+    (void) widget;
+    (void) user_data;
+
+    if (event->keyval == GDK_KEY_Escape) {
+        g_print("Esc pressed\n");
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
+    (void) widget;
+
+    if (event->button == GDK_BUTTON_PRIMARY) {
+        if (active_event_box != NULL) {
+            gtk_style_context_remove_class(gtk_widget_get_style_context(active_event_box), "active");
+        }
+        active_event_box = widget;
+        gtk_style_context_add_class(gtk_widget_get_style_context(active_event_box), "active");
+    }
+
+    return TRUE;
+}
+
+static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event) {
+    (void) event;
+    gtk_style_context_add_class(gtk_widget_get_style_context(widget), "hover");
+    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_HAND2);
+    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+    g_object_unref(cursor);
+    return TRUE;
+}
+
+static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event) {
+    (void) event;
+    gtk_style_context_remove_class(gtk_widget_get_style_context(widget), "hover");
+    gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
+    return TRUE;
 }
 
 GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
@@ -41,10 +84,9 @@ GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
     GtkWidget *chat_time = gtk_label_new("00:00");
     gtk_widget_set_name(chat_time, "chat-time");
 
-    // Spacer to push chat_time to the right
-    GtkWidget *spacer = gtk_label_new(""); // Создаем пустую метку для отступа
-    gtk_widget_set_hexpand(spacer, TRUE);  // Позволяем отступу растягиваться горизонтально
-    gtk_widget_set_size_request(spacer, 0, -1); // Делаем отступ гибким
+    GtkWidget *spacer = gtk_label_new("");
+    gtk_widget_set_hexpand(spacer, TRUE);
+    gtk_widget_set_size_request(spacer, 0, -1);
 
     GtkWidget *chat_message = gtk_label_new("The information on who successfully completed the marathon is almost ready, just a little bit left");
     gtk_label_set_line_wrap(GTK_LABEL(chat_message), TRUE);
@@ -52,7 +94,6 @@ GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
     gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
     gtk_widget_set_name(chat_message, "chat-message");
 
-    // Добавление элементов в chatblock
     gtk_box_pack_start(GTK_BOX(chatblock), avatar_wrapper, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(chatblock_text), chatblock_text_header, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(chatblock_text), chat_message, FALSE, FALSE, 0);
@@ -62,7 +103,14 @@ GtkWidget *create_chatblock(int avatar_id, const gchar *image_path) {
     gtk_box_pack_start(GTK_BOX(chatblock_text_header), chat_time, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(chatblock), chatblock_text, TRUE, TRUE, 0);
 
-    return chatblock;
+    GtkWidget *event_box = gtk_event_box_new();
+    gtk_widget_set_name(event_box, "chatblock-wrapper");
+    g_signal_connect(event_box, "button-press-event", G_CALLBACK(click_handler), NULL);
+    g_signal_connect(event_box, "enter-notify-event", G_CALLBACK(enter_notify_event), NULL);
+    g_signal_connect(event_box, "leave-notify-event", G_CALLBACK(leave_notify_event), NULL);
+    gtk_container_add(GTK_CONTAINER(event_box), chatblock);
+
+    return event_box;
 }
 
 GtkWidget *sidebar_init(void) {
@@ -72,37 +120,34 @@ GtkWidget *sidebar_init(void) {
     gtk_widget_set_hexpand(sidebar, FALSE);
 
     GtkWidget *search = init_search();
-    gtk_box_pack_start(GTK_BOX(sidebar), search, FALSE, FALSE, 0); // Изменено для GTK3
+    gtk_box_pack_start(GTK_BOX(sidebar), search, FALSE, FALSE, 0);
 
-    // Блок для автоматического скролла
-    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL); // Создаем новое окно прокрутки с NULL для параметров
+    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_vexpand(stretchable_box, TRUE); // Позволяем растягиваемому блоку занимать всю доступную высоту
+    gtk_widget_set_vexpand(stretchable_box, TRUE);
 
-    // Добавляем растягиваемый блок в окно прокрутки
-    gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box); // Исправлено на gtk_container_add
+    gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 
-    gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0); // Изменено для GTK3
+    gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
 
-    // Заполнение растягиваемого блока элементами
     for (int i = 0; i < 10; i++) {
         GtkWidget *avatar = create_chatblock(i, "person_img.jpg");
-        gtk_box_pack_start(GTK_BOX(stretchable_box), avatar, FALSE, FALSE, 0); // Используем gtk_box_pack_start для добавления
+        gtk_box_pack_start(GTK_BOX(stretchable_box), avatar, FALSE, FALSE, 0);
     }
-    // Установка свойства vexpand для scrolled_window
-    gtk_widget_set_vexpand(scrolled_window, TRUE); // Это позволяет окну прокрутки занимать доступное пространство
+    gtk_widget_set_vexpand(scrolled_window, TRUE);
 
-    // Фиксированный блок внизу
     GtkWidget *fixed_height_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_size_request(fixed_height_box, -1, 80);  // Высота 80px
+    gtk_widget_set_size_request(fixed_height_box, -1, 80);
     gtk_widget_set_name(fixed_height_box, "fixed-height-box");
 
     GtkWidget *fixed_label = gtk_label_new("Fixed Height Box");
-    gtk_box_pack_start(GTK_BOX(fixed_height_box), fixed_label, FALSE, FALSE, 0); // Изменено для GTK3
+    gtk_box_pack_start(GTK_BOX(fixed_height_box), fixed_label, FALSE, FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(sidebar), fixed_height_box, FALSE, FALSE, 0); // Изменено для GTK3
+    gtk_box_pack_start(GTK_BOX(sidebar), fixed_height_box, FALSE, FALSE, 0);
+
+    g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
 
     return sidebar;
 }
