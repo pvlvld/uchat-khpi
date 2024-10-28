@@ -42,7 +42,7 @@ CREATE TABLE personal_chats (
     user1_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     user2_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     backgroung 
-    UNIQUE (MIN(user1_id, user2_id), MAX(user1_id, user2_id))
+    UNIQUE (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id))
 );
 
 CREATE TABLE group_chats (
