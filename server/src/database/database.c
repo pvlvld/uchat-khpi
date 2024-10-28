@@ -1,5 +1,5 @@
-#include "../../inc/database.h"
 #include "../../inc/header.h"
+#include "../../inc/sqlite.h"
 
 t_database init_database(void) {
     t_database database = {

@@ -1,6 +1,6 @@
-#include "../inc/database.h"
 #include "../inc/header.h"
 #include "../inc/server/server.h"
+#include "../inc/sqlite.h"
 #include "../inc/ssl.h"
 
 t_vendor vendor;

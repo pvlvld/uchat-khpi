@@ -5,7 +5,7 @@
 
 #include "../../libraries/cJSON/cJSON.h"
 #include "env.h"
-#include "database.h"
+#include "sqlite.h"
 #include "server/server.h"
 #include "handlers/handlers.h"
 #include "websocket.h"

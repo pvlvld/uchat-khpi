@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../../libraries/sqlite/include/sqlite3.h"
-#include "database.h"
+#include "sqlite.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

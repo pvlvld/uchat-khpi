@@ -1,5 +1,5 @@
-#include "../../../inc/database.h"
 #include "../../../inc/header.h"
+#include "../../../inc/sqlite.h"
 
 t_users_table init_users_table(void) {
     t_users_table table = {
