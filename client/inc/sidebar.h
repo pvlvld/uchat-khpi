@@ -18,7 +18,7 @@ char *format_timestamp(time_t timestamp);
 int compare_chats(const void *a, const void *b);
 
 GtkWidget *sidebar_init(void);
-GtkWidget *sidebar_create_avatar(t_chat_info *chat_info);
+GtkWidget *chatblock_create_avatar(t_chat_info *chat_info);
 
 typedef struct {
     GtkWidget *(*init)(void);

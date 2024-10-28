@@ -38,7 +38,7 @@ t_chat_info **parse_chats_info(void) {
         chats_info[i]->sender_name = _sender_name[i % 6];
 
         time_t now = time(NULL);
-        int random_seconds = rand() % (365 * 24 * 60 * 60);
+        int random_seconds = rand() % (8 * 24 * 60 * 60);
         chats_info[i]->timestamp = now - random_seconds;
     }
 
@@ -68,8 +68,13 @@ char *format_timestamp(time_t timestamp) {
     // Создаем структуру tm для локального времени
     struct tm *tm = localtime(&timestamp);
 
+    if (difference < 24 * 60 * 60) {
+        // Форматируем время в формате "HH:MM"
+        strftime(buffer, 50, "%H:%M", tm);
+    }
+
     // 1. Если разница меньше недели
-    if (difference < 7 * 24 * 60 * 60) {
+    else if (difference < 7 * 24 * 60 * 60) {
         // Форматируем день недели (например, "Fri")
         strftime(buffer, 50, "%a", tm); // %a возвращает краткое название дня недели
     }

@@ -11,10 +11,11 @@ static void default_input_handler(GtkEntry *entry, gpointer user_data) {
     if (user_data) return;  // Plug for user_data
 }
 
-GtkWidget *create_input(const gchar *id, const gchar *placeholder, GCallback input_handler) {
+GtkWidget *create_input(const gchar *name, const gchar *placeholder, GCallback input_handler) {
     GtkWidget *entry = gtk_entry_new();
     gtk_entry_set_placeholder_text(GTK_ENTRY(entry), placeholder);
-    gtk_widget_set_name(entry, id);
+    gtk_widget_set_name(entry, name);
+    gtk_style_context_add_class(gtk_widget_get_style_context(entry), name);
 
     if (input_handler == NULL) {
         g_signal_connect(entry, "activate", G_CALLBACK(default_input_handler), NULL);

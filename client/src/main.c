@@ -54,10 +54,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
 }
 
 int main(int argc, char **argv) {
+    srand(time(NULL));
     init_vendor(&vendor);
     GtkApplication *app;
     int status;
-
     app = gtk_application_new("org.example.GtkApplication", 0);
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
