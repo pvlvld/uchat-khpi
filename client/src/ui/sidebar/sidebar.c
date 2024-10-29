@@ -25,27 +25,31 @@ static GtkWidget *init_search(void) {
 static void swap_sidebar(GtkWidget *widget, ssize_t index) {
     GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
 
-    // Получаем количество детей в stretchable_box
     GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
 
     if (children != NULL) {
-        // Проверяем, есть ли элемент с индексом 3
         for (ssize_t i = 0; i < g_list_length(children); i++) {
             GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
-
-            gtk_widget_destroy(target_child); // Удаляем его
-
-            // Создаем новый элемент на основе chat_info
             GtkWidget *new_child = vendor.sidebar.create_chatblock(chat_info);
-            gtk_box_pack_end(GTK_BOX(stretchable_box), new_child, TRUE, FALSE, 0); // Добавляем в начало
-            gtk_widget_show(new_child); // Показать новый элемент
 
-            // Перерисовываем stretchable_box
+            if (vendor.active_chat.chat_sidebar_widget == target_child) {
+                vendor.active_chat.chat_sidebar_widget = new_child;
+                gtk_style_context_add_class(gtk_widget_get_style_context(new_child), "active");
+            }
+            if (vendor.hover_chat.chat_sidebar_widget == target_child) {
+                vendor.hover_chat.chat_sidebar_widget = new_child;
+                gtk_style_context_add_class(gtk_widget_get_style_context(new_child), "hover");
+            }
+            gtk_widget_destroy(target_child);
+
+            gtk_box_pack_end(GTK_BOX(stretchable_box), new_child, TRUE, FALSE, 0);
+            gtk_widget_show(new_child);
+
             gtk_widget_show_all(stretchable_box);
         }
-        g_list_free(children); // Освобождаем список
+        g_list_free(children);
     }
 }
 
