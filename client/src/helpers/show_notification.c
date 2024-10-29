@@ -1,7 +1,7 @@
 #include "../../inc/header.h"
 #include <gtk/gtk.h>
 
-void show_notification(const char *title, const char *message) {
+void ubuntu_show_notification(const char *title, const char *message) {
     NotifyNotification *notification;
 
     notification = notify_notification_new(title, message, NULL);
@@ -13,4 +13,10 @@ void show_notification(const char *title, const char *message) {
     }
 
     g_object_unref(G_OBJECT(notification));
+}
+
+void macos_show_notification(const char *title, const char *message) {
+    char command[512];
+    snprintf(command, sizeof(command), "osascript -e 'display notification \"%s\" with title \"%s\"'", message, title);
+    system(command);
 }

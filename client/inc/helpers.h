@@ -9,7 +9,17 @@ typedef struct {
 } t_helpers;
 
 void set_classname_and_id(GtkWidget *widget, char *name);
-void show_notification(const char *title, const char *message);
+void ubuntu_show_notification(const char *title, const char *message);
+void macos_show_notification(const char *title, const char *message);
+
+void show_notification(const char *title, const char *message) {
+#ifdef __APPLE__
+    macos_show_notification(title, message);
+#else
+    ubuntu_show_notification(title, message);
+#endif
+}
+
 t_helpers init_helpers(void);
 
 #endif //HELPERS_H
