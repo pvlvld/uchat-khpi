@@ -41,14 +41,15 @@ CREATE TABLE personal_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     user1_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     user2_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    backgroung 
+    backgroung INT REFERENCES media(media_id) DEFAULT NULL,
     UNIQUE (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id))
 );
 
 CREATE TABLE group_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     group_name VARCHAR(120),
-    group_picture INT REFERENCES media(media_id) DEFAULT NULL
+    group_picture INT REFERENCES media(media_id) DEFAULT NULL,
+    backgroung INT REFERENCES media(media_id) DEFAULT NULL,
 );
 
 CREATE TABLE group_chat_members (
