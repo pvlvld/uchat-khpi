@@ -1,4 +1,6 @@
 .sidebar {
+  background-color: $neutral-800;
+
   &__search {
     border-radius: 8px;
     padding: 0 12px;
@@ -17,8 +19,10 @@
 
     &_wrapper {
       transition: background-color .3s ease;
-
-      &.hover, &.active {
+      &.hover {
+        background-color: $neutral-700;
+      }
+      &.active {
         background-color: #022C22;
       }
     }

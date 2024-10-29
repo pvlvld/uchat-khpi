@@ -91,7 +91,7 @@ int compare_chats(const void *a, const void *b) {
     t_chat_info *chatA = *(t_chat_info **)a;
     t_chat_info *chatB = *(t_chat_info **)b;
 
-    if (chatA->timestamp > chatB->timestamp) return -1;
-    if (chatA->timestamp < chatB->timestamp) return 1;
+    if (chatA->timestamp > chatB->timestamp) return 1;
+    if (chatA->timestamp < chatB->timestamp) return -1;
     return 0;
 }

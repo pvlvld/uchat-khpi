@@ -1,4 +1,4 @@
-#include "../inc/header.h"
+#include "../../inc/header.h"
 #include <gtk/gtk.h>
 
 void set_classname_and_id(GtkWidget *widget, char *name) {

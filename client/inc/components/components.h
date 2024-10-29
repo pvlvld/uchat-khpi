@@ -1,6 +1,8 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#pragma once
+
 #include "../header.h"
 #include "input.h"
 
