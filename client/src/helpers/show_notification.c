@@ -20,3 +20,11 @@ void macos_show_notification(const char *title, const char *message) {
     snprintf(command, sizeof(command), "osascript -e 'display notification \"%s\" with title \"%s\"'", message, title);
     system(command);
 }
+
+void show_notification(const char *title, const char *message) { // Definition only in this file
+#ifdef __APPLE__
+    macos_show_notification(title, message);
+#else
+    ubuntu_show_notification(title, message);
+#endif
+}
