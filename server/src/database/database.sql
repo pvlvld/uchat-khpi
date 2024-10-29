@@ -9,6 +9,7 @@ CREATE TABLE users (
     user_login VARCHAR(32) UNIQUE NOT NULL,
     password_hash VARCHAR(1024) NOT NULL,
     about VARCHAR(1024) DEFAULT NULL,
+    locale VARCHAR(6) DEFAULT 'en',
     is_online BOOLEAN NOT NULL DEFAULT 0,
     profile_picture INT REFERENCES media(media_id) DEFAULT NULL,
     public_key VARCHAR(1024) NOT NULL,
