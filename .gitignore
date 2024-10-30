@@ -2,4 +2,5 @@
 installs/
 obj/
 uchat_server
+uchat
 *.db
