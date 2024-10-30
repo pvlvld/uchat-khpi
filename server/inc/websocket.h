@@ -3,7 +3,7 @@
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include "../../libraries/cJSON/cJSON.h"
+#include "../../libraries/cJSON/inc/cJSON.h"
 
 #define BUFFER_SIZE 4096
 

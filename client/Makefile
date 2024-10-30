@@ -7,21 +7,21 @@ CFLAGS = -std=c11 \
          -Werror \
          -Wpedantic \
          -I/usr/include \
-         -I../libraries/sqlite/include \
-         -I../libraries/cJSON/build/include \
+         -I../libraries/sqlite/inc \
+         -I../libraries/cJSON/inc \
          -I./inc \
          $(shell pkg-config --cflags gtk+-3.0) \
          $(shell pkg-config --cflags libnotify)
 
 # Path for libraries, including GTK3+ via pkg-config
 LDFLAGS = -L../libraries/sqlite/lib \
-          -L../libraries/cJSON/build/lib \
+          -L../libraries/cJSON/lib \
           -lsqlite3 \
           -lcjson \
           $(shell pkg-config --libs gtk+-3.0) \
           $(shell pkg-config --libs libnotify) \
           -Wl,-rpath,../libraries/sqlite/lib \
-          -Wl,-rpath,../libraries/cJSON/build/lib
+          -Wl,-rpath,../libraries/cJSON/lib
 
 SRC_DIR = src
 OBJ_DIR = obj

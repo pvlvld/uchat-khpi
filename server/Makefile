@@ -7,20 +7,23 @@ CFLAGS = -std=c11 \
          -Werror \
          -Wpedantic \
          -I/usr/include \
-         -I../libraries/sqlite/include \
-         -I../libraries/cJSON/build/include \
+         -I../libraries/sqlite/inc \
+         -I../libraries/cJSON/inc \
+         -I../libraries/openssl \
          -I./libmx/inc \
          -I./inc
 
 # Path for libraries
 LDFLAGS = -L../libraries/sqlite/lib \
-          -L../libraries/cJSON/build/lib \
+          -L../libraries/cJSON/lib \
+          -L../libraries/precompilied/ubuntu/lib \
           -lsqlite3 \
           -lssl \
           -lcrypto \
           -lcjson \
           -Wl,-rpath,../libraries/sqlite/lib \
-          -Wl,-rpath,../libraries/cJSON/build/lib
+          -Wl,-rpath,../libraries/cJSON/lib \
+          -Wl,-rpath,../libraries/precompilied/ubuntu/lib
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -35,16 +38,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Main goal: install OpenSSL first, then build the project
-all: openssl $(TARGET)
-
-# Verify and install OpenSSL if not found
-openssl:
-	@if ! openssl version > /dev/null 2>&1; then \
-	    echo "OpenSSL not found. Installing..."; \
-	    sudo apt-get update && sudo apt-get install -y libssl-dev; \
-	else \
-	    echo "OpenSSL is already installed."; \
-	fi
+all: $(TARGET)
 
 # Build target after checking OpenSSL
 $(TARGET): $(OBJ)

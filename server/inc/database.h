@@ -4,7 +4,7 @@
 #pragma once
 
 #include "sql.h"
-#include "../../libraries/cJSON/cJSON.h"
+#include "../../libraries/cJSON/inc/cJSON.h"
 
 typedef struct {
     void (*create_table)(void);
