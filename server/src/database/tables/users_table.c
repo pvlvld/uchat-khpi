@@ -146,10 +146,10 @@ bool update_user_about(PGconn *conn, int user_id, const char *about) {
     return false;
 }
 
-bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture) {
+bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_id) {
     const char *query = "UPDATE users SET profile_picture = $1, updated_at = NOW() WHERE user_id = $2";
     char user_id_str[12], profile_picture_str[12];
-    const char *params[2] = {itoa(profile_picture, profile_picture_str), itoa(user_id, user_id_str)};
+    const char *params[2] = {itoa(profile_picture_id, profile_picture_str), itoa(user_id, user_id_str)};
     PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
 
     if (PQresultStatus(res) == PGRES_COMMAND_OK) {
