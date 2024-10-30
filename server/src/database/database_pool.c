@@ -2,6 +2,7 @@
 
 static Connection pool[POOL_SIZE];
 
+// TODO: Take connection parameters from environment variables.
 void init_postgres_pool() {
     for (int i = 0; i < POOL_SIZE; i++) {
         pool[i].conn =
