@@ -8,6 +8,7 @@
 #include <libpq-fe.h>
 #include <stdbool.h>
 
+// TODO: Make pool size configurable at runtime.
 #define POOL_SIZE 10
 
 typedef struct {
