@@ -16,9 +16,13 @@ typedef struct {
 } Connection;
 
 struct DatabasePool {
+    /* A function pointer to initialize the database pool. */
     void (*init)();
+    /* A function pointer to acquire a connection from the database pool. */
     PGconn *(*acquire_connection)();
+    /* A function pointer to release a connection back to the database pool. */
     void (*release_connection)(PGconn *);
+    /* A function pointer to close all connections in the database pool. */
     void (*cleanup)();
 };
 
