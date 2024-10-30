@@ -5,7 +5,7 @@
 void on_server_response_received(e_page_type target_page, gpointer user_data);
 
 void perform_server_request(e_page_type target_page) {
-    g_timeout_add(200, (GSourceFunc)on_server_response_received, GINT_TO_POINTER(target_page));clear
+    g_timeout_add(200, (GSourceFunc)on_server_response_received, GINT_TO_POINTER(target_page));
 }
 
 void on_server_response_received(e_page_type target_page, gpointer user_data) {
