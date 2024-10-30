@@ -82,7 +82,7 @@ CREATE TABLE messages (
     message_text TEXT DEFAULT NULL,
     media INT REFERENCES media(media_id) DEFAULT NULL,
     edited BOOLEAN DEFAULT FALSE,
-    deleted BOOLEAN DEFAULT FALSE,
+    deleted_at TIMESTAMP DEFAULT NULL,
     reply_to_chat INT,
     reply_to_message INT,
     forwarded_from_chat INT,
