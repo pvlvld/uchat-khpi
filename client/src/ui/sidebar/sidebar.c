@@ -94,6 +94,13 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
     return FALSE;
 }
 
+static void on_widget_destroy(GtkWidget *widget, gpointer user_data) {
+    (void) user_data;
+    (void) widget;
+    vendor.active_chat.chat_sidebar_widget = NULL;
+    vendor.hover_chat.chat_sidebar_widget = NULL;
+}
+
 GtkWidget *sidebar_init(void) {
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     vendor.helpers.set_classname_and_id(sidebar, "sidebar");
@@ -141,6 +148,7 @@ GtkWidget *sidebar_init(void) {
     gtk_box_pack_start(GTK_BOX(sidebar), fixed_height_box, FALSE, FALSE, 0);
 
     g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
+    g_signal_connect(sidebar, "destroy", G_CALLBACK(on_widget_destroy), NULL);
 
     return sidebar;
 }

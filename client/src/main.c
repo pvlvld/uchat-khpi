@@ -14,6 +14,8 @@ static void activate(GtkApplication *app, gpointer user_data) {
         case LOGIN_PAGE:
             vendor.pages.current_page_widget = create_login_page();
             break;
+        default:
+            break;
     }
 
     gtk_container_add(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
