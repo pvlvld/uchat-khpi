@@ -1,4 +1,4 @@
-#include "../../inc/database_pool.h"
+#include "../../inc/database/database_pool.h"
 
 static Connection pool[POOL_SIZE];
 
