@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "database.h"
 #include "../../libraries/cJSON/cJSON.h"
 #include "env.h"
-#include "sqlite.h"
 #include "server/server.h"
 #include "handlers/handlers.h"
 #include "websocket.h"
@@ -16,7 +16,6 @@
 typedef struct {
     t_env env;
     t_database database;
-    t_sql sql;
     void (*execute_sql)(const char *sql);
 	t_server server;
 	t_handlers handlers;
