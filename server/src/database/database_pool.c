@@ -3,7 +3,7 @@
 static Connection pool[POOL_SIZE];
 
 // TODO: Take connection parameters from environment variables.
-void init_postgres_pool() {
+void init_postgres_pool_connections() {
     for (int i = 0; i < POOL_SIZE; i++) {
         pool[i].conn =
             PQconnectdb("user=your_username dbname=your_dbname password=your_password hostaddr=127.0.0.1 port=5432");

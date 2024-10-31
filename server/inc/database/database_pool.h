@@ -34,6 +34,7 @@ void cleanup_pool();
 
 static struct t_database_pool database_pool = {
     .init = init_postgres_pool,
+    .init_connections = init_postgres_pool_connections,
     .acquire_connection = acquire_connection,
     .release_connection = release_connection,
     .cleanup = cleanup_pool
