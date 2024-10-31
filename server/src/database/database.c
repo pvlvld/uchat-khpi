@@ -1,6 +1,8 @@
 #include "../../inc/database.h"
 
-void init_database(t_database *database) {
+t_database *database;
+
+t_database *init_database(void) {
     database->pool.init();
 
     database->messages_table.send_message = send_message;
@@ -20,4 +22,6 @@ void init_database(t_database *database) {
     database->users_table.get_user_by_login = get_user_by_login;
     database->users_table.get_user_by_id = get_user_by_id;
     database->users_table.update_user_locale = update_user_locale;
+
+    return database;
 }
