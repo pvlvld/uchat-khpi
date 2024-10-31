@@ -16,7 +16,7 @@ typedef struct {
     bool in_use;
 } Connection;
 
-struct DatabasePool {
+struct t_database_pool {
     /* A function pointer to initialize the database pool. */
     void (*init)();
     /* A function pointer to acquire a connection from the database pool. */
@@ -32,7 +32,7 @@ PGconn *acquire_connection();
 void release_connection(PGconn *conn);
 void cleanup_pool();
 
-static struct DatabasePool database_pool = {
+static struct t_database_pool database_pool = {
     .init = init_postgres_pool,
     .acquire_connection = acquire_connection,
     .release_connection = release_connection,
