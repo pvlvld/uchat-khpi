@@ -4,6 +4,16 @@
 
 #include <libpq-fe.h>
 
+/** Creates a user.
+ *
+ * @param conn The connection to the PostgreSQL database.
+ * @param username The username of the user.
+ * @param user_login The login of the user.
+ * @param password_hash The hash of the user's password.
+ * @param public_key The public encription key of the user.
+ * @param locale The locale of the user.
+ * @return The ID of the created user, or -1 if the user could not be created.
+ */
 int create_user(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
                 const char *public_key, const char *locale);
 
