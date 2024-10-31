@@ -92,4 +92,18 @@ bool update_user_about(PGconn *conn, int user_id, const char *about);
  */
 bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_id);
 
+typedef struct {
+    int (*create_user)(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
+                       const char *public_key, const char *locale);
+    PGresult *(*get_user_by_login)(PGconn *conn, const char *user_login);
+    PGresult *(*get_user_by_id)(PGconn *conn, int user_id);
+    bool (*update_user_locale)(PGconn *conn, int user_id, const char *locale);
+    bool (*update_user_username)(PGconn *conn, int user_id, const char *username);
+    bool (*delete_user)(PGconn *conn, int user_id);
+    bool (*restore_user)(PGconn *conn, int user_id);
+    bool (*update_user_password)(PGconn *conn, int user_id, const char *password_hash);
+    bool (*update_user_about)(PGconn *conn, int user_id, const char *about);
+    bool (*update_user_profile_picture)(PGconn *conn, int user_id, int profile_picture_id);
+} t_users_table;
+
 #endif // USERS_TABLE_H
