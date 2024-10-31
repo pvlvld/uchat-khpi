@@ -16,4 +16,6 @@ typedef struct {
     t_users_table users_table;
 } t_database;
 
+void init_database(t_database *database);
+
 #endif // POSTGRES_H
