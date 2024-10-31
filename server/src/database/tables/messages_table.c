@@ -63,3 +63,34 @@ bool edit_message_text(PGconn *conn, int chat_id, int message_id, const char *ne
     PQclear(res);
     return true;
 }
+
+PGresult *get_message(PGconn *conn, int chat_id, int message_id) {
+    const char *query = "SELECT * FROM messages WHERE chat_id = $1 AND message_id = $2";
+    char chat_id_str[12];
+    char message_id_str[12];
+    const char *params[2] = {itoa(chat_id, chat_id_str), itoa(message_id, message_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get message failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
+
+PGresult *get_messages(PGconn *conn, int chat_id, int limit, int offset) {
+    const char *query = "SELECT * FROM messages WHERE chat_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3";
+    char chat_id_str[12], limit_str[12], offset_str[12];
+    const char *params[3] = {itoa(chat_id, chat_id_str), itoa(limit, limit_str), itoa(offset, offset_str)};
+    PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get messages failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
