@@ -1,0 +1,44 @@
+.login {
+  &__content {
+    background: $neutral-800;
+    padding: 36px;
+    border-radius: 12px;
+  }
+  &__block {
+    margin: 0;
+  }
+  &__username {
+    &_wrapper {
+    }
+  }
+  &__password {
+    margin: 0;
+    &_wrapper {
+
+    }
+    &_icon {
+      &__wrapper {
+        background: $neutral-900;
+      }
+    }
+  }
+  &__button {
+    background: $emerald-700;
+    border: 1px solid $emerald-700;
+    color: $neutral-100;
+    font-size: 16px;
+    transition: background-color .3s ease;
+    border-radius: 12px;
+    &:hover {
+      background: $emerald-900;
+    }
+    &:active {
+      background: $emerald-600;
+    }
+  }
+}
+
+
+.error {
+  background: pink;
+}

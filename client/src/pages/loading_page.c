@@ -16,7 +16,7 @@ GtkWidget *create_loading_page(void) {
     gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(login_page), box, TRUE, TRUE, 0);
 
-    set_classname_and_id(login_page, "_right_block");
+    vendor.helpers.set_classname_and_id(login_page, "_right_block");
 
     return login_page;
 }

@@ -11,6 +11,7 @@ typedef enum {
 
 typedef struct {
     e_page_type current_page;
+    t_login_page login_page;
     GtkWidget *current_page_widget;
     void (*change_page)(e_page_type page);
 } t_pages;

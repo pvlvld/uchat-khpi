@@ -67,6 +67,7 @@ t_pages init_pages(void) {
         .current_page = LOGIN_PAGE,
         .current_page_widget = NULL,
         .change_page = change_page,
+        .login_page = init_login(),
     };
     return pages;
 }

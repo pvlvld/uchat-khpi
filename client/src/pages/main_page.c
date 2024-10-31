@@ -18,7 +18,7 @@ GtkWidget *create_main_page(void) {
     gtk_box_pack_start(GTK_BOX(main_page), sidebar, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(main_page), right_box, TRUE, TRUE, 0);
 
-    set_classname_and_id(right_box, "_right_block");
+    vendor.helpers.set_classname_and_id(right_box, "_right_block");
 
     return main_page;
 }

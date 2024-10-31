@@ -25,6 +25,7 @@ typedef struct {
 #include "program.h"
 #include "components/components.h"
 #include "sidebar.h"
+#include "login.h"
 #include "modal.h"
 #include "helpers.h"
 #include "pages.h"
