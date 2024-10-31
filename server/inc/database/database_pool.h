@@ -16,7 +16,7 @@ typedef struct {
     bool in_use;
 } Connection;
 
-struct t_database_pool {
+typedef struct {
     /* A function pointer to initialize the database pool. */
     void (*init)();
     /* A function pointer to acquire a connection from the database pool. */
@@ -25,26 +25,10 @@ struct t_database_pool {
     void (*release_connection)(PGconn *);
     /* A function pointer to close all connections in the database pool. */
     void (*cleanup)();
-};
+} t_database_pool;
 
-void init_postgres_pool();
-PGconn *acquire_connection();
-void release_connection(PGconn *conn);
-void cleanup_pool();
-
-static struct t_database_pool database_pool = {
-    .init = init_postgres_pool,
-    .init_connections = init_postgres_pool_connections,
-    .acquire_connection = acquire_connection,
-    .release_connection = release_connection,
-    .cleanup = cleanup_pool
-};
-
-
-static Connection pool[POOL_SIZE];
-static pthread_mutex_t pool_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void init_postgres_pool();
+void init_postgres_pool(t_database_pool *database_pool);
+void init_postgres_pool_connections();
 PGconn *acquire_connection();
 void release_connection(PGconn *conn);
 void cleanup_pool();

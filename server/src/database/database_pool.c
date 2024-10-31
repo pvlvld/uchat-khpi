@@ -1,6 +1,7 @@
 #include "../../inc/database/database_pool.h"
 
 static Connection pool[POOL_SIZE];
+static pthread_mutex_t pool_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // TODO: Take connection parameters from environment variables.
 void init_postgres_pool_connections() {
@@ -41,4 +42,11 @@ void release_connection(PGconn *conn) {
 
 void cleanup_pool() {
     for (int i = 0; i < POOL_SIZE; i++) PQfinish(pool[i].conn);
+}
+
+void init_postgres_pool(t_database_pool *database_pool) {
+    database_pool->init = init_postgres_pool_connections;
+    database_pool->acquire_connection = acquire_connection;
+    database_pool->release_connection = release_connection;
+    database_pool->cleanup = cleanup_pool;
 }
