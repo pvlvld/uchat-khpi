@@ -46,6 +46,7 @@ void cleanup_pool() {
 
 void init_postgres_pool(t_database_pool *database_pool) {
     database_pool->init = init_postgres_pool_connections;
+    database_pool->init_connections = init_postgres_pool_connections;
     database_pool->acquire_connection = acquire_connection;
     database_pool->release_connection = release_connection;
     database_pool->cleanup = cleanup_pool;
