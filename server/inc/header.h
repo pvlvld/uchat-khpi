@@ -17,7 +17,7 @@
 typedef struct {
     t_env env;
     t_database database;
-    t_sql sql;
+    // t_sql sql;
 //    void (*execute_sql)(const char *sql);
     t_server server;
     t_handlers handlers;
