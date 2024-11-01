@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "database.h"
 #include "../../libraries/cJSON/inc/cJSON.h"
 #include "env.h"
 #include "database.h"
@@ -17,9 +18,9 @@ typedef struct {
     t_env env;
     t_database database;
     t_sql sql;
-    void (*execute_sql)(const char *sql);
-	t_server server;
-	t_handlers handlers;
+//    void (*execute_sql)(const char *sql);
+    t_server server;
+    t_handlers handlers;
     t_websocket websocket;
     t_jwt jwt;
 } t_vendor;

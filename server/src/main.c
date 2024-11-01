@@ -1,4 +1,3 @@
-#include "../inc/websocket.h"
 #include "../inc/header.h"
 #include "../inc/server/server.h"
 
@@ -8,12 +7,14 @@ int main(void) {
     // Structure initialization
     init_vendor(&vendor);
 
-    // Creating a database
-    vendor.database.create_database();
+    // Initializing a database connections pool
+    vendor.database.pool.init();
+
+    // Creating a database connections in the pool
+    vendor.database.pool.init_connections();
 
     start_server();
 
-    vendor.database.close_database();
     free(vendor.server.client_settings.clients);
     SSL_CTX_free(vendor.server.ssl_ctx);
     return 0;

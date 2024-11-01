@@ -1,79 +1,163 @@
-#include "../../../inc/database.h"
-#include "../../../inc/header.h"
+#include "../../../inc/utils.h"
+#include <libpq-fe.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
-t_users_table init_users_table(void) {
-    t_users_table table = {
-        .create_table = _create_users_table,
-        .get_or_create = _get_or_create_user_id,
-        .find_by_phone = _find_by_phone,
-    };
+int create_user(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
+                const char *public_key, const char *locale) {
+    const char *query = "INSERT INTO users (username, user_login, password_hash, public_key, locale) VALUES ($1, $2, "
+                        "$3, $4, $5) RETURNING user_id";
+    const char *params[5] = {username, user_login, password_hash, public_key, locale};
+    PGresult *res = PQexecParams(conn, query, 4, NULL, params, NULL, NULL, 0);
 
-    return table;
-}
-
-// Function for creating the users table
-void _create_users_table(void) {
-    const char *sql =
-        "CREATE TABLE IF NOT EXISTS users ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "username TEXT, "
-        "phone_number TEXT NOT NULL UNIQUE, "
-        "ava_url TEXT, "
-        "created_at TIMESTAMP DEFAULT (strftime('%s', 'now')), "
-        "updated_at DATETIME"
-        ");";
-    sqlite.execute_sql(sql);
-}
-
-unsigned long _get_or_create_user_id(const char *phone_number) {
-    char *sql;
-    char *result;
-    int user_id;
-
-    // Query to verify an existing user
-    sql = sqlite3_mprintf("SELECT id FROM users WHERE phone_number = '%q'", phone_number);
-    result = vendor.sql.get_column_value(sql, "id");
-
-    if (result) {
-        // User found, return ID
-        user_id = atoi(result);
-        free(result);
-        sqlite3_free(sql);
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        int user_id = atoi(PQgetvalue(res, 0, 0));
+        PQclear(res);
         return user_id;
     }
-    free(result);
 
-    // Form SQL query for inserting a new user
-    sql = sqlite3_mprintf(
-        "INSERT INTO users (phone_number) VALUES ('%q')",
-        phone_number
-    );
-    execute_sql(sql);
-
-    // Get the ID of the newly inserted record
-    user_id = (int)sqlite3_last_insert_rowid(vendor.database.db);
-    sqlite3_free(sql);
-
-    return user_id;
-}
-
-unsigned long _find_by_phone(const char *phone_number) {
-    char *sql;
-    char *result;
-    int user_id;
-
-    // Query to verify an existing user
-    sql = sqlite3_mprintf("SELECT id FROM users WHERE phone_number = '%q'", phone_number);
-    result = vendor.sql.get_column_value(sql, "id");
-
-    if (result) {
-        // User found, return ID
-        user_id = atoi(result);
-        free(result);
-        sqlite3_free(sql);
-        return user_id;
-    }
-    free(result);
-
+    fprintf(stderr, "Create user failed: %s", PQerrorMessage(conn));
+    PQclear(res);
     return -1;
+}
+
+PGresult *get_user_by_login(PGconn *conn, const char *user_login) {
+    const char *query = "SELECT * FROM users WHERE user_login = $1";
+    const char *params[1] = {user_login};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get user failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
+
+PGresult *get_user_by_id(PGconn *conn, int user_id) {
+    const char *query = "SELECT * FROM users WHERE user_id = $1";
+    char user_id_str[12];
+    const char *params[1] = {itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get user failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
+
+bool update_user_locale(PGconn *conn, int user_id, const char *locale) {
+    const char *query = "UPDATE users SET locale = $1, updated_at = NOW() WHERE user_id = $2";
+    char user_id_str[12];
+    const char *params[2] = {locale, itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Update user locale failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool update_user_username(PGconn *conn, int user_id, const char *username) {
+    const char *query = "UPDATE users SET username = $1, updated_at = NOW() WHERE user_id = $2";
+    char user_id_str[12];
+    const char *params[2] = {username, itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Update user username failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool delete_user(PGconn *conn, int user_id) {
+    const char *query = "UPDATE users SET deleted_at = NOW(), updated_at = NOW() WHERE user_id = $1";
+    char user_id_str[12];
+    const char *params[1] = {itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Delete user failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool restore_user(PGconn *conn, int user_id) {
+    const char *query = "UPDATE users SET deleted_at = NULL, updated_at = NOW() WHERE user_id = $1";
+    char user_id_str[12];
+    const char *params[1] = {itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Restore user failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool update_user_password(PGconn *conn, int user_id, const char *password_hash) {
+    const char *query = "UPDATE users SET password_hash = $1, updated_at = NOW() WHERE user_id = $2";
+    char user_id_str[12];
+    const char *params[2] = {password_hash, itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Update user password failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool update_user_about(PGconn *conn, int user_id, const char *about) {
+    const char *query = "UPDATE users SET about = $1, updated_at = NOW() WHERE user_id = $2";
+    char user_id_str[12];
+    const char *params[2] = {about, itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Update user about failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}
+
+bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_id) {
+    const char *query = "UPDATE users SET profile_picture = $1, updated_at = NOW() WHERE user_id = $2";
+    char user_id_str[12], profile_picture_str[12];
+    const char *params[2] = {itoa(profile_picture_id, profile_picture_str), itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Update user profile picture failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
 }

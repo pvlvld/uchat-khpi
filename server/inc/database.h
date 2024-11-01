@@ -1,39 +1,21 @@
-#ifndef DATABASE_H
-#define DATABASE_H
+#ifndef POSTGRES_H
+#define POSTGRES_H
 
 #pragma once
 
-#include "sql.h"
 #include "../../libraries/cJSON/inc/cJSON.h"
+#include "database/database_pool.h"
+#include "database/tables/messages_table.h"
+#include "database/tables/personal_chat_table.h"
+#include "database/tables/users_table.h"
 
 typedef struct {
-    void (*create_table)(void);
-    unsigned long (*get_or_create)(const char *phone_number);
-    unsigned long (*find_by_phone)(const char *phone_number);
-} t_users_table;
-void _create_users_table(void);
-unsigned long _get_or_create_user_id(const char *phone_number) ;
-unsigned long _find_by_phone(const char *phone_number);
-t_users_table init_users_table(void);
-
-typedef struct {
-    char* db_name;
-    void (*create_database)(void);
-    void (*close_database)(void);
+    t_database_pool pool;
+    t_messages_table messages_table;
+    t_personal_chat_table personal_chat_table;
     t_users_table users_table;
-    sqlite3 *db;
 } t_database;
 
-// Function for creating a database
-void _create_database_impl(void);
-void _close_database(void);
+t_database *init_database(void);
 
-void execute_sql(const char *sql);
-int query_callback(void *data, int argc, char **argv, char **azColName);
-int execute_query(const char *sql, char ***results, int *rows, int *cols);
-void print_query_results(const char *sql);
-void print_column_value(const char *sql, const char *column_name);
-
-t_database init_database(void);
-
-#endif //DATABASE_H
+#endif // POSTGRES_H
