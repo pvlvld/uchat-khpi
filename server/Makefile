@@ -23,8 +23,9 @@ LDFLAGS = -L../libraries/sqlite/lib \
           -lcjson \
           -Wl,-rpath,../libraries/sqlite/lib \
           -Wl,-rpath,../libraries/cJSON/lib \
-          -Wl,-rpath,../libraries/precompilied/ubuntu/lib
+          -Wl,-rpath,../libraries/precompilied/ubuntu/lib \
           -lpq // TODO: install locally
+
 SRC_DIR = src
 OBJ_DIR = obj
 SRC = $(shell find $(SRC_DIR) -name '*.c')
