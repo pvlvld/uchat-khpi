@@ -1,5 +1,5 @@
-#include "../../../inc/server/client.h"
 #include "../../../inc/header.h"
+#include "../../../inc/server/client.h"
 #include "../../../inc/websocket.h"
 
 void *_handle_client(void *client_socket) {
@@ -24,7 +24,7 @@ void *_handle_client(void *client_socket) {
     read_size = SSL_read(ssl, buffer, sizeof(buffer) - 1);
     if (read_size > 0) {
         buffer[read_size] = '\0';
-       if (vendor.env.dev_mode) printf("Received request:\n%s\n", buffer);
+        if (vendor.env.dev_mode) printf("Received request:\n%s\n", buffer);
 
         // Extract JWT token from Authorization header
         char *jwt_token = extract_bearer_token(buffer);
@@ -44,17 +44,19 @@ void *_handle_client(void *client_socket) {
 
                     if (jwt_token) {
                         jwt_verification_result jwt_verify = vendor.jwt.verify_jwt_token(jwt_token);
-                       if (vendor.env.dev_mode) printf("jwt_verify.status: %d\n",jwt_verify.status);
+                        if (vendor.env.dev_mode) printf("jwt_verify.status: %d\n", jwt_verify.status);
                         if (jwt_verify.status == 1) {
                             cJSON *jwt_payload = jwt_verify.payload;
                             cJSON *phone_number_item = cJSON_GetObjectItem(jwt_payload, "phone_number");
                             if (cJSON_IsString(phone_number_item)) {
                                 char *phone_number = phone_number_item->valuestring;
-                                user_id = vendor.database.users_table.find_by_phone(phone_number);
+                                // TODO:
+                                //  user_id = vendor.database.users_table.find_by_phone(phone_number);
                                 free(phone_number);
                             }
                         } else {
-                            cJSON_AddStringToObject(response_json, "message", "WebSocket connection without invalid JWT token");
+                            cJSON_AddStringToObject(response_json, "message",
+                                                    "WebSocket connection without invalid JWT token");
                             cJSON_AddStringToObject(response_json, "status", "ERROR");
                             vendor.websocket.send_websocket_message(ssl, cJSON_Print(response_json));
                             vendor.websocket.send_close_frame(ssl, 1002); // 1002 - Protocol Error
@@ -93,7 +95,8 @@ void *_handle_client(void *client_socket) {
                         return NULL;
                     }
 
-                   if (vendor.env.dev_mode) printf("WebSocket handshake with user_id: %ld\n", user_id);  // Debug message
+                    if (vendor.env.dev_mode)
+                        printf("WebSocket handshake with user_id: %ld\n", user_id); // Debug message
                     vendor.server.client_settings.update_client_user_id(ssl, user_id);
 
                     cJSON_AddStringToObject(response_json, "message", "Connected succsess!");
@@ -107,7 +110,7 @@ void *_handle_client(void *client_socket) {
                         read_size = SSL_read(ssl, frame, sizeof(frame));
                         if (read_size <= 0) {
                             if (SSL_get_error(ssl, read_size) == SSL_ERROR_ZERO_RETURN) {
-                               if (vendor.env.dev_mode) printf("Connection closed by the client\n");
+                                if (vendor.env.dev_mode) printf("Connection closed by the client\n");
                             } else {
                                 perror("SSL_read");
                             }
