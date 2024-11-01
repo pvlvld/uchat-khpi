@@ -4,7 +4,7 @@ static Connection pool[POOL_SIZE];
 static pthread_mutex_t pool_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // TODO: Take connection parameters from environment variables.
-void init_postgres_pool_connections() {
+void init_postgres_pool_connections(void) {
     for (int i = 0; i < POOL_SIZE; i++) {
         pool[i].conn =
             PQconnectdb("user=your_username dbname=your_dbname password=your_password hostaddr=127.0.0.1 port=5432");
@@ -16,7 +16,7 @@ void init_postgres_pool_connections() {
     }
 }
 
-PGconn *acquire_connection() {
+PGconn *acquire_connection(void) {
     pthread_mutex_lock(&pool_mutex);
     for (int i = 0; i < POOL_SIZE; i++) {
         if (!pool[i].in_use) {
@@ -40,7 +40,7 @@ void release_connection(PGconn *conn) {
     pthread_mutex_unlock(&pool_mutex);
 }
 
-void cleanup_pool() {
+void cleanup_pool(void) {
     for (int i = 0; i < POOL_SIZE; i++) PQfinish(pool[i].conn);
 }
 
