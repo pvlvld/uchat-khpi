@@ -1,0 +1,111 @@
+.auth {
+
+  &__label-box {
+    margin-top: 24px;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $neutral-100;
+  }
+
+  &__link {
+    color: $emerald-500;
+    font-weight: bold;
+  }
+
+  &__content {
+    background: $neutral-800;
+    padding: 36px;
+    border-radius: 12px;
+  }
+
+  &__block {
+    margin-top: 24px;
+  }
+
+  &__password {
+    margin: 0;
+    &_icon {
+      &__wrapper {
+        background: $neutral-900;
+      }
+    }
+  }
+
+  &__button {
+    background: $emerald-700;
+    border: 1px solid $emerald-700;
+    color: $neutral-100;
+    font-size: 16px;
+    transition: background-color .3s ease;
+    border-radius: 12px;
+
+    &.hover, &:focus {
+      background: $emerald-900;
+    }
+
+    &:active {
+      background: $emerald-600;
+    }
+  }
+}
+
+._form {
+
+  &__image{
+
+    &_wrapper {
+      background: $neutral-900;
+      border-radius: 6px 0 0 6px;
+    }
+  }
+
+  &__input {
+    background: transparent;
+    border-color: transparent;
+    margin-left: 8px;
+    margin-right: 8px;
+    font-size: 14px;
+    color: $neutral-100;
+    transition: all .3s ease;
+
+    &_toggle {
+      background: transparent;
+      padding-right: 8px;
+    }
+
+    &_block {
+      background: $neutral-700;
+      border: 2px solid $neutral-900;
+      border-radius: 8px;
+    }
+
+    &_placeholder {
+      color: $neutral-300;
+      margin-left: 40px;
+      margin-top: -35px;
+    }
+
+    &_wrapper {
+
+      &._form_error {
+
+        & ._form__input_block {
+          border-color: $warning;
+        }
+      }
+    }
+  }
+
+  &__error {
+
+    &_wrapper {
+      margin-top: 6px;
+    }
+
+    &_text {
+      color: $warning;
+    }
+  }
+}

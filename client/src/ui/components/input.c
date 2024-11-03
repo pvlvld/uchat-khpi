@@ -3,12 +3,10 @@
 
 // Default handler for input, if the user has not passed their
 static void default_input_handler(GtkEntry *entry, gpointer user_data) {
-    // Получение текста из GtkEntry
     const gchar *text = gtk_entry_get_text(entry);
     g_print("The text (default): %s\n", text);
-    // Очистка текста в GtkEntry
     gtk_entry_set_text(entry, "");
-    if (user_data) return;  // Plug for user_data
+    if (user_data) return;
 }
 
 GtkWidget *create_input(const gchar *name, const gchar *placeholder, GCallback input_handler) {

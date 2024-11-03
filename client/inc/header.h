@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib.h>
 #include <libnotify/notify.h>
 
 typedef struct {
@@ -22,10 +24,14 @@ typedef struct {
     time_t timestamp;
 } t_chat_info;
 
+#include "program.h"
 #include "components/components.h"
 #include "sidebar.h"
+#include "login.h"
+#include "register.h"
 #include "modal.h"
 #include "helpers.h"
+#include "pages.h"
 
 typedef struct {
     t_chat_info *chat;
@@ -37,6 +43,10 @@ typedef struct {
     GtkWidget* chat_sidebar_widget;
 } t_hover_chat;
 
+//typedef struct {
+//
+//} t_window;
+
 typedef struct {
     t_components components;
     t_sidebar sidebar;
@@ -44,6 +54,9 @@ typedef struct {
     t_hover_chat hover_chat;
     t_modal modal;
     t_helpers helpers;
+    t_pages pages;
+    GtkWidget *window_content;
+    GtkWidget *window;
 } t_vendor;
 
 extern t_vendor vendor;

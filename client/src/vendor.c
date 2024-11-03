@@ -7,4 +7,6 @@ void init_vendor(t_vendor *vendor) {
     vendor->sidebar = init_sidebar();
     vendor->modal = init_modal();
     vendor->helpers = init_helpers();
+    vendor->pages = init_pages();
+    vendor->window_content = NULL;
 }
