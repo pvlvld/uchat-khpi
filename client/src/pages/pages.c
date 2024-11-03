@@ -2,40 +2,6 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
-gboolean on_server_response_received(gpointer user_data);
-
-void perform_server_request(e_page_type target_page) {
-    g_timeout_add(200, (GSourceFunc)on_server_response_received, GINT_TO_POINTER(target_page));
-}
-
-gboolean on_server_response_received(gpointer user_data) {
-    e_page_type target_page = (e_page_type)(uintptr_t)user_data;
-
-    if (vendor.pages.current_page_widget != NULL) {
-        gtk_container_remove(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
-        vendor.pages.current_page_widget = NULL;
-    }
-
-    vendor.pages.current_page = target_page;
-
-    switch (target_page) {
-        case LOGIN_PAGE:
-            vendor.pages.current_page_widget = create_login_page();
-            break;
-        case MAIN_PAGE:
-            vendor.pages.current_page_widget = create_main_page();
-            break;
-        default:
-            g_print("Unknown page type: %d\n", target_page);
-            return G_SOURCE_REMOVE;
-    }
-
-    gtk_container_add(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
-    gtk_widget_show_all(vendor.pages.current_page_widget);
-
-    return G_SOURCE_REMOVE;
-}
-
 void change_page(e_page_type page) {
     if (vendor.pages.current_page == page) return;
 
@@ -47,15 +13,20 @@ void change_page(e_page_type page) {
     vendor.pages.current_page = page;
 
     switch (page) {
-        case LOGIN_PAGE:
-            vendor.pages.current_page_widget = create_login_page();
-            break;
-        case MAIN_PAGE:
-            vendor.pages.current_page_widget = create_loading_page();
-            perform_server_request(page);
-            break;
-        default:
-            g_print("Attempted to change to an unknown page type: %d\n", page);
+    case LOGIN_PAGE:
+        vendor.pages.current_page_widget = create_login_page();
+        break;
+    case REGISTER_PAGE:
+        vendor.pages.current_page_widget = create_register_page();
+        break;
+    case MAIN_PAGE:
+        vendor.pages.current_page_widget = create_main_page();
+        break;
+    case LOADING_PAGE:
+        vendor.pages.current_page_widget = create_loading_page();
+        break;
+    default:
+        g_print("Attempted to change to an unknown page type: %d\n", page);
     }
 
     gtk_container_add(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
@@ -64,10 +35,12 @@ void change_page(e_page_type page) {
 
 t_pages init_pages(void) {
     t_pages pages = {
-        .current_page = LOGIN_PAGE,
+        .current_page = REGISTER_PAGE,
         .current_page_widget = NULL,
         .change_page = change_page,
         .login_page = init_login(),
+        .register_page = init_register(),
     };
     return pages;
 }
+// g_timeout_add(200, (GSourceFunc)on_server_response_received, GINT_TO_POINTER(target_page));

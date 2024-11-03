@@ -3,6 +3,7 @@
 #include <gdk/gdk.h>
 
 GtkWidget *create_main_page(void) {
+    gtk_window_set_title(GTK_WINDOW(vendor.window), "ShadowTalk | Cahts");
     GtkWidget *main_page = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *sidebar = vendor.sidebar.init();
     GtkWidget *right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

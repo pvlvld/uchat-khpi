@@ -52,25 +52,6 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
     return TRUE;
 }
 
-static gboolean enter_notify_event(GtkWidget *widget, GdkEventCrossing *event) {
-    (void) event;
-    if (vendor.active_chat.chat_sidebar_widget != widget) {
-        gtk_style_context_add_class(gtk_widget_get_style_context(widget), "hover");
-    }
-    GdkCursor *cursor = gdk_cursor_new_for_display(gdk_display_get_default(), GDK_HAND2);
-    gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-    g_object_unref(cursor);
-    return TRUE;
-}
-
-static gboolean leave_notify_event(GtkWidget *widget, GdkEventCrossing *event) {
-    (void) event;
-    if (vendor.hover_chat.chat_sidebar_widget != widget)
-        gtk_style_context_remove_class(gtk_widget_get_style_context(widget), "hover");
-    gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
-    return TRUE;
-}
-
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock, "sidebar__chatblock");
@@ -119,8 +100,7 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     vendor.helpers.set_classname_and_id(event_box, "sidebar__chatblock_wrapper");
     g_object_set_data(G_OBJECT(event_box), "chat_info", chat_info);
     g_signal_connect(event_box, "button-press-event", G_CALLBACK(click_handler), NULL);
-    g_signal_connect(event_box, "enter-notify-event", G_CALLBACK(enter_notify_event), NULL);
-    g_signal_connect(event_box, "leave-notify-event", G_CALLBACK(leave_notify_event), NULL);
+    vendor.helpers.add_hover(event_box);
     gtk_container_add(GTK_CONTAINER(event_box), chatblock);
 
     // Освобождение памяти

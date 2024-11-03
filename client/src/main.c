@@ -14,6 +14,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
         case LOGIN_PAGE:
             vendor.pages.current_page_widget = create_login_page();
             break;
+        case REGISTER_PAGE:
+            vendor.pages.current_page_widget = create_register_page();
+            break;
         default:
             break;
     }

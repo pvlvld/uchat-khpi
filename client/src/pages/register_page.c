@@ -6,18 +6,18 @@ static gboolean on_link_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     (void) widget;
     (void) data;
     if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        vendor.pages.change_page(REGISTER_PAGE);
+        vendor.pages.change_page(LOGIN_PAGE);
         return TRUE;
     }
     return FALSE;
 }
 
-GtkWidget *create_login_page(void) {
-    gtk_window_set_title(GTK_WINDOW(vendor.window), "ShadowTalk | Login");
+GtkWidget *create_register_page(void) {
+    gtk_window_set_title(GTK_WINDOW(vendor.window), "ShadowTalk | Register");
     GtkWidget *page = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    vendor.helpers.set_classname_and_id(wrapper, "login");
+    vendor.helpers.set_classname_and_id(wrapper, "register");
     gtk_widget_set_halign(wrapper, GTK_ALIGN_CENTER);
     gtk_widget_set_valign(wrapper, GTK_ALIGN_CENTER);
     gtk_widget_set_hexpand(wrapper, TRUE);
@@ -28,16 +28,16 @@ GtkWidget *create_login_page(void) {
     gtk_widget_set_hexpand(content, FALSE);
 
     vendor.helpers.set_classname_and_id(content, "auth__content");
-    GtkWidget *login_block = login_init();
+    GtkWidget *register_block = register_init();
 
-    GtkWidget *title = vendor.components.title.create_h1("Login");
+    GtkWidget *title = vendor.components.title.create_h1("Register");
     vendor.helpers.set_classname_and_id(title, "auth__title");
 
-    GtkWidget *label_text = gtk_label_new("Don’t have an account? ");
+    GtkWidget *label_text = gtk_label_new("Already have an account? ");
     vendor.helpers.set_classname_and_id(label_text, "auth__text");
 
     GtkWidget *event_box = gtk_event_box_new();
-    GtkWidget *label_link = gtk_label_new("Register");
+    GtkWidget *label_link = gtk_label_new("Login");
     vendor.helpers.set_classname_and_id(label_link, "auth__link");
 
     gtk_container_add(GTK_CONTAINER(event_box), label_link);
@@ -54,7 +54,7 @@ GtkWidget *create_login_page(void) {
     vendor.helpers.set_classname_and_id(label_box, "auth__label-box");
 
     gtk_box_pack_start(GTK_BOX(content), title, TRUE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(content), login_block, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(content), register_block, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(content), label_box, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(wrapper), content, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(page), wrapper, FALSE, FALSE, 0);

@@ -1,35 +1,38 @@
-.login {
+.auth {
+
+  &__label-box {
+    margin-top: 24px;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $neutral-100;
+  }
+
+  &__link {
+    color: $emerald-500;
+    font-weight: bold;
+  }
+
   &__content {
     background: $neutral-800;
     padding: 36px;
     border-radius: 12px;
   }
+
   &__block {
     margin-top: 24px;
   }
-  &__username {
-    &_image{
-      &__wrapper {
-      }
-    }
-    &_input {
 
-    }
-    &_wrapper {
-
-    }
-  }
   &__password {
     margin: 0;
-    &_wrapper {
-
-    }
     &_icon {
       &__wrapper {
         background: $neutral-900;
       }
     }
   }
+
   &__button {
     background: $emerald-700;
     border: 1px solid $emerald-700;
@@ -37,9 +40,11 @@
     font-size: 16px;
     transition: background-color .3s ease;
     border-radius: 12px;
-    &:hover, &:focus {
+
+    &.hover, &:focus {
       background: $emerald-900;
     }
+
     &:active {
       background: $emerald-600;
     }
@@ -49,11 +54,13 @@
 ._form {
 
   &__image{
+
     &_wrapper {
       background: $neutral-900;
       border-radius: 6px 0 0 6px;
     }
   }
+
   &__input {
     background: transparent;
     border-color: transparent;
@@ -83,6 +90,7 @@
     &_wrapper {
 
       &._form_error {
+
         & ._form__input_block {
           border-color: $warning;
         }
@@ -91,9 +99,11 @@
   }
 
   &__error {
+
     &_wrapper {
       margin-top: 6px;
     }
+
     &_text {
       color: $warning;
     }

@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
+#include <glib.h>
 #include <libnotify/notify.h>
 
 typedef struct {
@@ -26,6 +28,7 @@ typedef struct {
 #include "components/components.h"
 #include "sidebar.h"
 #include "login.h"
+#include "register.h"
 #include "modal.h"
 #include "helpers.h"
 #include "pages.h"
@@ -53,6 +56,7 @@ typedef struct {
     t_helpers helpers;
     t_pages pages;
     GtkWidget *window_content;
+    GtkWidget *window;
 } t_vendor;
 
 extern t_vendor vendor;

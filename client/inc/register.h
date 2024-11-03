@@ -1,41 +1,46 @@
-#ifndef LOGIN_H
-#define LOGIN_H
+#ifndef REGISTER_H
+#define REGISTER_H
 
 #include "header.h"
 
 typedef struct {
     GtkWidget *username_entry;
     GtkWidget *password_entry;
+    GtkWidget *password_confirm_entry;
     GtkWidget *toggle_button;
     GtkWidget *toggle_image;
-} t_login_form_data;
+    GtkWidget *toggle_confirm_image;
+} t_register_form_data;
 
 typedef struct {
     gboolean (*on_key_press)(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
     gboolean (*on_from_entry_focus_in)(GtkWidget *entry, GdkEventFocus *event, gpointer user_data);
     gboolean (*on_from_entry_focus_out)(GtkWidget *entry, GdkEventFocus *event, gpointer user_data);
-    void (*on_login_submit)(GtkButton *button, gpointer user_data);
+    void (*on_register_submit)(GtkButton *button, gpointer user_data);
     GtkWidget *(*create_username_wrapper)(void);
     GtkWidget *(*create_password_wrapper)(void);
+    GtkWidget *(*create_password_confirm_wrapper)(void);
     GtkWidget *(*create_button)(void);
-} t_login_functions;
+} t_register_functions;
 
 typedef struct {
     GtkWidget *(*init)(void);
-    t_login_form_data form_data;
-    t_login_functions functions;
+    t_register_form_data form_data;
+    t_register_functions functions;
     GtkWidget *username_wrapper;
     GtkWidget *password_wrapper;
+    GtkWidget *password_confirm_wrapper;
     GtkWidget *username_error;
     GtkWidget *password_error;
-} t_login_page;
+} t_register_page;
 
-GtkWidget *create_login_username_wrapper(void);
-GtkWidget *create_login_password_wrapper(void);
-GtkWidget *create_login_button(void);
+GtkWidget *create_register_username_wrapper(void);
+GtkWidget *create_register_password_wrapper(void);
+GtkWidget *create_register_password_confirm_wrapper(void);
+GtkWidget *create_register_button(void);
 
-GtkWidget *login_init(void);
-t_login_page init_login(void);
-t_login_functions init_login_functions(void);
+GtkWidget *register_init(void);
+t_register_page init_register(void);
+t_register_functions init_register_functions(void);
 
-#endif //LOGIN_H
+#endif //REGISTER_H

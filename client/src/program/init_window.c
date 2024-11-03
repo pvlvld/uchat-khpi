@@ -26,11 +26,16 @@ static gboolean on_key_press_event(GtkWidget *widget, GdkEventKey *event, gpoint
         vendor.pages.change_page(LOGIN_PAGE);
         return TRUE;
     }
+    if ((event->state & GDK_CONTROL_MASK) && event->keyval == GDK_KEY_r) {
+        vendor.pages.change_page(REGISTER_PAGE);
+        return TRUE;
+    }
     return FALSE;
 }
 
 GtkWidget *init_window(GtkApplication *app) {
     GtkWidget *window = gtk_application_window_new(app);
+    vendor.window = window;
     gtk_window_set_title(GTK_WINDOW(window), "ShadowTalk");
     gtk_window_set_default_size(GTK_WINDOW(window), 1080, 720);
     gtk_widget_set_size_request(window, 900, 600);
