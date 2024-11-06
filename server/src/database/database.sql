@@ -3,6 +3,19 @@ CREATE TYPE e_chat_type AS ENUM ('personal', 'group', 'channel');
 CREATE TYPE e_media_type AS ENUM ('image', 'animation', 'audio', 'video');
 CREATE TYPE e_chat_member_type AS ENUM ('member', 'admin', 'owner', 'left', 'banned', 'restricted');
 
+CREATE TABLE media (
+    media_id SERIAL PRIMARY KEY,
+    media_type e_media_type NOT NULL,
+    content BYTEA NOT NULL,
+    duration INT DEFAULT NULL,
+    height INT NOT NULL,
+    width INT NOT NULL,
+    -- metadata JSONB DEFAULT NULL, -- or metadata, flexible, can be resolution, duration, etc.
+    hash_original VARCHAR(1024) NOT NULL,
+    hash_compressed VARCHAR(1024) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(32) UNIQUE NOT NULL,
@@ -10,7 +23,7 @@ CREATE TABLE users (
     password_hash VARCHAR(1024) NOT NULL,
     about VARCHAR(1024) DEFAULT NULL,
     locale VARCHAR(6) DEFAULT 'en',
-    is_online BOOLEAN NOT NULL DEFAULT 0,
+    is_online BOOLEAN NOT NULL DEFAULT FALSE,
     profile_picture INT REFERENCES media(media_id) DEFAULT NULL,
     public_key VARCHAR(1024) NOT NULL,
     premium_until TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
@@ -44,14 +57,14 @@ CREATE TABLE personal_chats (
     user1_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     user2_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     backgroung INT REFERENCES media(media_id) DEFAULT NULL,
-    UNIQUE (LEAST(user1_id, user2_id), GREATEST(user1_id, user2_id))
+    UNIQUE (user1_id, user2_id)
 );
 
 CREATE TABLE group_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     group_name VARCHAR(120),
     group_picture INT REFERENCES media(media_id) DEFAULT NULL,
-    backgroung INT REFERENCES media(media_id) DEFAULT NULL,
+    backgroung INT REFERENCES media(media_id) DEFAULT NULL
 );
 
 CREATE TABLE group_chat_members (
@@ -59,19 +72,6 @@ CREATE TABLE group_chat_members (
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     role e_chat_member_type DEFAULT 'member',
     PRIMARY KEY (chat_id, user_id)
-);
-
-CREATE TABLE media (
-    media_id SERIAL PRIMARY KEY,
-    media_type e_media_type NOT NULL,
-    content BYTEA NOT NULL,
-    duration INT DEFAULT NULL,
-    height INT NOT NULL,
-    width INT NOT NULL,
-    -- metadata JSONB DEFAULT NULL, -- or metadata, flexible, can be resolution, duration, etc.
-    hash_original VARCHAR(1024) NOT NULL,
-    hash_compressed VARCHAR(1024) NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE messages (
