@@ -7,6 +7,7 @@ CFLAGS = -std=c11 \
          -Werror \
          -Wpedantic \
          -I/usr/include \
+         -I/usr/include/postgresql \
          -I../libraries/sqlite/inc \
          -I../libraries/cJSON/inc \
          -I../libraries/openssl \

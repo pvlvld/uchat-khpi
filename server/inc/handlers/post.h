@@ -5,10 +5,12 @@
 
 void post_rout(SSL *ssl, const char *request);
 void login_rout(SSL *ssl, const char *request);
+void register_rout(SSL *ssl, const char *request);
 
 typedef struct {
     void (*post)(SSL *ssl, const char *request); // No underscores because this will be middleware.
     void (*_login)(SSL *ssl, const char *request);
+    void (*_register)(SSL *ssl, const char *request);
     t_middleware middleware;
 } t_post_handler;
 

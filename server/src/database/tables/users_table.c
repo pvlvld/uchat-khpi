@@ -8,9 +8,9 @@ int create_user(PGconn *conn, const char *username, const char *user_login, cons
     const char *query = "INSERT INTO users (username, user_login, password_hash, public_key, locale) VALUES ($1, $2, "
                         "$3, $4, $5) RETURNING user_id";
     const char *params[5] = {username, user_login, password_hash, public_key, locale};
-    PGresult *res = PQexecParams(conn, query, 4, NULL, params, NULL, NULL, 0);
+    PGresult *res = PQexecParams(conn, query, 5, NULL, params, NULL, NULL, 0);
 
-    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+    if (PQresultStatus(res) == PGRES_TUPLES_OK) {
         int user_id = atoi(PQgetvalue(res, 0, 0));
         PQclear(res);
         return user_id;
@@ -28,6 +28,11 @@ PGresult *get_user_by_login(PGconn *conn, const char *user_login) {
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "Get user failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    if (PQntuples(res) == 0) {
         PQclear(res);
         return NULL;
     }

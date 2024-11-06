@@ -8,6 +8,7 @@ t_handlers init_handlers(void) {
     t_post_handler post_handlers = {
         .post = post_rout,
         ._login = login_rout,
+        ._register = register_rout,
         .middleware = middleware,
     };
 
