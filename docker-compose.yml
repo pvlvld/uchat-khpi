@@ -2,6 +2,7 @@ version: "3"
 services:
     uchat-database:
         image: postgres:17-alpine
+        restart: always
         container_name: uchat-database
         ports:
             - 5432:5432/tcp
