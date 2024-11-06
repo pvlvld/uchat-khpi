@@ -1,5 +1,13 @@
 version: "3"
 services:
+    uchat-server:
+        build:
+            context: ./server
+        ports:
+            - "8080:6969"
+        depends_on:
+            - uchat-database
+
     uchat-database:
         image: postgres:17-alpine
         restart: always
