@@ -1,0 +1,16 @@
+version: "3"
+services:
+    uchat-database:
+        image: postgres:17-alpine
+        container_name: uchat-database
+        ports:
+            - 5432:5432/tcp
+        environment:
+            POSTGRES_DB: uchat
+            POSTGRES_PASSWORD: uchat
+        volumes:
+            - postgres-volume:/data/db
+
+volumes:
+    postgres-volume:
+        driver: "local"
