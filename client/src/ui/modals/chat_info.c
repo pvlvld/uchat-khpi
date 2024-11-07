@@ -1,7 +1,7 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
-void show_modal(GtkWindow *parent, int x, int y) {
+static void show_modal(GtkWindow *parent, int x, int y) {
     GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(dialog), "Chat settings");
     vendor.helpers.set_classname_and_id(dialog, "modal__chat-info");
@@ -26,19 +26,19 @@ void show_modal(GtkWindow *parent, int x, int y) {
     vendor.modal.chat_info.window = dialog;
 }
 
-void destroy_modal(void) {
+static void destroy_modal(void) {
     if (vendor.modal.chat_info.window != NULL) {
         gtk_widget_destroy(vendor.modal.chat_info.window);
         vendor.modal.chat_info.window = NULL;
     }
 }
 
-t_modal_chat_ifno init_modal_chat_info(void) {
-    t_modal_chat_ifno chat_ifno = {
+t_modal_chat_info init_modal_chat_info(void) {
+    t_modal_chat_info chat_info = {
         .window = NULL,
         .show = show_modal,
         .destroy = destroy_modal,
     };
 
-    return chat_ifno;
+    return chat_info;
 }

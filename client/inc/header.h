@@ -43,9 +43,23 @@ typedef struct {
     GtkWidget* chat_sidebar_widget;
 } t_hover_chat;
 
-//typedef struct {
-//
-//} t_window;
+typedef struct {
+    int id;
+    char *username;
+    char *user_login;
+    char *profile_picture;
+} t_user;
+
+typedef struct {
+    GtkWidget *window;
+    GtkWidget *block;
+    void (*add_message)(const char *message);
+    void (*init)(void);
+    void (*hide)(void);
+    void (*show)(void);
+    void (*update)(void);
+} t_popup;
+t_popup init_popup(void);
 
 typedef struct {
     t_components components;
@@ -57,6 +71,8 @@ typedef struct {
     t_pages pages;
     GtkWidget *window_content;
     GtkWidget *window;
+    t_popup popup;
+    t_user current_user;
 } t_vendor;
 
 extern t_vendor vendor;
