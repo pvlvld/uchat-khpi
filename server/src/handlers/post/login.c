@@ -1,4 +1,5 @@
 #include "../../../inc/header.h"
+#include "../../../inc/utils.h"
 
 void login_rout(SSL *ssl, const char *request) {
     char *body = strstr(request, "\r\n\r\n");
@@ -11,7 +12,7 @@ void login_rout(SSL *ssl, const char *request) {
         return;
     }
 
-    body += 4; // Skip the empty string
+    body += 4;
     cJSON *json = cJSON_Parse(body);
 
     if (!json) {
@@ -24,14 +25,85 @@ void login_rout(SSL *ssl, const char *request) {
     cJSON *login_item = cJSON_GetObjectItem(json, "login");
     cJSON *password_item = cJSON_GetObjectItem(json, "password");
 
-    cJSON_AddStringToObject(response_json, "login", login_item->valuestring);
-    cJSON_AddStringToObject(response_json, "password", password_item->valuestring);
+    if (!cJSON_IsString(login_item) || !cJSON_IsString(password_item)) {
+        cJSON_AddStringToObject(response_json, "message", "Login and password are required");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    // Extract values
+    char *user_login = login_item->valuestring;
+    char *password = password_item->valuestring;
+
+    // Validate input (minimum length for login and password)
+    if (strlen(user_login) < 5 || strlen(password) < 5) {
+        cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
+        vendor.server.https.send_https_response(ssl, "401 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    // Connect to the database
+    PGconn *conn = vendor.database.pool.acquire_connection();
+    if (PQstatus(conn) != CONNECTION_OK) {
+        fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
+        PQfinish(conn);
+        cJSON_AddStringToObject(response_json, "message", "Database connection failed");
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    // Get user by login
+    PGresult *res = get_user_by_login(conn, user_login);
+    if (res == NULL || PQntuples(res) == 0) {
+        cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
+        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
+        if (res) PQclear(res);
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        PQfinish(conn);
+        return;
+    }
+
+    // Verify password
+    char *stored_password_hash = PQgetvalue(res, 0, 3);
+    char *password_hash = hash_password(password);
+    if (strcmp(stored_password_hash, password_hash) != 0) {
+        cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
+        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
+        PQclear(res);
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        free(password_hash);
+        PQfinish(conn);
+        return;
+    }
+
+    // Create response JSON with user details
+    cJSON_AddStringToObject(response_json, "status", "success");
+    cJSON_AddStringToObject(response_json, "message", "User logged in successfully.");
+
+    cJSON *user_json = cJSON_CreateObject();
+    cJSON_AddNumberToObject(user_json, "id", atoi(PQgetvalue(res, 0, 0))); // Assuming user_id is the 1st column
+    cJSON_AddStringToObject(user_json, "name", PQgetvalue(res, 0, 1)); // Assuming username is the 2nd column
+    cJSON_AddStringToObject(user_json, "login", PQgetvalue(res, 0, 2)); // Assuming user_login is the 3rd column
+    cJSON_AddItemToObject(response_json, "user", user_json);
+
+    // Generate JWT token (placeholder, implement your JWT generation logic)
+    cJSON_AddStringToObject(response_json, "token", "jwt_token");
 
     char *response_body = cJSON_Print(response_json);
     vendor.server.https.send_https_response(ssl, "200 OK", "application/json", response_body);
 
+    PQclear(res);
     free(response_body);
     cJSON_Delete(json);
-
     cJSON_Delete(response_json);
+    free(password_hash);
+    vendor.database.pool.release_connection(conn);
 }
