@@ -11,12 +11,13 @@ int compare_chats(const void *a, const void *b);
 GtkWidget *sidebar_init(void);
 GtkWidget *sidebar_create_avatar(t_chat_info *chat_info);
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info);
-
+GtkWidget *sidebar_create_bottom(void);
 
 typedef struct {
     GtkWidget *(*init)(void);
     GtkWidget *(*create_chatblock)(t_chat_info *chat_info);
     GtkWidget *(*create_avatar)(t_chat_info *chat_info);
+    GtkWidget *(*create_bottom)(void);
 } t_sidebar;
 
 t_sidebar init_sidebar(void);

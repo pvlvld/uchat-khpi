@@ -9,13 +9,21 @@ typedef struct {
     GtkWidget *window;
     void (*show)(GtkWindow *parent, int x, int y);
     void (*destroy)(void);
-} t_modal_chat_ifno;
+} t_modal_chat_info;
 
 typedef struct {
-    t_modal_chat_ifno chat_info;
+    GtkWidget *window;
+    void (*show)(GtkWindow *parent);
+    void (*destroy)(void);
+} t_modal_profile_settings;
+
+typedef struct {
+    t_modal_chat_info chat_info;
+    t_modal_profile_settings profile_settings;
 } t_modal;
 
-t_modal_chat_ifno init_modal_chat_info(void);
+t_modal_chat_info init_modal_chat_info(void);
+t_modal_profile_settings init_modal_profile_settings(void);
 t_modal init_modal(void);
 
 #endif //MODAL_H

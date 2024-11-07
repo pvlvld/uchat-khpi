@@ -83,7 +83,7 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_r)) {
+    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
         ssize_t index = rand() % 12;
         g_print("Element with id %zd updated!\n", index);
         swap_sidebar(widget, index);
@@ -112,6 +112,7 @@ GtkWidget *sidebar_init(void) {
 
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+    vendor.helpers.set_classname_and_id(scrolled_window, "sidebar__scrolled-window");
 
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
@@ -138,14 +139,9 @@ GtkWidget *sidebar_init(void) {
 
     gtk_widget_set_vexpand(scrolled_window, TRUE);
 
-    GtkWidget *fixed_height_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_size_request(fixed_height_box, -1, 80);
-    gtk_widget_set_name(fixed_height_box, "fixed-height-box");
+    GtkWidget *bottom_block = vendor.sidebar.create_bottom();
 
-    GtkWidget *fixed_label = gtk_label_new("Fixed Height Box");
-    gtk_box_pack_start(GTK_BOX(fixed_height_box), fixed_label, FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(sidebar), fixed_height_box, FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
 
     g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
     g_signal_connect(sidebar, "destroy", G_CALLBACK(on_widget_destroy), NULL);
@@ -157,7 +153,8 @@ t_sidebar init_sidebar(void) {
     t_sidebar sidebar = {
         .init = sidebar_init,
         .create_chatblock = sidebar_create_chatblock,
-        .create_avatar = sidebar_create_avatar
+        .create_avatar = sidebar_create_avatar,
+        .create_bottom = sidebar_create_bottom,
     };
     return sidebar;
 }
