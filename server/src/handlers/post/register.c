@@ -49,9 +49,7 @@ void register_rout(SSL *ssl, const char *request) {
     }
 
     // Connect to the database
-    const char *conninfo = "dbname=your_dbname user=your_username password=your_password hostaddr=127.0.0.1 port=5432";
-
-    PGconn *conn = PQconnectdb(conninfo);
+    PGconn *conn = vendor.database.pool.acquire_connection();
     if (PQstatus(conn) != CONNECTION_OK) {
         fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
         PQfinish(conn);
@@ -105,6 +103,6 @@ void register_rout(SSL *ssl, const char *request) {
     cJSON_Delete(json);
     cJSON_Delete(response_json);
     free(password_hash);
-    PQfinish(conn);
+    vendor.database.pool.release_connection(conn);
 }
 
