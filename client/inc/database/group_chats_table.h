@@ -4,7 +4,7 @@
 #include "database.h"
 
 typedef struct {
-    t_chats_struct chat_struct;
+    t_chats_struct *chat_struct;
     char *group_name;
 } t_group_chats_struct;
 

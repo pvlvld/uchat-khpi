@@ -4,9 +4,9 @@
 #include "database.h"
 
 typedef struct {
-    t_chats_struct chat_struct;
-    t_chats_struct user1_struct;
-    t_chats_struct user2_struct;
+    t_chats_struct *chat_struct;
+    t_chats_struct *user1_struct;
+    t_chats_struct *user2_struct;
 } t_personal_chats_struct;
 
 typedef struct {

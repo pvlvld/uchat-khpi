@@ -10,10 +10,10 @@ static void create_database_impl(void) {
 
     vendor.database.tables.users_table.create_table();
     vendor.database.tables.chats_table.create_table();
-    vendor.database.tables.messages_table.create_table();
     vendor.database.tables.personal_chats_table.create_table();
     vendor.database.tables.group_chats_table.create_table();
     vendor.database.tables.group_chat_members_table.create_table();
+    vendor.database.tables.messages_table.create_table();
 }
 
 static void close_database(void) {

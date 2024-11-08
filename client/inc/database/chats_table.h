@@ -18,7 +18,8 @@ typedef struct {
 typedef struct {
     void (*create_table)(void);
     void (*add_chat)(int chat_id, const char *chat_type);
-    t_chats_struct *(*fetch_chat_by_id)(int chat_id);
+    t_chats_struct *(*get_chat_by_id)(int chat_id);
+    void (*free_struct)(t_chats_struct *chat);
 } t_chats_table;
 t_chats_table init_chats_table(void);
 

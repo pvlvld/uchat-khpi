@@ -13,8 +13,8 @@ typedef enum {
 } t_group_chat_members_rols;
 
 typedef struct {
-    t_chats_struct chat_struct;
-    t_users_struct user_struct;
+    t_chats_struct *chat_struct;
+    t_users_struct *user_struct;
     t_group_chat_members_rols role;
 } t_group_chat_members_struct;
 

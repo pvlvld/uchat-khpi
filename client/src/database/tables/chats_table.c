@@ -19,7 +19,7 @@ static void add_chat(int chat_id, const char *chat_type) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static t_chats_struct *fetch_chat_by_id(int chat_id) {
+static t_chats_struct *get_chat_by_id(int chat_id) {
     char sql[512];
     snprintf(sql, sizeof(sql),
              "SELECT chat_id, chat_type, created_at FROM chats WHERE chat_id = %d;", chat_id);
@@ -40,7 +40,6 @@ static t_chats_struct *fetch_chat_by_id(int chat_id) {
     }
     chat->chat_id = chat_id;
 
-    printf("type: %s\n", results[cols + 1]);
     switch (results[cols + 1][0]) {
         case 'p':
             chat->chat_type = PERSONAL;
@@ -57,17 +56,23 @@ static t_chats_struct *fetch_chat_by_id(int chat_id) {
 
 
     time_t timestamp = (time_t)(atoll(results[cols + 2]));
-
     localtime_r(&timestamp, &chat->created_at);
 
     return chat;
+}
+
+static void free_struct(t_chats_struct *chat) {
+    if (chat != NULL) {
+        free(chat);
+    }
 }
 
 t_chats_table init_chats_table(void) {
     t_chats_table table = {
         .create_table = create_table,
         .add_chat = add_chat,
-        .fetch_chat_by_id = fetch_chat_by_id,
+        .get_chat_by_id = get_chat_by_id,
+        .free_struct = free_struct,
     };
 
     return table;
