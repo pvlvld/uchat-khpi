@@ -89,19 +89,23 @@ void login_rout(SSL *ssl, const char *request) {
     cJSON_AddStringToObject(response_json, "message", "User logged in successfully.");
 
     cJSON *user_json = cJSON_CreateObject();
-    cJSON_AddNumberToObject(user_json, "id", atoi(PQgetvalue(res, 0, 0))); // Assuming user_id is the 1st column
-    cJSON_AddStringToObject(user_json, "name", PQgetvalue(res, 0, 1)); // Assuming username is the 2nd column
-    cJSON_AddStringToObject(user_json, "login", PQgetvalue(res, 0, 2)); // Assuming user_login is the 3rd column
+    cJSON_AddNumberToObject(user_json, "id", atoi(PQgetvalue(res, 0, 0)));
+    cJSON_AddStringToObject(user_json, "name", PQgetvalue(res, 0, 1));
+    cJSON_AddStringToObject(user_json, "login", PQgetvalue(res, 0, 2));
     cJSON_AddItemToObject(response_json, "user", user_json);
 
-    // Generate JWT token (placeholder, implement your JWT generation logic)
-    cJSON_AddStringToObject(response_json, "token", "jwt_token");
+    cJSON *jwt_payload = cJSON_CreateObject();
+    cJSON_AddNumberToObject(jwt_payload, "id", atoi(PQgetvalue(res, 0, 0)));
+    cJSON_AddStringToObject(jwt_payload, "name", PQgetvalue(res, 0, 1));
+    cJSON_AddStringToObject(jwt_payload, "login", PQgetvalue(res, 0, 2));
 
-    char *response_body = cJSON_Print(response_json);
-    vendor.server.https.send_https_response(ssl, "200 OK", "application/json", response_body);
+    char *token = _generate_jwt_token(jwt_payload);
+    cJSON_AddStringToObject(response_json, "token", token);
 
+    vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+
+    free(token);
     PQclear(res);
-    free(response_body);
     cJSON_Delete(json);
     cJSON_Delete(response_json);
     free(password_hash);

@@ -95,11 +95,19 @@ void register_rout(SSL *ssl, const char *request) {
     cJSON_AddStringToObject(user_json, "login", user_login);
     cJSON_AddItemToObject(response_json, "user", user_json);
 
-    char *response_body = cJSON_Print(response_json);
-    vendor.server.https.send_https_response(ssl, "201 Created", "application/json", response_body);
+    cJSON *jwt_payload = cJSON_CreateObject();
+    cJSON_AddNumberToObject(jwt_payload, "id", user_id);
+    cJSON_AddStringToObject(jwt_payload, "name", username);
+    cJSON_AddStringToObject(jwt_payload, "login", user_login);
 
+    char *token = _generate_jwt_token(jwt_payload);
+    cJSON_AddStringToObject(response_json, "token", token);
+
+    vendor.server.https.send_https_response(ssl, "201 Created", "application/json", cJSON_Print(response_json));
+
+
+    free(token);
     PQclear(res);
-    free(response_body);
     cJSON_Delete(json);
     cJSON_Delete(response_json);
     free(password_hash);
