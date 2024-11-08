@@ -7,11 +7,16 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <glib.h>
+#include <arpa/inet.h>
+#include <ctype.h>
 #include <libnotify/notify.h>
+#include "../../libraries/sqlite/inc/sqlite3.h"
+#include "../../libraries/cJSON/inc/cJSON.h"
 
 typedef struct {
     unsigned int id;
@@ -25,6 +30,7 @@ typedef struct {
 } t_chat_info;
 
 #include "program.h"
+#include "database/database.h"
 #include "components/components.h"
 #include "sidebar.h"
 #include "login.h"
@@ -62,6 +68,12 @@ typedef struct {
 t_popup init_popup(void);
 
 typedef struct {
+    char *address;
+    int port;
+} t_server;
+
+typedef struct {
+    t_database database;
     t_components components;
     t_sidebar sidebar;
     t_active_chat active_chat;
@@ -73,6 +85,7 @@ typedef struct {
     GtkWidget *window;
     t_popup popup;
     t_user current_user;
+    t_server server;
 } t_vendor;
 
 extern t_vendor vendor;
@@ -80,5 +93,5 @@ extern t_vendor vendor;
 t_chat_info **parse_chats_info(void);
 void free_chats_info(t_chat_info **chats_info);
 void init_vendor(t_vendor *vendor);
-
+int init_server(int argc, char **argv);
 #endif //HEADER_H

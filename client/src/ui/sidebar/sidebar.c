@@ -83,7 +83,31 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
+    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_w)) {
+        vendor.database.tables.chats_table.add_chat(3, "personal");
+        t_chats_struct *chat = vendor.database.tables.chats_table.fetch_chat_by_id(3);
+        if (chat != NULL) {
+            printf("Chat ID: %d\n", chat->chat_id);
+            printf("Chat Type: %d\n", chat->chat_type);
+            printf("Created At: %s", asctime(&chat->created_at));
+
+            free(chat);
+        } else {
+            printf("Chat with ID %d not found.\n", 123);
+        }
+    }
+
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
+        t_chats_struct *chat = vendor.database.tables.chats_table.fetch_chat_by_id(1);
+        if (chat != NULL) {
+            printf("Chat ID: %d\n", chat->chat_id);
+            printf("Chat Type: %d\n", chat->chat_type);
+            printf("Created At: %s", asctime(&chat->created_at));
+
+            free(chat);
+        } else {
+            printf("Chat with ID %d not found.\n", 123);
+        }
         ssize_t index = rand() % 12;
         g_print("Element with id %zd updated!\n", index);
         swap_sidebar(widget, index);

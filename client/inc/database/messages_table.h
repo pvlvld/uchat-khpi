@@ -1,0 +1,22 @@
+#ifndef MESSAGES_TABLE_H
+#define MESSAGES_TABLE_H
+
+#include "database.h"
+
+typedef struct {
+    int message_id;
+    t_chats_struct chat_struct;
+    t_users_struct sender_struct;
+    char *message_text;
+    struct tm timestamp;
+    struct tm read_at;
+} t_messages_struct;
+
+typedef struct {
+    void (*create_table)(void);
+    void (*add_message)(int message_id, int chat_id, int sender_id, const char *message_text);
+    void (*edit_message)(int message_id, const char *new_message_text);
+} t_messages_table;
+t_messages_table init_messages_table(void);
+
+#endif //MESSAGES_TABLE_H
