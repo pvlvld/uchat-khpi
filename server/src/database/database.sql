@@ -81,7 +81,7 @@ CREATE TABLE messages (
     sender_id INT REFERENCES users(user_id) ON DELETE SET NULL,
     message_text TEXT DEFAULT NULL,
     media INT REFERENCES media(media_id) DEFAULT NULL,
-    edited BOOLEAN DEFAULT FALSE,
+    edited_at TIMESTAMP DEFAULT NULL,
     deleted_at TIMESTAMP DEFAULT NULL,
     reply_to_chat INT,
     reply_to_message INT,
