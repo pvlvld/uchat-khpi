@@ -68,6 +68,20 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     gboolean success = g_task_propagate_boolean(task, NULL);
 
     if (success) {
+        t_active_users_struct *active_users_struct = vendor.database.tables.active_users_table.get_user_by_user_login(vendor.current_user.username);
+        if (active_users_struct) {
+            vendor.crypto.public_key_str = active_users_struct->public_key;
+            vendor.crypto.private_key_str = vendor.crypto.decrypt_text(active_users_struct->private_key, vendor.current_user.password);
+            char *encrypt = vendor.crypto.encrypt(active_users_struct->public_key, "Test message");
+            if (encrypt) {
+                char *decrypt = vendor.crypto.decrypt(encrypt);
+                if (decrypt) {
+                    printf("%s\n", decrypt);
+                    free(decrypt);
+                }
+                free(encrypt);
+            }
+        }
         vendor.pages.change_page(MAIN_PAGE);
     } else {
         g_print("Request failed.\n");
@@ -89,6 +103,8 @@ void login_on_login_submit(GtkButton *button, gpointer user_data) {
     }
 
     g_print("Login: %s\nPassword: %s\n", username, password);
+    vendor.current_user.username = vendor.helpers.strdup(username);
+    vendor.current_user.password = vendor.helpers.strdup(password);
     vendor.pages.change_page(LOADING_PAGE);
 
     GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);

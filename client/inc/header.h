@@ -31,6 +31,7 @@ typedef struct {
 
 #include "program.h"
 #include "database/database.h"
+#include "crypto.h"
 #include "components/components.h"
 #include "sidebar.h"
 #include "login.h"
@@ -53,6 +54,7 @@ typedef struct {
     int id;
     char *username;
     char *user_login;
+    char *password;
     char *profile_picture;
 } t_user;
 
@@ -74,6 +76,7 @@ typedef struct {
 
 typedef struct {
     t_database database;
+    t_crypto crypto;
     t_components components;
     t_sidebar sidebar;
     t_active_chat active_chat;

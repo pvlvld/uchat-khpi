@@ -9,6 +9,7 @@ CFLAGS = -std=c11 \
          -I/usr/include \
          -I../libraries/sqlite/inc \
          -I../libraries/cJSON/inc \
+         -I../libraries/openssl \
          -I./inc \
          $(shell pkg-config --cflags gtk+-3.0) \
          $(shell pkg-config --cflags libnotify)
@@ -16,12 +17,16 @@ CFLAGS = -std=c11 \
 # Path for libraries, including GTK3+ via pkg-config
 LDFLAGS = -L../libraries/sqlite/lib \
           -L../libraries/cJSON/lib \
+          -L../libraries/precompilied/ubuntu/lib \
           -lsqlite3 \
           -lcjson \
+          -lssl \
+          -lcrypto \
           $(shell pkg-config --libs gtk+-3.0) \
           $(shell pkg-config --libs libnotify) \
           -Wl,-rpath,../libraries/sqlite/lib \
-          -Wl,-rpath,../libraries/cJSON/lib
+          -Wl,-rpath,../libraries/cJSON/lib \
+          -Wl,-rpath,../libraries/precompilied/ubuntu/lib
 
 SRC_DIR = src
 OBJ_DIR = obj

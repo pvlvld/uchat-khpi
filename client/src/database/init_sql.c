@@ -4,6 +4,7 @@ static void execute_sql(const char *sql) {
     char *errmsg = NULL;
     int rc = sqlite3_exec(vendor.database.db, sql, 0, 0, &errmsg);
     if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", errmsg);
         sqlite3_free(errmsg);
     }
 }

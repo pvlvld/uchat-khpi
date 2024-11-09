@@ -86,6 +86,17 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
 
     g_usleep(300000);
 
+//    t_active_users_struct active_users_struct = {
+//        .user_id = 1,
+//        .username = vendor.current_user.username,
+//        .user_login = vendor.current_user.username,
+//        .about = NULL,
+//        .public_key = vendor.crypto.public_key_str,
+//        .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
+//    };
+//    vendor.database.tables.active_users_table.add_user(&active_users_struct);
+//    printf("User id: %d\n", active_users_struct.user_id);
+
     g_task_return_boolean(task, TRUE);
 }
 
@@ -97,7 +108,17 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     gboolean success = g_task_propagate_boolean(task, NULL);
 
     if (success) {
+        t_active_users_struct active_users_struct = {
+            .user_id = 1,
+            .username = vendor.current_user.username,
+            .user_login = vendor.current_user.username,
+            .about = NULL,
+            .public_key = vendor.crypto.public_key_str,
+            .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
+        };
+        vendor.database.tables.active_users_table.add_user(&active_users_struct);
         vendor.pages.change_page(MAIN_PAGE);
+
     } else {
         g_print("Request failed.\n");
     }
@@ -119,7 +140,11 @@ void register_on_register_submit(GtkButton *button, gpointer user_data) {
     }
 
     g_print("login: %s\nPassword: %s\n", username, password);
+    vendor.current_user.username = vendor.helpers.strdup(username);
+    vendor.current_user.password = vendor.helpers.strdup(password);
+
     vendor.pages.change_page(LOADING_PAGE);
+    vendor.crypto.keygen();
 
     GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
     g_task_run_in_thread(task, perform_request_async);

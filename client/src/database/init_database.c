@@ -9,6 +9,7 @@ static void create_database_impl(void) {
     }
 
     vendor.database.tables.users_table.create_table();
+    vendor.database.tables.active_users_table.create_table();
     vendor.database.tables.chats_table.create_table();
     vendor.database.tables.personal_chats_table.create_table();
     vendor.database.tables.group_chats_table.create_table();
@@ -25,6 +26,7 @@ static void close_database(void) {
 static t_database_tables init_database_tables(void) {
     t_database_tables tables = {
         .users_table = init_users_table(),
+        .active_users_table = init_active_users_table(),
         .chats_table = init_chats_table(),
         .messages_table = init_messages_table(),
         .personal_chats_table = init_personal_chats_table(),

@@ -4,6 +4,7 @@
 #include "../header.h"
 #include "chats_table.h"
 #include "users_table.h"
+#include "active_users_table.h"
 #include "messages_table.h"
 #include "personal_chats_table.h"
 #include "group_chats_table.h"
@@ -19,6 +20,7 @@ t_sql init_sql(void);
 
 typedef struct {
     t_users_table users_table;
+    t_active_users_table active_users_table;
     t_chats_table chats_table;
     t_messages_table messages_table;
     t_personal_chats_table personal_chats_table;

@@ -45,7 +45,7 @@ static t_users_struct *get_user_by_id(int user_id) {
     time_t timestamp = (time_t)atoll(results[cols + 6]);
     localtime_r(&timestamp, &user->updated_at);
 
-//    vendor.database.sql.free(results);
+    vendor.database.sql.free(results);
 
     return user;
 }
