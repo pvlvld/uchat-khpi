@@ -25,6 +25,7 @@ void register_rout(SSL *ssl, const char *request) {
     cJSON *login_item = cJSON_GetObjectItem(json, "login");
     cJSON *password_item = cJSON_GetObjectItem(json, "password");
     cJSON *username_item = cJSON_GetObjectItem(json, "name");
+    cJSON *public_key_item = cJSON_GetObjectItem(json, "public_key");
 
     if (!cJSON_IsString(login_item) || !cJSON_IsString(password_item)) {
         cJSON_AddStringToObject(response_json, "message", "Login and password are required");
@@ -38,6 +39,7 @@ void register_rout(SSL *ssl, const char *request) {
     char *user_login = login_item->valuestring;
     char *password = password_item->valuestring;
     char *username = username_item && cJSON_IsString(username_item) ? username_item->valuestring : user_login;
+    char *public_key = public_key_item && cJSON_IsString(public_key_item) ? public_key_item->valuestring : "default_public_key";
 
     // Validate input (minimum length for login and password)
     if (strlen(user_login) < 5 || strlen(password) < 5) {
@@ -93,6 +95,7 @@ void register_rout(SSL *ssl, const char *request) {
     cJSON_AddNumberToObject(user_json, "id", user_id);
     cJSON_AddStringToObject(user_json, "name", username);
     cJSON_AddStringToObject(user_json, "login", user_login);
+    cJSON_AddStringToObject(user_json, "public_key", public_key);
     cJSON_AddItemToObject(response_json, "user", user_json);
 
     cJSON *jwt_payload = cJSON_CreateObject();
