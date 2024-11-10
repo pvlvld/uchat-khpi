@@ -7,7 +7,6 @@ CFLAGS = -std=c11 \
          -Werror \
          -Wpedantic \
          -I/usr/include \
-         -I../libraries/sqlite/inc \
          -I../libraries/cJSON/inc \
          -I../libraries/openssl \
          -I./libmx/inc \
@@ -18,7 +17,6 @@ CFLAGS = -std=c11 \
 LDFLAGS = -L../libraries/sqlite/lib \
           -L../libraries/cJSON/lib \
           -L../libraries/precompilied/ubuntu/lib \
-          -lsqlite3 \
           -lssl \
           -lcrypto \
           -Wl,-rpath,../libraries/sqlite/lib \
