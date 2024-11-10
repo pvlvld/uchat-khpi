@@ -11,6 +11,7 @@ CFLAGS = -std=c11 \
          -I../libraries/cJSON/inc \
          -I../libraries/openssl \
          -I./libmx/inc \
+         -I/usr/include/postgresql \
          -I./inc
 
 # Path for libraries
@@ -23,7 +24,7 @@ LDFLAGS = -L../libraries/sqlite/lib \
           -Wl,-rpath,../libraries/sqlite/lib \
           -Wl,-rpath,../libraries/cJSON/lib \
           -Wl,-rpath,../libraries/precompilied/ubuntu/lib \
-          -lpq #TODO: install locally
+          -lpq
 
 SRC_DIR = src
 CJSON_DIR = ../libraries/cJSON

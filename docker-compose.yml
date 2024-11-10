@@ -2,7 +2,8 @@ version: "3"
 services:
     uchat-server:
         build:
-            context: ./server
+            context: .
+            dockerfile: server/Dockerfile
         ports:
             - "8080:6969"
         depends_on:
