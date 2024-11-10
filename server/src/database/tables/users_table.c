@@ -55,6 +55,25 @@ PGresult *get_user_by_id(PGconn *conn, int user_id) {
     return res; // Caller is responsible for freeing with PQclear.
 }
 
+PGresult *get_user_by_username(PGconn *conn, const char *username) {
+    const char *query = "SELECT * FROM users WHERE username = $1";
+    const char *params[1] = {username};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get user by username failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    if (PQntuples(res) == 0) {
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
+
 bool update_user_locale(PGconn *conn, int user_id, const char *locale) {
     const char *query = "UPDATE users SET locale = $1, updated_at = NOW() WHERE user_id = $2";
     char user_id_str[12];

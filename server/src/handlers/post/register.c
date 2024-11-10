@@ -38,10 +38,9 @@ void register_rout(SSL *ssl, const char *request) {
     // Extract values
     char *user_login = login_item->valuestring;
     char *password = password_item->valuestring;
-    char *username = username_item && cJSON_IsString(username_item) ? username_item->valuestring : user_login;
     char *public_key = public_key_item->valuestring;
 
-    /*if(public_key_item && cJSON_IsString(public_key_item) && is_valid_public_key(public_key_item->valuestring)){
+    if(public_key_item && cJSON_IsString(public_key_item) && is_valid_public_key(public_key_item->valuestring)){
         public_key = public_key_item->valuestring;
     }
     else {
@@ -50,7 +49,7 @@ void register_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
-    }*/
+    }
 
     // Validate input
     if (!is_valid_login(user_login)) {
@@ -90,6 +89,17 @@ void register_rout(SSL *ssl, const char *request) {
         return;
     }
 
+    // username validation
+    char *username_validation_result = username_validation(username_item ? username_item->valuestring : NULL, user_login, conn);
+
+    if (!username_validation_result) {
+        cJSON_AddStringToObject(response_json, "message", "Username must be at least 3 characters long and contain only letters, digits, and underscores. Try to choose another one");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    char *username = username_validation_result;
     char *password_hash = hash_password(password);
 
     // Insert user into the database
@@ -127,6 +137,7 @@ void register_rout(SSL *ssl, const char *request) {
 
 
     free(token);
+    free(username_validation_result);
     PQclear(res);
     cJSON_Delete(json);
     cJSON_Delete(response_json);

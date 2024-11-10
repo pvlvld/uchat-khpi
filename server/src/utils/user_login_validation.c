@@ -5,7 +5,7 @@
 
 bool is_valid_login(const char *login) {
     // Check if the login is at least 5 characters long
-    if (strlen(login) < 5) return false;
+    if (strlen(login) < 5 || strlen(login) > 50) return false;
 
     // Check if the login only contains letters and numbers
     regex_t regex_login;

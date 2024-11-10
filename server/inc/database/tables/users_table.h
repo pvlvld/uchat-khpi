@@ -38,6 +38,17 @@ PGresult *get_user_by_login(PGconn *conn, const char *user_login);
 PGresult *get_user_by_id(PGconn *conn, int user_id);
 
 /**
+ * Retrieves a user by their username.
+ *
+ * @param conn The connection to the PostgreSQL database.
+ * @param username The username of the user to retrieve.
+ * @return A PGresult containing the user data, or NULL if the query failed
+ *         or no user was found. Caller is responsible for freeing the result
+ *         with PQclear.
+ */
+PGresult *get_user_by_username(PGconn *conn, const char *username);
+
+/**
  * Updates the locale of a user.
  *
  * @param conn The connection to the PostgreSQL database.

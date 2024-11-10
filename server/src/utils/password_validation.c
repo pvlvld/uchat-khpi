@@ -4,7 +4,7 @@
 #include <cJSON.h>
 
 bool is_valid_password(const char *password) {
-    if (strlen(password) < 8) return false;
+    if (strlen(password) < 8 || strlen(password) > 100) return false;
 
     // Check if the password contains at least one letter
     regex_t regex_letter;
