@@ -10,12 +10,6 @@
 // The RSA key size must be 1024 bits.
 // Must be parsable by OpenSSL without errors.
 
-#include <openssl/evp.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
-#include <string.h>
-#include <stdio.h>
-
 int is_valid_public_key(const char *public_key_str) {
     BIO *bio = NULL;
     EVP_PKEY *pkey = NULL;
