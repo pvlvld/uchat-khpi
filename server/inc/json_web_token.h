@@ -1,7 +1,7 @@
 #ifndef JSON_WEB_TOKEN_H
 #define JSON_WEB_TOKEN_H
 
-#include "../../libraries/cJSON/inc/cJSON.h"
+#include "../../libraries/cJSON/cJSON.h"
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
 #include <openssl/bio.h>
