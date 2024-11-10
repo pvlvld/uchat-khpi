@@ -39,7 +39,7 @@ void register_rout(SSL *ssl, const char *request) {
     char *user_login = login_item->valuestring;
     char *password = password_item->valuestring;
     char *username = username_item && cJSON_IsString(username_item) ? username_item->valuestring : user_login;
-    char *public_key = public_key_item && cJSON_IsString(public_key_item) ? public_key_item->valuestring : "default_public_key";
+    char *public_key = public_key_item && cJSON_IsString(public_key_item) && is_valid_public_key(public_key_item->valuestring) ? public_key_item->valuestring : "default_public_key";
 
     // Validate input (minimum length for login and password)
     if (strlen(user_login) < 5 || strlen(password) < 5) {
