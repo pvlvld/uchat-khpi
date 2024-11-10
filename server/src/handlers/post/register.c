@@ -39,9 +39,9 @@ void register_rout(SSL *ssl, const char *request) {
     char *user_login = login_item->valuestring;
     char *password = password_item->valuestring;
     char *username = username_item && cJSON_IsString(username_item) ? username_item->valuestring : user_login;
-    char *public_key;
+    char *public_key = public_key_item->valuestring;
 
-    if(public_key_item && cJSON_IsString(public_key_item) && is_valid_public_key(public_key_item->valuestring)){
+    /*if(public_key_item && cJSON_IsString(public_key_item) && is_valid_public_key(public_key_item->valuestring)){
         public_key = public_key_item->valuestring;
     }
     else {
@@ -50,13 +50,19 @@ void register_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
+    }*/
+
+    // Validate input
+    if (!is_valid_login(user_login)) {
+        cJSON_AddStringToObject(response_json, "message", "Login must be at least 5 characters long and contain only letters and digits.");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        return;
     }
 
-    // Validate input (minimum length for login and password)
-    if (strlen(user_login) < 5 || strlen(password) < 5) {
-        cJSON_AddStringToObject(response_json, "message", "Login and password must be at least 5 characters long");
+    if (!is_valid_password(password)) {
+        cJSON_AddStringToObject(response_json, "message", "Password must be at least 8 characters long, contain at least one letter, one digit, and one special character.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
-        cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
     }
