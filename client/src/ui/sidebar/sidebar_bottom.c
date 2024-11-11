@@ -39,7 +39,9 @@ static GtkWidget *create_profile_text_block(void) {
 
     GtkWidget *user_login_event_box = gtk_event_box_new();
     gtk_box_pack_start(GTK_BOX(profile_text_block), user_login_event_box, FALSE, FALSE, 0);
-    GtkWidget *user_login = gtk_label_new(vendor.current_user.user_login);
+    char user_login_text[50];
+    snprintf(user_login_text, sizeof(user_login_text), "@%s", vendor.current_user.user_login);
+    GtkWidget *user_login = gtk_label_new(user_login_text);
     vendor.helpers.set_classname_and_id(user_login_event_box, "sidebar__bottom_profile-block__text-block_user-login");
     vendor.helpers.add_hover(user_login);
     gtk_label_set_line_wrap(GTK_LABEL(user_login), TRUE);

@@ -9,6 +9,7 @@ t_crypto init_crypto(void) {
         .decrypt = decrypt,
         .encrypt_text = encrypt_text,
         .decrypt_text = decrypt_text,
+        .verify_key_pair = verify_key_pair,
     };
 
     return crypto;

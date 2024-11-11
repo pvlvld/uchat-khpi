@@ -23,6 +23,7 @@ typedef struct {
     char *(*decrypt)(char *encrypted_base64); // return decrypted string
     char *(*encrypt_text)(const char *text, const char *secret); // returns encrypted string
     char *(*decrypt_text)(const char *encrypted, const char *secret); // return decrypted string
+    int (*verify_key_pair)(void); // returns 1 in good case, 0 - in error cases
 } t_crypto;
 
 int keygen(void);
@@ -30,6 +31,7 @@ char *encrypt(char *public_key_str, const char *data);
 char *decrypt(char *encrypted_base64);
 char *encrypt_text(const char* text, const char* secret);
 char *decrypt_text(const char* encrypted, const char* secret);
+int verify_key_pair(void);
 
 t_crypto init_crypto(void);
 

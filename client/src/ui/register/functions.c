@@ -24,10 +24,8 @@ static void create_error(GtkWidget *widget, const char *message) {
     gtk_widget_show_all(error_wrapper);
 }
 
-static gboolean validate_input(const gchar *username, const gchar *password, const gchar *password_confirm) {
-    gboolean is_valid = TRUE;
-
-    GList *usrname_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.username_wrapper));
+static void remove_errors(void) {
+	GList *usrname_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.username_wrapper));
     if (g_list_length(usrname_children) != 2) {
         GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(usrname_children, 2));
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
@@ -47,6 +45,12 @@ static gboolean validate_input(const gchar *username, const gchar *password, con
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.password_confirm_wrapper), "_form_error");
         gtk_widget_destroy(target_child);
     }
+}
+
+static gboolean validate_input(const gchar *username, const gchar *password, const gchar *password_confirm) {
+    gboolean is_valid = TRUE;
+
+    remove_errors();
 
     if (g_strcmp0(username, "") == 0 || g_utf8_strlen(username, -1) < 3) {
         create_error(vendor.pages.register_page.username_wrapper, "Username must be at least 3 characters long");
@@ -166,6 +170,7 @@ gboolean register_on_from_entry_focus_in(GtkWidget *entry, GdkEventFocus *event,
     (void)event;
     GtkWidget *placeholder = (GtkWidget *)user_data;
     gtk_widget_hide(placeholder);
+    remove_errors();
     return FALSE;
 }
 

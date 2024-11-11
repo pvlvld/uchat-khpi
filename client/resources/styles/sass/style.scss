@@ -28,3 +28,37 @@
     }
   }
 }
+
+.chat {
+  &__header {
+    background: $neutral-900;
+    border-top-left-radius: 12px;
+    border-bottom: 1px solid $neutral-950;
+  }
+  &__chats-box {
+    background: $neutral-900;
+    padding: 0 20px;
+  }
+  &__bottom {
+    background: $neutral-800;
+  }
+
+  &__scrolled-window {
+    background: green;
+    padding: 0 12px;
+  }
+
+  &__message {
+    background: red;
+
+    &__wrapper {
+      background: #000;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    &__text {
+      background: blue;
+    }
+  }
+}

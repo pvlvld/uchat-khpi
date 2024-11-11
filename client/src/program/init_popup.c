@@ -16,7 +16,6 @@ void popup_init(void) {
     gtk_window_get_position(GTK_WINDOW(vendor.window), &window_x, &window_y);
 
     gtk_window_move(GTK_WINDOW(popup), window_x + window_width, window_y);
-    gtk_widget_set_size_request(popup, 150, window_height - 40);
 
     GtkWidget *popup_block = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_valign(popup_block, GTK_ALIGN_END);
@@ -31,8 +30,8 @@ void popup_update(void) {
     gint window_x, window_y;
     gtk_window_get_size(GTK_WINDOW(vendor.window), &window_width, &window_height);
     gtk_window_get_position(GTK_WINDOW(vendor.window), &window_x, &window_y);
-    gtk_window_move(GTK_WINDOW(vendor.popup.window), window_x + window_width - 170, window_y + 56);
-    gtk_widget_set_size_request(vendor.popup.window, 150, window_height - 40);
+    gtk_window_move(GTK_WINDOW(vendor.popup.window), window_x + window_width - 240, window_y + 102);
+    gtk_widget_set_size_request(vendor.popup.window, 240, window_height - 136);
 }
 
 void popup_hide(void) {

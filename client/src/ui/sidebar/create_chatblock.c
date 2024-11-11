@@ -56,7 +56,7 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock, "sidebar__chatblock");
     gtk_widget_set_size_request(chatblock, 177, -1);
-    GtkWidget *avatar_wrapper = vendor.sidebar.create_avatar(chat_info);
+    GtkWidget *avatar_wrapper = vendor.pages.main_page.sidebar.create_avatar(chat_info);
 
     GtkWidget *chatblock_text = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     vendor.helpers.set_classname_and_id(chatblock_text, "sidebar__chatblock_text");

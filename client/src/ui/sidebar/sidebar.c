@@ -32,7 +32,7 @@ static void swap_sidebar(GtkWidget *widget, ssize_t index) {
             GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
-            GtkWidget *new_child = vendor.sidebar.create_chatblock(chat_info);
+            GtkWidget *new_child = vendor.pages.main_page.sidebar.create_chatblock(chat_info);
 
             if (vendor.active_chat.chat_sidebar_widget == target_child) {
                 vendor.active_chat.chat_sidebar_widget = new_child;
@@ -160,7 +160,7 @@ GtkWidget *sidebar_init(void) {
     qsort(chats_info, size, sizeof(t_chat_info *), compare_chats);
 
     for (size_t i = 0; i < size; i++) {
-        GtkWidget *chatblock = vendor.sidebar.create_chatblock(chats_info[i]);
+        GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
         g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
 
         gtk_box_pack_end(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
@@ -170,7 +170,7 @@ GtkWidget *sidebar_init(void) {
 
     gtk_widget_set_vexpand(scrolled_window, TRUE);
 
-    GtkWidget *bottom_block = vendor.sidebar.create_bottom();
+    GtkWidget *bottom_block = vendor.pages.main_page.sidebar.create_bottom();
 
     gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
 

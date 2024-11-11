@@ -11,7 +11,13 @@ typedef enum {
 } e_page_type;
 
 typedef struct {
+    t_sidebar sidebar;
+    t_chat chat;
+} t_main_page;
+
+typedef struct {
     e_page_type current_page;
+    t_main_page main_page;
     t_login_page login_page;
     t_register_page register_page;
     GtkWidget *current_page_widget;

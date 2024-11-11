@@ -34,6 +34,7 @@ typedef struct {
 #include "crypto.h"
 #include "components/components.h"
 #include "sidebar.h"
+#include "chat.h"
 #include "login.h"
 #include "register.h"
 #include "modal.h"
@@ -51,9 +52,10 @@ typedef struct {
 } t_hover_chat;
 
 typedef struct {
-    int id;
+    int user_id;
     char *username;
     char *user_login;
+    char *about;
     char *password;
     char *profile_picture;
 } t_user;
