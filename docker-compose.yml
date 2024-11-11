@@ -5,7 +5,7 @@ services:
             context: .
             dockerfile: server/Dockerfile
         ports:
-            - "8080:6969"
+            - "${UCHAT_SERVER_PORT:-8080}:6969"
         depends_on:
             - uchat-database
 
