@@ -35,15 +35,17 @@ static void edit_message(int message_id, const char *new_message_text) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_elements, int page, int *total_messages) {
+static t_messages_struct *get_messages_by_chat_id(int chat_id, const char *sort_by, const char *order,
+                                                  int number_of_elements, int page, int *total_messages) {
     int offset = (page - 1) * number_of_elements;
 
     char sql[1024];
     snprintf(sql, sizeof(sql),
              "SELECT message_id, chat_id, sender_id, message_text, timestamp, read_at, edited_at "
              "FROM messages WHERE chat_id = %d "
-             "ORDER BY timestamp DESC "
-             "LIMIT %d OFFSET %d;", chat_id, number_of_elements, offset);
+             "ORDER BY %s %s "
+             "LIMIT %d OFFSET %d;",
+             chat_id, sort_by ? sort_by : "timestamp", order ? order : "DESC", number_of_elements, offset);
 
     char **results = NULL;
     int rows, cols;
@@ -77,21 +79,18 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_ele
     for (int i = 1; i <= rows; ++i) {
         t_messages_struct *msg = &messages[i - 1];
 
-        msg->message_id = atoi(results[i * cols]);  // message_id
-        msg->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
-        msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(chat_id);
-//        msg->chat_struct.chat_id = atoi(results[i * cols + 1]);  // chat_id
-//        msg->sender_struct.user_id = atoi(results[i * cols + 2]);  // sender_id
-        msg->message_text = vendor.helpers.strdup(results[i * cols + 3]);  // message_text
+        msg->message_id = atoi(results[i * cols]);
+    	msg->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(atoi(results[i * cols + 1]));
+    	msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(atoi(results[i * cols + 2]));
+    	msg->message_text = vendor.helpers.strdup(results[i * cols + 3]);
 
-
-        time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
-        localtime_r(&timestamp, &msg->timestamp);
+    	time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
+    	localtime_r(&timestamp, &msg->timestamp);
 
         if (results[i * cols + 5] != NULL) {
-            time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 5]));
-            localtime_r(&read_at_timestamp, &msg->read_at);
-        }
+        time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 5]));
+        localtime_r(&read_at_timestamp, &msg->read_at);
+    	}
     }
 
     return messages;

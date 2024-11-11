@@ -18,4 +18,5 @@ void init_vendor(t_vendor *vendor) {
     };
     vendor->current_user = current_user;
     vendor->popup = init_popup();
+    vendor->server_requests = init_server_requests();
 }

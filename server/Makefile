@@ -1,5 +1,13 @@
 CC = clang
 
+export CPATH=/usr/include/postgresql:$CPATH
+export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
+
+LDFLAGS += -L/usr/lib/x86_64-linux-gnu
+LIBS += -lpq
+
+CFLAGS += -I/usr/include/postgresql
+
 # Path for header files
 CFLAGS = -std=c11 \
          -Wall \

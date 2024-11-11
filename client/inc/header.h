@@ -40,6 +40,8 @@ typedef struct {
 #include "modal.h"
 #include "helpers.h"
 #include "pages.h"
+#include "database/server_requests.h"
+#include "database/edit_delete_layer.h"
 
 typedef struct {
     t_chat_info *chat;
@@ -91,6 +93,7 @@ typedef struct {
     t_popup popup;
     t_user current_user;
     t_server server;
+    t_server_requests server_requests;
 } t_vendor;
 
 extern t_vendor vendor;
