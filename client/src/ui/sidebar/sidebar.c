@@ -102,7 +102,7 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         int page = 1;
         int message_count = 10;
 
-        t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(page, message_count, 1, &total_messages);
+        t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, "timestamp", "DESC", message_count, page, &total_messages);
         if (messages != NULL) {
             printf("Total messages: %d\n", total_messages);
             for (int i = 0; i < message_count; i++) {
@@ -133,50 +133,62 @@ static void on_widget_destroy(GtkWidget *widget, gpointer user_data) {
 }
 
 GtkWidget *sidebar_init(void) {
+    (void)key_press_handler;
+    (void)on_widget_destroy;
+
+    // Создаем основной контейнер для сайдбара
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     vendor.helpers.set_classname_and_id(sidebar, "sidebar");
     gtk_widget_set_size_request(sidebar, 260, -1);
     gtk_widget_set_hexpand(sidebar, FALSE);
 
+    // Инициализируем поиск
     GtkWidget *search = init_search();
     gtk_box_pack_start(GTK_BOX(sidebar), search, FALSE, FALSE, 0);
 
+    // Создаем окно с прокруткой для чатов
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     vendor.helpers.set_classname_and_id(scrolled_window, "sidebar__scrolled-window");
 
+    // Создаем контейнер для чатов (stretchable_box)
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
-
     gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 
-    gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
-
-    t_chat_info **chats_info = parse_chats_info();
-    size_t size = 0;
-    while (chats_info[size] != NULL) {
-        size++;
-    }
-    qsort(chats_info, size, sizeof(t_chat_info *), compare_chats);
-
-    for (size_t i = 0; i < size; i++) {
-        GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
-        g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
-
-        gtk_box_pack_end(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
-    }
-
+    // Сохраняем stretchable_box в sidebar для использования в swap_sidebar
     g_object_set_data(G_OBJECT(sidebar), "stretchable_box", stretchable_box);
 
-    gtk_widget_set_vexpand(scrolled_window, TRUE);
+    // Добавляем окно с прокруткой в сайдбар
+    gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
 
-    GtkWidget *bottom_block = vendor.pages.main_page.sidebar.create_bottom();
+    // Получаем данные чатов из БД
+    t_chat_info **chats_info = parse_chats_info();
+    if (!chats_info) {
+        printf("[ERROR] Не удалось получить информацию о чатах.\n");
+        return sidebar;
+    }
 
-    gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
+    // Создаем блоки чатов и добавляем их в stretchable_box
+    size_t i = 0;
+    while (chats_info[i] != NULL) {
+        printf("[DEBUG] Создание chatblock для чата с ID: %d\n", chats_info[i]->id);
+        GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
+        if (!chatblock) {
+            printf("[ERROR] Не удалось создать блок для чата с ID: %d\n", chats_info[i]->id);
+            continue;
+        }
 
-    g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
-    g_signal_connect(sidebar, "destroy", G_CALLBACK(on_widget_destroy), NULL);
+        g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
+        gtk_box_pack_end(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
+        gtk_widget_show(chatblock);
+        i++;
+    }
 
+    // Освобождаем память, если чаты были получены
+    free_chats_info(chats_info);
+
+    // Возвращаем сайдбар
     return sidebar;
 }
 

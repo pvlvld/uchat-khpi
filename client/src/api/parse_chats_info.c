@@ -1,27 +1,45 @@
 #include "../../inc/header.h"
+char *strdup(const char *str) {
+    size_t len = strlen(str) + 1;
+    char *copy = malloc(len);
+    if (copy) {
+        memcpy(copy, str, len);
+    }
+    return copy;
+}
 
 t_chat_info **parse_chats_info(void) {
-    // Массив указателей на структуры t_chat_info
-    t_chat_info **chats_info = malloc(sizeof(t_chat_info *) * 13);
+    // SQL-запрос для получения всех чатов
+    const char *sql = "SELECT chat_id, chat_type, created_at FROM chats ORDER BY created_at DESC;";
+    char **results = NULL;
+    int rows, cols;
+    int rc = vendor.database.sql.execute_query(sql, &results, &rows, &cols);
 
-    int _id[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-    char *_name[12] = {"Chat name 1", "Chat name 2", "Chat name 3",
-                       "Chat name 4", "Chat name 5", "Chat name 6",
-                       "Chat name 7", "Chat name 8", "Chat name 9",
-                       "Chat name 10", "Chat name 11", "Chat name 12"};
-    char *_last_message[2] = {
-        "Інформація стосовно того, хто вдало подолав марафон вже майже готова, залишилося зовсім трошки Поки ми фіналізуєио питання, нагадуємо, що свій фідбек стосовно марафону ти можеш залишити у цій формі",
-        "The information on who successfully completed the marathon is almost ready, just a little bit left "
-    };
-    int _type[12] = {0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0};
-    char *_path_to_logo[4] = {"person_img.jpg", "logo_2.jpg", "logo_3.jpg", "logo_4.jpg"};
-    char *_sender_name[6] = {"Username1", "Username2", "Username3", "Username4", "Username5", "Username6"};
-    int _unreaded_messages[5] = {0, 20, 0, 10, 100};
+    // Проверка результата выполнения SQL-запроса
+    if (rc != 0) {
+        printf("[ERROR] Ошибка при выполнении SQL-запроса: %s\n", sqlite3_errmsg(vendor.database.db));
+        return NULL;
+    }
 
+    if (rows == 0) {
+        printf("[INFO] Чаты не найдены. Таблица 'chats' пустая.\n");
+        return NULL;
+    }
 
-    for (int i = 0; i < 12; i++) {
+    printf("[DEBUG] Найдено строк: %d, Колонок: %d\n", rows, cols);
+
+    // Выделяем память для массива указателей на структуры t_chat_info
+    t_chat_info **chats_info = malloc(sizeof(t_chat_info *) * (rows + 1));
+    if (!chats_info) {
+        printf("[ERROR] Ошибка выделения памяти для массива структур.\n");
+        return NULL;
+    }
+
+    // Заполняем массив структур
+    for (int i = 0; i < rows; i++) {
         chats_info[i] = malloc(sizeof(t_chat_info));
-        if (chats_info[i] == NULL) {
+        if (!chats_info[i]) {
+            printf("[ERROR] Ошибка выделения памяти для структуры t_chat_info.\n");
             for (int j = 0; j < i; j++) {
                 free(chats_info[j]);
             }
@@ -29,20 +47,34 @@ t_chat_info **parse_chats_info(void) {
             return NULL;
         }
 
-        chats_info[i]->id = _id[i];
-        chats_info[i]->type = _type[i];
-        chats_info[i]->name = _name[i];
-        chats_info[i]->path_to_logo = _path_to_logo[i % 4];
-        chats_info[i]->last_message = _last_message[i % 2];
-        chats_info[i]->unreaded_messages = _unreaded_messages[rand() % 5];
-        chats_info[i]->sender_name = _sender_name[i % 6];
+        // Получаем значения из результата запроса
+        chats_info[i]->id = atoi(results[(i + 1) * cols]);
+        const char *type_str = results[(i + 1) * cols + 1];
+        chats_info[i]->type = (strcmp(type_str, "personal") == 0) ? PERSONAL :
+                              (strcmp(type_str, "group") == 0) ? GROUP : CHANNEL;
+        chats_info[i]->timestamp = (time_t)atoll(results[(i + 1) * cols + 2]);
 
-        time_t now = time(NULL);
-        int random_seconds = rand() % (8 * 24 * 60 * 60);
-        chats_info[i]->timestamp = now - random_seconds;
+        // Задаем дополнительные поля
+        chats_info[i]->name = strdup("Название чата");
+        chats_info[i]->path_to_logo = "default_logo.jpg";
+        chats_info[i]->last_message = strdup("Последнее сообщение");
+        chats_info[i]->sender_name = strdup("Отправитель");
+        chats_info[i]->unreaded_messages = 0;
+
+        // Отладочный вывод для проверки заполнения структуры
+        printf("[DEBUG] Chat #%d\n", i);
+        printf("  ID: %d\n", chats_info[i]->id);
+        printf("  Type: %d\n", chats_info[i]->type);
+        printf("  Timestamp: %ld\n", chats_info[i]->timestamp);
+        printf("  Name: %s\n", chats_info[i]->name);
+        printf("  Last Message: %s\n", chats_info[i]->last_message);
+        printf("  Sender Name: %s\n", chats_info[i]->sender_name);
     }
 
-    chats_info[12] = NULL;
+    chats_info[rows] = NULL;
+
+    // Освобождаем память, выделенную для результатов SQL-запроса
+    sqlite3_free_table(results);
 
     return chats_info;
 }
