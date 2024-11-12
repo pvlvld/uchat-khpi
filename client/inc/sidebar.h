@@ -21,6 +21,5 @@ typedef struct {
 } t_sidebar;
 
 t_sidebar init_sidebar(void);
-void update_sidebar_with_chats(GtkWidget *sidebar);
 
 #endif //SIDEBAR_H
