@@ -1,6 +1,5 @@
 #include "../../inc/server/server.h"
 #include "../../inc/header.h"
-#include "../../inc/websocket.h"
 #include "../../inc/ssl.h"
 
 void start_server(void) {
@@ -37,17 +36,18 @@ void start_server(void) {
         exit(EXIT_FAILURE);
     }
 
-   if (vendor.env.dev_mode) printf("Server listening on port %d\n", vendor.server.port);
+    if (vendor.env.dev_mode) printf("Server listening on port %d\n", vendor.server.port);
 
     while (1) {
         // Accept incoming connection
-        if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
+        if ((client_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
             perror("accept");
             exit(EXIT_FAILURE);
         }
 
         // Create a new thread to process the client
-        if (pthread_create(&thread_id, NULL, vendor.server.client_settings.handle_client, (void *)(intptr_t)client_socket) != 0) {
+        if (pthread_create(&thread_id, NULL, vendor.server.client_settings.handle_client,
+                           (void *)(intptr_t)client_socket) != 0) {
             perror("pthread_create");
             exit(EXIT_FAILURE);
         }
@@ -57,10 +57,10 @@ void start_server(void) {
 
 t_server init_server(void) {
     t_server server = {
-       .port = vendor.env.port,
-       .ssl_ctx = init_ssl_context(),
-       .client_settings = init_client_settings(),
-       .https = init_https(),
+        .port = vendor.env.port,
+        .ssl_ctx = init_ssl_context(),
+        .client_settings = init_client_settings(),
+        .https = init_https(),
     };
     return server;
 }
