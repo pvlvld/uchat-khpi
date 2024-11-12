@@ -1,6 +1,34 @@
 #include "../../../inc/header.h"
 
 void post_rout(SSL *ssl, const char *request) {
+    // Extract the path from the request
+    const char *path_start = strstr(request, "POST ");
+    if (!path_start) {
+        // Handle unexpected request format
+        return;
+    }
+    path_start += 5;
+    const char *path_end = strstr(path_start, " ");
+    if (!path_end) {
+        // Handle unexpected request format
+        return;
+    }
+    size_t path_length = path_end - path_start;
+    char path[256];
+    strncpy(path, path_start, path_length);
+    path[path_length] = '\0';
+
+    t_handlers handlers = init_handlers();
+
+    // Route the request based on the path
+    if (strcmp(path, "/register") == 0) {
+        handlers.post._register(ssl, request);
+        return;
+    } else if (strcmp(path, "/login") == 0) {
+        handlers.post._login(ssl, request);
+        return;
+    }
+
     char *token = extract_bearer_token(request);
 
     char *body = strstr(request, "\r\n\r\n");

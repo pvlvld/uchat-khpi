@@ -16,6 +16,10 @@ void _handle_https_request(SSL *ssl, const char *request) {
         vendor.handlers.post.middleware._jwt(ssl, request, vendor.handlers.post.post);
         return;
     }
+    if (strstr(request, "POST /register") == request) {
+        vendor.handlers.post._register(ssl, request);
+        return;
+    }
     if (strstr(request, "POST /login") == request) {
         vendor.handlers.post._login(ssl, request);
         return;
