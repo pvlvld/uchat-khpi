@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "../../libraries/cJSON/inc/cJSON.h"
+#include "../../libraries/cJSON/cJSON.h"
 #include "database/database_pool.h"
 #include "database/tables/messages_table.h"
 #include "database/tables/personal_chat_table.h"

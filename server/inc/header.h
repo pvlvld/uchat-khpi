@@ -4,7 +4,7 @@
 #pragma once
 
 #include "database.h"
-#include "../../libraries/cJSON/inc/cJSON.h"
+#include "../../libraries/cJSON/cJSON.h"
 #include "env.h"
 #include "database.h"
 #include "server/server.h"

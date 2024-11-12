@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <openssl/err.h>
-#include "../../../libraries/cJSON/inc/cJSON.h"
+#include "../../../libraries/cJSON/cJSON.h"
 
 typedef struct {
     int socket;
