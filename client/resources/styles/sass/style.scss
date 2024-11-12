@@ -18,7 +18,7 @@
   background: transparent;
   &__message {
     padding: 8px 0;
-    border-radius: 8px;
+    //border-radius: 8px;
     background: $emerald-900;
     opacity: 0;
     transition: opacity .5s ease;
@@ -35,30 +35,39 @@
     border-top-left-radius: 12px;
     border-bottom: 1px solid $neutral-950;
   }
-  &__chats-box {
-    background: $neutral-900;
-    padding: 0 20px;
-  }
   &__bottom {
     background: $neutral-800;
   }
 
   &__scrolled-window {
-    background: green;
-    padding: 0 12px;
+    margin-right: 2px;
   }
 
   &__message {
-    background: red;
 
     &__wrapper {
-      background: #000;
-      margin-top: 6px;
-      margin-bottom: 6px;
+      margin: 6px 10px 6px 12px;
     }
 
     &__text {
-      background: blue;
+      border-radius: 16px;
+      font-size: 16px;
+      &_bg {
+        background: $neutral-900;
+      }
+
+      &._received {
+        background: $neutral-700;
+        border-bottom-left-radius: 0;
+      }
+      &._sended {
+        background: $emerald-950;
+        border-bottom-right-radius: 0;
+      }
+    }
+    &__time {
+      margin-right: 10px;
+      margin-bottom: 4px;
     }
   }
 }

@@ -117,10 +117,20 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
 
         ssize_t index = rand() % 12;
         g_print("Element with id %zd updated!\n", index);
-        swap_sidebar(widget, index);
+        swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
         return TRUE;
     }
+//
+    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_q)) {
+        add_chat_message("New message");
+        return TRUE;
+    }
+
+//    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_a)) {
+//        draw_chat("New message");
+//        return TRUE;
+//    }
 
     return FALSE;
 }
@@ -174,7 +184,7 @@ GtkWidget *sidebar_init(void) {
 
     gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
 
-    g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
+    g_signal_connect(vendor.pages.main_page.main_page, "key-press-event", G_CALLBACK(key_press_handler), NULL);
     g_signal_connect(sidebar, "destroy", G_CALLBACK(on_widget_destroy), NULL);
 
     return sidebar;
