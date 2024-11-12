@@ -1,23 +1,51 @@
 #include "../../inc/header.h"
 #include <gtk/gtk.h>
 
-void ubuntu_show_notification(const char *title, const char *message) {
-    NotifyNotification *notification;
+void *play_sound_thread(void *arg) {
+    const char *command = (const char *)arg;
+    system(command);
+    return NULL;
+}
 
-    notification = notify_notification_new(title, message, NULL);
+static void play_sound_ubuntu(void) {
+    pthread_t thread;
+    const char *command = "aplay ./resources/sounds/naruto-shadow-clone-jutsu-free-sound-effect.wav > /dev/null 2>&1";
 
-    GError *error = NULL;
-    if (!notify_notification_show(notification, &error)) {
-        g_error("Failed to send notification: %s", error->message);
-        g_error_free(error);
+    if (pthread_create(&thread, NULL, play_sound_thread, (void *)command) != 0) {
+        return;
     }
 
-    g_object_unref(G_OBJECT(notification));
+    pthread_detach(thread);
+}
+
+static void play_sound_macos(void) {
+    pthread_t thread;
+    const char *command = "afplay ./resources/sounds/naruto-shadow-clone-jutsu-free-sound-effect.wav > /dev/null 2>&1";
+
+    if (pthread_create(&thread, NULL, play_sound_thread, (void *)command) != 0) {
+        return;
+    }
+
+    pthread_detach(thread);
+}
+
+void ubuntu_show_notification(const char *title, const char *message) {
+    play_sound_ubuntu();
+
+    char command[512];
+
+    snprintf(command, sizeof(command), "notify-send -a 'ShadowTalk' '%s' '%s' >/dev/null 2>&1", title, message);
+
+    system(command);
 }
 
 void macos_show_notification(const char *title, const char *message) {
+    play_sound_macos();
+
     char command[512];
+
     snprintf(command, sizeof(command), "osascript -e 'display notification \"%s\" with title \"%s\"'", message, title);
+
     system(command);
 }
 

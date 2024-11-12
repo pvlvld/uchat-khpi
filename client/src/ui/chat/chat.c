@@ -8,6 +8,11 @@ typedef struct {
     int *height;
 } t_widget_size_data;
 
+gboolean set_scroll_to_bottom(gpointer data) {
+    GtkAdjustment *vadjustment = GTK_ADJUSTMENT(data);
+    gtk_adjustment_set_value(vadjustment, gtk_adjustment_get_upper(vadjustment));
+    return FALSE;
+}
 
 gboolean get_widget_size(gpointer data) {
     t_widget_size_data *size_data = (t_widget_size_data *)data;
@@ -38,10 +43,6 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     vendor.helpers.set_classname_and_id(message, "chat__message");
     gtk_box_pack_start(GTK_BOX(message_wrapper), message, FALSE, FALSE, 0);
 
-//    GtkWidget *message_text_bg = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-//    vendor.helpers.set_classname_and_id(message_text_bg, "chat__message__text_bg");
-//    gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text_bg);
-
     GtkWidget *message_text = gtk_label_new(message_txt);
     PangoLayout *layout = gtk_label_get_layout(GTK_LABEL(message_text));
     pango_layout_set_width(layout, width * PANGO_SCALE);
@@ -49,7 +50,6 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     gtk_widget_set_size_request(message, width, height);
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_widget_set_size_request(message_text, width, height);
-//    gtk_widget_set_size_request(message_text_bg, 500, height);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
     gtk_label_set_line_wrap(GTK_LABEL(message_text), TRUE);
     vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
@@ -58,7 +58,6 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
 
     GtkWidget *time = gtk_label_new("00:00");
 
-    // Добавляем время в overlay
     gtk_overlay_add_overlay(GTK_OVERLAY(message), time);
     vendor.helpers.set_classname_and_id(time, "chat__message__time");
 
@@ -72,6 +71,15 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
 }
 
 void add_chat_message(const char *message_txt) {
+    GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(vendor.pages.main_page.chat.scrolled_window));
+	double upper = gtk_adjustment_get_upper(adjustment);
+    double current_value = gtk_adjustment_get_value(adjustment);
+	double page_size = gtk_adjustment_get_page_size(adjustment);
+
+    if (current_value + page_size == upper) {
+		g_idle_add(set_scroll_to_bottom, adjustment);
+    }
+
     int is_received = rand() % 2;
     GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_new_messages), message_wrapper, FALSE, FALSE, 0);
@@ -129,12 +137,6 @@ void on_scroll_value_changed(GtkAdjustment *adjustment, gpointer user_data) {
 
         g_idle_add(scroll_to_height, scroll_data);
     }
-}
-
-gboolean set_scroll_to_bottom(gpointer data) {
-    GtkAdjustment *vadjustment = GTK_ADJUSTMENT(data);
-    gtk_adjustment_set_value(vadjustment, gtk_adjustment_get_upper(vadjustment));
-    return FALSE;
 }
 
 GtkWidget *chat_init(void) {

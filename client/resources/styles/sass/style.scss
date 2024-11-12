@@ -18,11 +18,12 @@
   background: transparent;
   &__message {
     padding: 8px 0;
-    //border-radius: 8px;
+    border-radius: 8px;
     background: $emerald-900;
     opacity: 0;
     transition: opacity .5s ease;
     margin-top: 20px;
+    font-size: 16px;
     &._show {
       opacity: 1;
     }

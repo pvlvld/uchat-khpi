@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
     srand(time(NULL));
     init_vendor(&vendor);
     vendor.database.create_database();
-    notify_init("ShadowTalk");
+//    notify_init("ShadowTalk");
     GtkApplication *app;
     int status;
     app = gtk_application_new("org.example.GtkApplication", 0);

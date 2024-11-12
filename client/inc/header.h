@@ -14,7 +14,6 @@
 #include <glib.h>
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <libnotify/notify.h>
 #include "../../libraries/sqlite/inc/sqlite3.h"
 #include "../../libraries/cJSON/inc/cJSON.h"
 

@@ -117,16 +117,14 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
 
         ssize_t index = rand() % 12;
         g_print("Element with id %zd updated!\n", index);
+
         swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
+		vendor.popup.add_message("New message");
+		add_chat_message("New message");
         return TRUE;
     }
 //
-    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_q)) {
-        add_chat_message("New message");
-        return TRUE;
-    }
-
 //    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_a)) {
 //        draw_chat("New message");
 //        return TRUE;
