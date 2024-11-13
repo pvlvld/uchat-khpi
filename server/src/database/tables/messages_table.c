@@ -94,10 +94,11 @@ PGresult *get_messages(PGconn *conn, int chat_id, int limit, int offset) {
 }
 
 PGresult *get_new_messages(PGconn *conn, int chat_id, int limit, int offset, time_t timestamp) {
-    const char *query =
-        "SELECT * FROM messages WHERE COALESCE(edited_at, timestamp) > $1 ORDER BY timestamp DESC LIMIT $2 OFFSET $3";
-    char timestamp_str[12], limit_str[12], offset_str[12];
-    const char *params[3] = {itoa(timestamp, timestamp_str), itoa(limit, limit_str), itoa(offset, offset_str)};
+    const char *query = "SELECT * FROM messages WHERE chat_id = $1 AND COALESCE(edited_at, timestamp) > $2 ORDER BY "
+                        "timestamp DESC LIMIT $3 OFFSET $4";
+    char chat_id_str[12], timestamp_str[12], limit_str[12], offset_str[12];
+    const char *params[4] = {itoa(chat_id, chat_id_str), itoa(timestamp, timestamp_str), itoa(limit, limit_str),
+                             itoa(offset, offset_str)};
     PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
