@@ -61,6 +61,9 @@ GtkWidget *chat_init(void) {
 t_chat init_chat(void) {
     t_chat chat = {
         .init = chat_init,
+        .page = 0,
+        .shown_messages = 0,
+        .temp_message_counter = 0,
     };
     return chat;
 }

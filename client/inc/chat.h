@@ -3,6 +3,8 @@
 
 #include "header.h"
 
+#define PER_PAGE 20
+
 typedef struct {
     GtkWidget *(*init)(void);
     GtkWidget *chat_box;
@@ -10,6 +12,11 @@ typedef struct {
     GtkWidget *stretchable_box_old_messages;
     GtkWidget *stretchable_box_new_messages;
     GtkAdjustment *vadjustment;
+    int total_messages;
+    int temp_message_counter;
+    int page;
+    int shown_messages;
+    int chat_id;
 } t_chat;
 
 typedef struct {

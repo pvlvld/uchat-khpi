@@ -98,29 +98,30 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
     }
 
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
-        int total_messages = 0;
-        int page = 1;
-        int message_count = 10;
-
-        t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(page, message_count, 1, &total_messages);
-        if (messages != NULL) {
-            printf("Total messages: %d\n", total_messages);
-            for (int i = 0; i < message_count; i++) {
-                if ((i + 1) * page > total_messages) break;
-                printf("Message ID: %d\n", messages[i].message_id);
-                printf("Sender: %d\n", messages[i].sender_struct->user_id);
-                printf("Text: %s\n", messages[i].message_text);
-            }
-
-            vendor.database.tables.messages_table.free_struct(messages);
-        }
+//        int total_messages = 0;
+//        int page = 1;
+//        int message_count = 20;
+//
+//        t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, message_count, page, &total_messages);
+//
+//        if (messages != NULL) {
+//            printf("Total messages: %d\n", total_messages);
+//            for (int i = 0; i < message_count; i++) {
+//                if ((i + 1) * page > total_messages) break;
+//                printf("Message ID: %d\n", messages[i].message_id);
+//                printf("Sender: %d\n", messages[i].sender_struct->user_id);
+//                printf("Text: %s\n", messages[i].message_text);
+//            }
+//
+//            vendor.database.tables.messages_table.free_struct(messages);
+//        }
 
         ssize_t index = rand() % 12;
         g_print("Element with id %zd updated!\n", index);
 
         swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
-	vendor.popup.add_message("New message");
+		vendor.popup.add_message("New message");
         int is_received = rand() % 2;
         add_chat_message("New message", is_received);
         return TRUE;

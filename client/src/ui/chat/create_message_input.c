@@ -39,8 +39,13 @@ static void update_text_view_height(GtkTextView *text_view) {
 
     gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
     PangoLayout *layout = gtk_widget_create_pango_layout(GTK_WIDGET(text_view), text);
-    int scrolled_window_width = gtk_widget_get_allocated_width(scrolled_window);
+
+    // Ограничение ширины, чтобы строки не были бесконечно длинными
+    int scrolled_window_width = gtk_widget_get_allocated_width(scrolled_window) - 48;
     pango_layout_set_width(layout, scrolled_window_width * PANGO_SCALE);
+
+    // Установка переноса для длинных слов
+    pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR); // Принудительный перенос длинных слов
 
     line_count = pango_layout_get_line_count(layout);
 
@@ -96,8 +101,9 @@ static void send_message(GtkTextView *text_view) {
     gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
     if (g_strcmp0(text, "") != 0) {
+        vendor.database.tables.messages_table.add_message(vendor.pages.main_page.chat.total_messages + (++vendor.pages.main_page.chat.temp_message_counter),
+			1, vendor.current_user.user_id, text);
         add_chat_message(text, 0);
-
         gtk_text_buffer_delete(buffer, &start, &end);
     } else {
         g_print("Empty message, not sending.\n");
@@ -127,7 +133,7 @@ static gboolean chat_input_on_key_press(GtkWidget *text_view, GdkEventKey *event
         return TRUE;
     }
 
-    if (event->keyval == GDK_KEY_Return) {
+    if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
         send_message(GTK_TEXT_VIEW(text_view));
         return TRUE;
     }
