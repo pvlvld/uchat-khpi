@@ -1,6 +1,4 @@
 #include "../../../inc/utils.h"
-#include <libpq-fe.h>
-#include <stdbool.h>
 
 bool send_message(PGconn *conn, int chat_id, int sender_id, const char *message_text, int media_id, int reply_to_chat,
                   int reply_to_message, int forwarded_from_chat, int forwarded_from_message) {
@@ -88,6 +86,22 @@ PGresult *get_messages(PGconn *conn, int chat_id, int limit, int offset) {
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "Get messages failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        return NULL;
+    }
+
+    return res; // Caller is responsible for freeing with PQclear.
+}
+
+PGresult *get_new_messages(PGconn *conn, int chat_id, int limit, int offset, time_t timestamp) {
+    const char *query =
+        "SELECT * FROM messages WHERE COALESCE(edited_at, timestamp) > $1 ORDER BY timestamp DESC LIMIT $2 OFFSET $3";
+    char timestamp_str[12], limit_str[12], offset_str[12];
+    const char *params[3] = {itoa(timestamp, timestamp_str), itoa(limit, limit_str), itoa(offset, offset_str)};
+    PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Get new messages failed: %s", PQerrorMessage(conn));
         PQclear(res);
         return NULL;
     }

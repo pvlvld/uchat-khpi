@@ -3,6 +3,7 @@
 #pragma once
 
 #include <libpq-fe.h>
+#include <time.h>
 
 /** Sends a message to a chat.
  *
@@ -58,6 +59,17 @@ PGresult *get_message(PGconn *conn, int chat_id, int message_id);
  */
 PGresult *get_messages(PGconn *conn, int chat_id, int limit, int offset);
 
+/** Retrieves new messages from a chat.
+ *
+ * @param conn The connection to the PostgreSQL database.
+ * @param chat_id The ID of the chat to retrieve messages from.
+ * @param limit The maximum number of messages to retrieve.
+ * @param offset The number of messages to skip.
+ * @param timestamp The timestamp of the last received message.
+ * @return A PGresult containing the message data, or NULL if the query failed.
+ *         Caller is responsible for freeing the result with PQclear.
+ */
+PGresult *get_new_messages(PGconn *conn, int chat_id, int limit, int offset, time_t timestamp);
 typedef struct {
     bool (*send_message)(PGconn *conn, int chat_id, int sender_id, const char *message_text, int media_id,
                          int reply_to_chat, int reply_to_message, int forwarded_from_chat, int forwarded_from_message);
@@ -65,6 +77,7 @@ typedef struct {
     bool (*edit_message_text)(PGconn *conn, int chat_id, int message_id, const char *new_message_text);
     PGresult *(*get_message)(PGconn *conn, int chat_id, int message_id);
     PGresult *(*get_messages)(PGconn *conn, int chat_id, int limit, int offset);
+    PGresult *(*get_new_messages)(PGconn *conn, int chat_id, int limit, int offset, time_t timestamp);
 } t_messages_table;
 
 #endif // MESSAGES_TABLE_H
