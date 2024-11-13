@@ -120,8 +120,9 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
 
         swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
-		vendor.popup.add_message("New message");
-		add_chat_message("New message");
+	vendor.popup.add_message("New message");
+        int is_received = rand() % 2;
+        add_chat_message("New message", is_received);
         return TRUE;
     }
 //

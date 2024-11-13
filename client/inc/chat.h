@@ -9,7 +9,7 @@ typedef struct {
     GtkWidget *scrolled_window;
     GtkWidget *stretchable_box_old_messages;
     GtkWidget *stretchable_box_new_messages;
-    int static_height;
+    GtkAdjustment *vadjustment;
 } t_chat;
 
 typedef struct {
@@ -17,7 +17,15 @@ typedef struct {
     double height;
 } t_scroll_data;
 
-t_chat init_chat(void);
-void add_chat_message(const char *message_txt);
+typedef struct {
+    GtkWidget *widget;
+    int *width;
+    int *height;
+} t_widget_size_data;
 
+t_chat init_chat(void);
+void add_chat_message(const char *message_txt, int is_received);
+GtkWidget *chat_create_scrolled_window(void);
+GtkWidget *create_message_input(void);
+gboolean set_scroll_to_bottom(gpointer data);
 #endif //CHAT_H

@@ -35,6 +35,14 @@
     background: $neutral-900;
     border-top-left-radius: 12px;
     border-bottom: 1px solid $neutral-950;
+    padding: 8px 12px;
+    &__title {
+      font-size: 20px;
+    }
+    &__info {
+      color: $neutral-400;
+      font-size: 14px;
+    }
   }
   &__bottom {
     background: $neutral-800;
@@ -46,6 +54,15 @@
 
   &__message {
 
+    &.hover * {
+      &._received {
+        background: $neutral-600;
+      }
+      &._sended {
+        background: $emerald-900;
+      }
+    }
+
     &__wrapper {
       margin: 6px 10px 6px 12px;
     }
@@ -53,9 +70,9 @@
     &__text {
       border-radius: 16px;
       font-size: 16px;
-      &_bg {
-        background: $neutral-900;
-      }
+      padding: 0 10px 12px;
+      //padding-bottom: 10px;
+      transition: background-color .3s ease;
 
       &._received {
         background: $neutral-700;
@@ -69,6 +86,47 @@
     &__time {
       margin-right: 10px;
       margin-bottom: 4px;
+    }
+  }
+  &__bottom {
+    padding: 19px 12px;
+  }
+  &__value {
+
+    &_scroll {
+    }
+    &_wrapper {
+
+      background: $neutral-700;
+      border-radius: 8px 0 0 8px;
+      padding: 0 20px 2px 4px;
+    }
+    &_input {
+      padding-bottom: 4px;
+      & text {
+        background: $neutral-700;
+        color: $neutral-100;
+        font-size: 14px;
+      }
+    }
+  }
+  &__button {
+    background: $emerald-900;
+    //border-radius: 50% 8px 8px 50%;
+    border-radius: 0 8px 8px 0;
+    transition: background-color .3s ease;
+    &.hover {
+      background: $emerald-700;
+    }
+  }
+}
+
+._chat {
+  &__input {
+    &_placeholder {
+      color: $neutral-300;
+      margin-left: 10px;
+      margin-top: -38px;
     }
   }
 }
