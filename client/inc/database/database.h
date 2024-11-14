@@ -9,6 +9,18 @@
 #include "personal_chats_table.h"
 #include "group_chats_table.h"
 #include "group_chat_members_table.h"
+#include "group_info_table.h"
+
+typedef struct {
+    unsigned int id;
+    char *name;
+    char *last_message;
+    char *sender_name;
+    t_chats_types type;
+    char *path_to_logo;
+    int unreaded_messages;
+    time_t timestamp;
+} t_chat_info;
 
 typedef struct {
     void (*execute_sql)(const char *sql);
@@ -26,6 +38,7 @@ typedef struct {
     t_personal_chats_table personal_chats_table;
     t_group_chats_table group_chats_table;
     t_group_chat_members_table group_chat_members_table;
+    t_group_info_table group_info_table;
 } t_database_tables;
 
 typedef struct {

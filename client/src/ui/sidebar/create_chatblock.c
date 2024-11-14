@@ -64,6 +64,11 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock_text_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock_text_header, "sidebar__chatblock_chat__header");
 
+    // Получаем имя группы для группового чата
+    if (chat_info->type == 1) { // Групповой чат
+    	chat_info->name = get_group_name_by_chat_id(chat_info->id);  // Используем chat_info->id
+	}
+
     GtkWidget *chat_name = gtk_label_new(chat_info->name);
     vendor.helpers.set_classname_and_id(chat_name, "sidebar__chatblock_chat__name");
     gtk_label_set_lines(GTK_LABEL(chat_name), 1);

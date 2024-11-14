@@ -1,4 +1,5 @@
 #include "../../inc/header.h"
+
 char *strdup(const char *str) {
     size_t len = strlen(str) + 1;
     char *copy = malloc(len);
@@ -55,8 +56,18 @@ t_chat_info **parse_chats_info(void) {
         chats_info[i]->timestamp = (time_t)atoll(results[(i + 1) * cols + 2]);
 
         // Задаем дополнительные поля
-        chats_info[i]->name = strdup("Название чата");
-        chats_info[i]->path_to_logo = "default_logo.jpg";
+        if (chats_info[i]->type == PERSONAL) {
+            // Получаем имя собеседника в персональном чате
+            int other_user_id = get_other_user_id(chats_info[i]->id);
+            chats_info[i]->name = get_user_name(other_user_id);
+        } else if (chats_info[i]->type == GROUP) {
+            // Получаем имя группы в групповом чате
+            chats_info[i]->name = get_group_name_by_chat_id(chats_info[i]->id);
+        } else {
+            chats_info[i]->name = strdup("Неизвестный чат");
+        }
+
+        chats_info[i]->path_to_logo = "default_logo.jpg";  // Путь к логотипу (по умолчанию)
         chats_info[i]->last_message = strdup("Последнее сообщение");
         chats_info[i]->sender_name = strdup("Отправитель");
         chats_info[i]->unreaded_messages = 0;
@@ -91,6 +102,9 @@ void free_chats_info(t_chat_info **chats_info) {
 char *format_timestamp(time_t timestamp) {
     time_t now = time(NULL);
     double difference = difftime(now, timestamp); // Разница во времени
+
+    // Преобразуем timestamp из миллисекунд в секунды
+    timestamp /= 1000;
 
     char *buffer = malloc(50); // Выделяем память для строки
     if (buffer == NULL) {

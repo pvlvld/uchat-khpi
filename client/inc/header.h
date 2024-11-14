@@ -18,17 +18,6 @@
 #include "../../libraries/sqlite/inc/sqlite3.h"
 #include "../../libraries/cJSON/inc/cJSON.h"
 
-typedef struct {
-    unsigned int id;
-    char *name;
-    char *last_message;
-    char *sender_name;
-    int type;
-    char *path_to_logo;
-    int unreaded_messages;
-    time_t timestamp;
-} t_chat_info;
-
 #include "program.h"
 #include "database/database.h"
 #include "crypto.h"
@@ -98,8 +87,12 @@ typedef struct {
 
 extern t_vendor vendor;
 
+int get_other_user_id(int chat_id);
+char *get_group_name_by_chat_id(int chat_id);
+char *get_user_name(int user_id);
 t_chat_info **parse_chats_info(void);
 void free_chats_info(t_chat_info **chats_info);
 void init_vendor(t_vendor *vendor);
 int init_server(int argc, char **argv);
+char *strdup(const char *str);
 #endif //HEADER_H
