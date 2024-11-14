@@ -7,6 +7,8 @@
 
 typedef struct {
     GtkWidget *(*init)(void);
+    GtkWidget *(*no_chat_init)(void);
+    void (*change_chat)(void);
     GtkWidget *chat_box;
     GtkWidget *scrolled_window;
     GtkWidget *stretchable_box_old_messages;

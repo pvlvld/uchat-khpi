@@ -39,7 +39,7 @@ static t_database_tables init_database_tables(void) {
 
 t_database init_database(void) {
     t_database database = {
-        .db_name = "ucaht.db",
+        .db_name = "db/admin.db",
         .create_database = create_database_impl,
         .close_database = close_database,
         .db = NULL,

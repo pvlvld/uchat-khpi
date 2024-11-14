@@ -35,7 +35,7 @@ void change_page(e_page_type page) {
 
 t_pages init_pages(void) {
     t_pages pages = {
-        .current_page = MAIN_PAGE,
+        .current_page = LOGIN_PAGE,
         .current_page_widget = NULL,
         .change_page = change_page,
         .main_page = {

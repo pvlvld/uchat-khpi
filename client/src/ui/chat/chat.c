@@ -6,9 +6,41 @@ gboolean set_scroll_to_bottom(gpointer data) {
     return FALSE;
 }
 
+void change_chat(void) {
+    vendor.pages.main_page.chat.page = 0;
+    vendor.pages.main_page.chat.shown_messages = 0;
+    vendor.pages.main_page.chat.temp_message_counter = 0;
+
+    if (vendor.pages.main_page.chat.chat_box != NULL) {
+        gtk_widget_destroy(vendor.pages.main_page.chat.chat_box);
+    }
+
+    if (vendor.active_chat.chat_sidebar_widget) {
+        vendor.pages.main_page.chat.chat_box = vendor.pages.main_page.chat.init();
+    } else {
+        vendor.pages.main_page.chat.chat_box = vendor.pages.main_page.chat.no_chat_init();
+    }
+
+    gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.main_page), vendor.pages.main_page.chat.chat_box, TRUE, TRUE, 0);
+    gtk_widget_show_all(vendor.pages.current_page_widget);
+}
+
+GtkWidget *no_chat_init(void) {
+    GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    vendor.helpers.set_classname_and_id(chat_box, "_right_block");
+    GtkWidget *label = gtk_label_new("Select a chat to start messaging");
+
+    gtk_widget_set_halign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(label, TRUE);
+    gtk_widget_set_vexpand(label, TRUE);
+    gtk_box_pack_start(GTK_BOX(chat_box), label, TRUE, TRUE, 0);
+
+    return chat_box;
+}
+
 GtkWidget *chat_init(void) {
     GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    vendor.pages.main_page.chat.chat_box = chat_box;
     vendor.helpers.set_classname_and_id(chat_box, "chat");
     gtk_style_context_add_class(gtk_widget_get_style_context(chat_box), "_right_block");
     gtk_widget_set_halign(chat_box, GTK_ALIGN_FILL);
@@ -22,13 +54,16 @@ GtkWidget *chat_init(void) {
     gtk_box_pack_start(GTK_BOX(chat_box), chat_header, FALSE, FALSE, 0);
     gtk_widget_set_halign(chat_header, GTK_ALIGN_FILL);
 
-    GtkWidget *header_title = gtk_label_new("The very long chat name");
+    GtkWidget *header_title = gtk_label_new(vendor.active_chat.chat->name);
     vendor.helpers.set_classname_and_id(header_title, "chat__header__title");
     gtk_label_set_line_wrap(GTK_LABEL(header_title), TRUE);
     gtk_widget_set_halign(header_title, GTK_ALIGN_START);
     gtk_box_pack_start(GTK_BOX(chat_header), header_title, TRUE, TRUE, 0);
 
-    GtkWidget *header_info = gtk_label_new("5 days ago");
+    char temp[48];
+    snprintf(temp, sizeof(temp), "id: %d", vendor.active_chat.chat->id);
+
+    GtkWidget *header_info = gtk_label_new(temp);
     vendor.helpers.set_classname_and_id(header_info, "chat__header__info");
     gtk_label_set_line_wrap(GTK_LABEL(header_info), TRUE);
     gtk_widget_set_halign(header_info, GTK_ALIGN_START);
@@ -61,6 +96,8 @@ GtkWidget *chat_init(void) {
 t_chat init_chat(void) {
     t_chat chat = {
         .init = chat_init,
+        .no_chat_init = no_chat_init,
+        .change_chat = change_chat,
         .page = 0,
         .shown_messages = 0,
         .temp_message_counter = 0,

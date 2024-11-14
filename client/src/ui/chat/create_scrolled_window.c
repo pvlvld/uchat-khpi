@@ -1,5 +1,22 @@
 #include "../../../inc/header.h"
 
+static char *format_last_message(const char *sender_name, const char *message) {
+    const char *format = "<span foreground='#047857'>%s\n</span>%s";
+
+    int size = snprintf(NULL, 0, format, sender_name, message);
+    if (size < 0) {
+        return NULL;
+    }
+
+    char *buffer = (char *)malloc(size + 1);
+    if (!buffer) {
+        return NULL;
+    }
+
+    snprintf(buffer, size + 1, format, sender_name, message);
+    return buffer;
+}
+
 static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is_received) {
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
@@ -13,11 +30,18 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     vendor.helpers.add_hover(event_box);
     gtk_container_add(GTK_CONTAINER(event_box), message);
 
-//    vendor.helpers.set_classname_and_id(message, "chat__message");
     vendor.helpers.set_classname_and_id(event_box, "chat__message");
     gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
 
-    GtkWidget *message_text = gtk_label_new(message_txt);
+    GtkWidget *message_text = NULL;
+
+    if (is_received == 1 && vendor.active_chat.chat->type != 0) {
+        char *formatted_last_message = format_last_message(vendor.active_chat.chat->sender_name, message_txt);
+        message_text = gtk_label_new(formatted_last_message);
+    } else {
+        message_text = gtk_label_new(message_txt);
+    }
+    gtk_label_set_use_markup(GTK_LABEL(message_text), TRUE);
     PangoLayout *layout = gtk_label_get_layout(GTK_LABEL(message_text));
 
     int _width, _height;
@@ -190,8 +214,6 @@ GtkWidget *chat_create_scrolled_window(void) {
 				break;
             }
 			int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
-//			g_print("messages[i].sender_struct->user_id: %d\n", messages[i].sender_struct->user_id);
-//			g_print("vendor.current_user.user_id: %d\n\n", vendor.current_user.user_id);
 
             height += add_old_chat_message(messages[i].message_text, is_received);
             vendor.pages.main_page.chat.shown_messages++;

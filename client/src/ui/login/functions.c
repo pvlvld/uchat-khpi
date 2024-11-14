@@ -104,6 +104,18 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     }
 }
 
+static int db_exists(const char *name) {
+    char path[512];
+    snprintf(path, sizeof(path), "db/%s.db", name);
+    int result = access(path, F_OK) == 0;
+    if (result) {
+        vendor.database.db_name = vendor.helpers.strdup(path);
+        vendor.database.create_database();
+    }
+
+    return result;
+}
+
 void login_on_login_submit(GtkButton *button, gpointer user_data) {
     (void)button;
     t_login_form_data *data = (t_login_form_data *)user_data;
@@ -118,14 +130,20 @@ void login_on_login_submit(GtkButton *button, gpointer user_data) {
         return;
     }
 
-    g_print("Login: %s\nPassword: %s\n", username, password);
-    vendor.current_user.username = vendor.helpers.strdup(username);
-    vendor.current_user.password = vendor.helpers.strdup(password);
-    vendor.pages.change_page(LOADING_PAGE);
+    if (db_exists(username)) {
+        g_print("Login: %s\nPassword: %s\n", username, password);
+        vendor.current_user.username = vendor.helpers.strdup(username);
+        vendor.current_user.password = vendor.helpers.strdup(password);
+        vendor.pages.change_page(LOADING_PAGE);
 
-    GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
-    g_task_run_in_thread(task, perform_request_async);
-    g_object_unref(task);
+        GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
+        g_task_run_in_thread(task, perform_request_async);
+        g_object_unref(task);
+    } else {
+        create_error(vendor.pages.login_page.password_wrapper, "This user does not have a key on this device.");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.login_page.username_wrapper), "_form_error");
+    }
+
 }
 
 gboolean login_input_on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {

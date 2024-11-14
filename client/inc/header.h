@@ -43,6 +43,7 @@ typedef struct {
 typedef struct {
     t_chat_info *chat;
     GtkWidget* chat_sidebar_widget;
+    char *recipient_public_key;
 } t_active_chat;
 
 typedef struct {

@@ -25,25 +25,21 @@ static void create_error(GtkWidget *widget, const char *message) {
 }
 
 static void remove_errors(void) {
-	GList *usrname_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.username_wrapper));
-    if (g_list_length(usrname_children) != 2) {
-        GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(usrname_children, 2));
-        gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
-        gtk_widget_destroy(target_child);
-    }
+    GtkWidget *errors_widget[3];
+    errors_widget[0] = vendor.pages.register_page.username_wrapper;
+    errors_widget[1] = vendor.pages.register_page.password_wrapper;
+    errors_widget[2] = vendor.pages.register_page.password_confirm_wrapper;
 
-    GList *password_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.password_wrapper));
-    if (g_list_length(password_children) != 2) {
-        GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(password_children, 2));
-        gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.password_wrapper), "_form_error");
-        gtk_widget_destroy(target_child);
-    }
+    for (int i = 0; i < 3; i++) {
+        GList *children = gtk_container_get_children(GTK_CONTAINER(errors_widget[i]));
 
-    GList *password_confim_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.password_confirm_wrapper));
-    if (g_list_length(password_confim_children) != 2) {
-        GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(password_confim_children, 2));
-        gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.password_confirm_wrapper), "_form_error");
-        gtk_widget_destroy(target_child);
+        if (gtk_style_context_has_class(gtk_widget_get_style_context(errors_widget[i]), "_form_error")) {
+            gtk_style_context_remove_class(gtk_widget_get_style_context(errors_widget[i]), "_form_error");
+        }
+        if (g_list_length(children) != 2) {
+            GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, 2));
+            gtk_widget_destroy(target_child);
+        }
     }
 }
 
@@ -128,6 +124,18 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     }
 }
 
+static int db_exists(const char *name) {
+    char path[512];
+    snprintf(path, sizeof(path), "db/%s.db", name);
+    int result = access(path, F_OK) == 0;
+    if (!result) {
+        vendor.database.db_name = vendor.helpers.strdup(path);
+        vendor.database.create_database();
+    }
+
+    return result;
+}
+
 void register_on_register_submit(GtkButton *button, gpointer user_data) {
     (void)button;
     t_register_form_data *data = (t_register_form_data *)user_data;
@@ -143,16 +151,22 @@ void register_on_register_submit(GtkButton *button, gpointer user_data) {
         return;
     }
 
-    g_print("login: %s\nPassword: %s\n", username, password);
-    vendor.current_user.username = vendor.helpers.strdup(username);
-    vendor.current_user.password = vendor.helpers.strdup(password);
+    if (!db_exists(username)) {
+        g_print("login: %s\nPassword: %s\n", username, password);
+        vendor.current_user.username = vendor.helpers.strdup(username);
+        vendor.current_user.password = vendor.helpers.strdup(password);
 
-    vendor.pages.change_page(LOADING_PAGE);
-    vendor.crypto.keygen();
+        vendor.pages.change_page(LOADING_PAGE);
+        vendor.crypto.keygen();
 
-    GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
-    g_task_run_in_thread(task, perform_request_async);
-    g_object_unref(task);
+        GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
+        g_task_run_in_thread(task, perform_request_async);
+        g_object_unref(task);
+    } else {
+        create_error(vendor.pages.register_page.password_confirm_wrapper, "Unexpected error");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.password_wrapper), "_form_error");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
+    }
 }
 
 gboolean register_input_on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {

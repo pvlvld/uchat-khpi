@@ -12,10 +12,12 @@ void init_vendor(t_vendor *vendor) {
     vendor->window_content = NULL;
     t_user current_user = {
         .user_id = 1,
-        .username = "Admin",
-        .user_login = "@admin",
+        .username = "admin",
+        .user_login = "admin",
         .profile_picture = "person_img.jpg"
     };
+
+    vendor->database.create_database();
     vendor->current_user = current_user;
     vendor->popup = init_popup();
 }

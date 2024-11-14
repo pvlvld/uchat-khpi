@@ -37,6 +37,7 @@ static void swap_sidebar(GtkWidget *widget, ssize_t index) {
             if (vendor.active_chat.chat_sidebar_widget == target_child) {
                 vendor.active_chat.chat_sidebar_widget = new_child;
                 gtk_style_context_add_class(gtk_widget_get_style_context(new_child), "active");
+                vendor.pages.main_page.chat.change_chat();
             }
             if (vendor.hover_chat.chat_sidebar_widget == target_child) {
                 vendor.hover_chat.chat_sidebar_widget = new_child;
@@ -62,6 +63,7 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         if (vendor.active_chat.chat_sidebar_widget != NULL) {
             gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
             vendor.active_chat.chat_sidebar_widget = NULL;
+            vendor.pages.main_page.chat.change_chat();
             vendor.active_chat.chat = NULL;
         }
         return TRUE;

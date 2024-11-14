@@ -1,7 +1,7 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
-char *format_last_message(const char *sender_name, const char *message) {
+static char *format_last_message(const char *sender_name, const char *message) {
     const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
 
     int size = snprintf(NULL, 0, format, sender_name, message);
@@ -29,6 +29,7 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
             gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
         }
         vendor.active_chat.chat_sidebar_widget = widget;
+        vendor.pages.main_page.chat.change_chat();
         gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
     } else if (event->button == GDK_BUTTON_SECONDARY) {
         int x = event->x_root;

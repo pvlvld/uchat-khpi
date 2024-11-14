@@ -79,8 +79,14 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_ele
 
         msg->message_id = atoi(results[i * cols]);  // message_id
         msg->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
-        msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(atoi(results[i * cols + 2]));
-        msg->message_text = vendor.helpers.strdup(results[i * cols + 3]);  // message_text
+        msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(atoi(results[i * cols + 2])); // sender struct
+//        test1234
+        char *decrypt = vendor.crypto.decrypt(results[i * cols + 3]);
+        if (decrypt) {
+            msg->message_text = vendor.helpers.strdup(decrypt);
+            free(decrypt);
+        }
+//        msg->message_text = vendor.helpers.strdup(results[i * cols + 3]);  // message_text
 
         time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
         localtime_r(&timestamp, &msg->timestamp);
