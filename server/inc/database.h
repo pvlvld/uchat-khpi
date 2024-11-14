@@ -9,6 +9,7 @@
 #include "database/tables/personal_chat_table.h"
 #include "database/tables/users_table.h"
 #include "database/tables/media_table.h"
+#include "database/tables/chats_table.h"
 
 typedef struct {
     t_database_pool pool;
@@ -16,6 +17,7 @@ typedef struct {
     t_personal_chat_table personal_chat_table;
     t_users_table users_table;
     t_media_table media_table;
+    t_chats_table chat_table;
 } t_database;
 
 t_database *init_database(void);
