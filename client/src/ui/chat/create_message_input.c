@@ -100,7 +100,7 @@ static void send_message(GtkTextView *text_view) {
     gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
     if (g_strcmp0(text, "") != 0) {
-        char *encrypt = vendor.crypto.encrypt(vendor.crypto.public_key_str, text);
+        char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
             vendor.database.tables.messages_table.add_message(vendor.pages.main_page.chat.total_messages + (++vendor.pages.main_page.chat.temp_message_counter),
 			1, vendor.current_user.user_id, encrypt);

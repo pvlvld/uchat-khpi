@@ -87,15 +87,15 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
         vendor.current_user.user_login = active_users_struct->user_login;
         vendor.current_user.about = active_users_struct->about;
 
-        char *encrypt = vendor.crypto.encrypt(active_users_struct->public_key, "Test message");
-        if (encrypt) {
-            char *decrypt = vendor.crypto.decrypt(encrypt);
-            if (decrypt) {
-                printf("%s\n", decrypt);
-                free(decrypt);
-            }
-            free(encrypt);
-        }
+//        char *encrypt = vendor.crypto.encrypt(active_users_struct->public_key, "Test message");
+//        if (encrypt) {
+//            char *decrypt = vendor.crypto.decrypt(encrypt);
+//            if (decrypt) {
+//                printf("%s\n", decrypt);
+//                free(decrypt);
+//            }
+//            free(encrypt);
+//        }
         vendor.pages.change_page(MAIN_PAGE);
     } else {
         vendor.pages.change_page(LOGIN_PAGE);

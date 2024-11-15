@@ -59,9 +59,11 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
 
     pango_layout_set_width(layout, width * PANGO_SCALE);
     int line_count = pango_layout_get_line_count(layout);
-    double magic_coefficient;
-    if (line_count < 20) magic_coefficient = 22;
-    else magic_coefficient = 17.87;
+    double magic_coefficient = 23.4;
+    if (line_count < 20) magic_coefficient = 23.4;
+    else if (line_count < 100) magic_coefficient = 22;
+    else if (line_count < 500) magic_coefficient = 23.4;
+
     int height = line_count * magic_coefficient + add_to_height;
 
     if (line_count > 0) {

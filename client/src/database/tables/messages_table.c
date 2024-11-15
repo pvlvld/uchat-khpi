@@ -18,12 +18,28 @@ static void create_table(void) {
 }
 
 static void add_message(int message_id, int chat_id, int sender_id, const char *message_text) {
-    char sql[1024];
-    snprintf(sql, sizeof(sql),
+    // Рассчитываем длину строки запроса с учетом всех параметров
+    size_t sql_size = snprintf(NULL, 0,
+             "INSERT INTO messages (message_id, chat_id, sender_id, message_text) "
+             "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text) + 1; // +1 для null-терминатора
+
+    // Выделяем память для строки
+    char *sql = malloc(sql_size);
+    if (sql == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return;
+    }
+
+    // Формируем SQL запрос
+    snprintf(sql, sql_size,
              "INSERT INTO messages (message_id, chat_id, sender_id, message_text) "
              "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text);
 
+    // Выполняем запрос
     vendor.database.sql.execute_sql(sql);
+
+    // Освобождаем память после использования
+    free(sql);
 }
 
 static void edit_message(int message_id, const char *new_message_text) {
@@ -81,7 +97,7 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_ele
         msg->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
         msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(atoi(results[i * cols + 2])); // sender struct
 //        test1234
-        char *decrypt = vendor.crypto.decrypt(results[i * cols + 3]);
+        char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);
         if (decrypt) {
             msg->message_text = vendor.helpers.strdup(decrypt);
             free(decrypt);
