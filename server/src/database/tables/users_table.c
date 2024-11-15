@@ -32,6 +32,7 @@ PGresult *get_user_by_login(PGconn *conn, const char *user_login) {
         return NULL;
     }
 
+    // wth? -vld
     if (PQntuples(res) == 0) {
         PQclear(res);
         return NULL;
