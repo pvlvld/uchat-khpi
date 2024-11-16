@@ -43,15 +43,15 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     }
     gtk_label_set_use_markup(GTK_LABEL(message_text), TRUE);
     PangoLayout *layout = gtk_label_get_layout(GTK_LABEL(message_text));
-
+    pango_layout_set_auto_dir(layout, FALSE);
     int _width, _height;
-    int add_to_height = 14;
+    float add_to_height = 26.5;
     pango_layout_get_size(layout, &_width, &_height);
-    int width_in_pixels = _width / PANGO_SCALE;
-    if (width_in_pixels < 20) add_to_height += 12;;
+    int width_in_pixels = _width / PANGO_SCALE + 20;
+    int height_in_pixels = _height / PANGO_SCALE + 20;
+    if (width_in_pixels < 20) add_to_height += 12;
     if (width_in_pixels < 40) {
         width_in_pixels = 40;
-
     }
     if (width_in_pixels < width) {
         width = width_in_pixels + 40;
@@ -59,12 +59,19 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
 
     pango_layout_set_width(layout, width * PANGO_SCALE);
     int line_count = pango_layout_get_line_count(layout);
-    double magic_coefficient = 23.4;
-    if (line_count < 20) magic_coefficient = 23.4;
-    else if (line_count < 100) magic_coefficient = 22;
-    else if (line_count < 500) magic_coefficient = 23.4;
-
-    int height = line_count * magic_coefficient + add_to_height;
+    int height = height_in_pixels;
+    if (line_count <= 2) {
+		height += add_to_height;
+    } else if (line_count < 20) {
+        add_to_height += 4.5;
+        height += (int)(line_count / 1.5) * add_to_height;
+    } else if (line_count < 100) {
+        add_to_height += 2.5;
+        height += (int)(line_count / 1.5) * add_to_height;
+    } else {
+        add_to_height += 1.5;
+        height += (int)(line_count / 1.5) * add_to_height;
+    }
 
     if (line_count > 0) {
         PangoLayoutLine *last_line = pango_layout_get_line(layout, line_count - 1);
@@ -85,6 +92,7 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
     gtk_label_set_line_wrap(GTK_LABEL(message_text), TRUE);
+	gtk_label_set_line_wrap_mode(GTK_LABEL(message_text), PANGO_WRAP_CHAR);
     vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
 
     gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);
