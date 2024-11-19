@@ -1,7 +1,7 @@
 #include "../../../inc/header.h"
 
 static char *format_last_message(const char *sender_name, const char *message) {
-    const char *format = "<span foreground='#047857'>%s\n</span>%s";
+    const char *format = "%s\n%s";
 
     int size = snprintf(NULL, 0, format, sender_name, message);
     if (size < 0) {
@@ -24,7 +24,8 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
 
     GtkWidget *message = gtk_overlay_new();
     gtk_widget_set_hexpand(message, FALSE);
-    gtk_widget_set_halign(message, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(message, GTK_ALIGN_START);
+    gtk_widget_set_valign(message, GTK_ALIGN_START);
 
     GtkWidget *event_box = gtk_event_box_new();
     vendor.helpers.add_hover(event_box);
@@ -33,23 +34,29 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     vendor.helpers.set_classname_and_id(event_box, "chat__message");
     gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
 
-    GtkWidget *message_text = NULL;
-
+    char *message_text_txt = (char *)message_txt;
+    ssize_t sender_length = 0;
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
-        char *formatted_last_message = format_last_message(vendor.active_chat.chat->sender_name, message_txt);
-        message_text = gtk_label_new(formatted_last_message);
-    } else {
-        message_text = gtk_label_new(message_txt);
+        message_text_txt = format_last_message(vendor.active_chat.chat->sender_name, message_txt);
+        sender_length = strlen(vendor.active_chat.chat->sender_name);
     }
-    gtk_label_set_use_markup(GTK_LABEL(message_text), TRUE);
-    PangoLayout *layout = gtk_label_get_layout(GTK_LABEL(message_text));
+
+    GtkWidget *message_text = create_message_box(message_text_txt, sender_length);
+
+    PangoLayout *layout = gtk_widget_create_pango_layout(message_text, message_txt);
+	pango_layout_set_text(layout, message_text_txt, -1);
+
+	PangoFontDescription *font_desc = pango_font_description_new();
+	pango_font_description_set_family(font_desc, "Ubuntu Sans");
+	pango_font_description_set_size(font_desc, 16 * PANGO_SCALE);
+	pango_layout_set_font_description(layout, font_desc);
+	pango_font_description_free(font_desc);
+
     pango_layout_set_auto_dir(layout, FALSE);
-    int _width, _height;
-    float add_to_height = 26.5;
-    pango_layout_get_size(layout, &_width, &_height);
+    int _width;
+    pango_layout_get_size(layout, &_width, NULL);
     int width_in_pixels = _width / PANGO_SCALE + 20;
-    int height_in_pixels = _height / PANGO_SCALE + 20;
-    if (width_in_pixels < 20) add_to_height += 12;
+
     if (width_in_pixels < 40) {
         width_in_pixels = 40;
     }
@@ -57,21 +64,13 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
         width = width_in_pixels + 40;
     }
 
-    pango_layout_set_width(layout, width * PANGO_SCALE);
+    pango_layout_set_width(layout, width * PANGO_SCALE * 1.95);
+    int _height;
+    pango_layout_get_size(layout, NULL, &_height);
+
     int line_count = pango_layout_get_line_count(layout);
-    int height = height_in_pixels;
-    if (line_count <= 2) {
-		height += add_to_height;
-    } else if (line_count < 20) {
-        add_to_height += 4.5;
-        height += (int)(line_count / 1.5) * add_to_height;
-    } else if (line_count < 100) {
-        add_to_height += 2.5;
-        height += (int)(line_count / 1.5) * add_to_height;
-    } else {
-        add_to_height += 1.5;
-        height += (int)(line_count / 1.5) * add_to_height;
-    }
+    int height_in_pixels = _height / PANGO_SCALE;
+    int height = height_in_pixels + 24;
 
     if (line_count > 0) {
         PangoLayoutLine *last_line = pango_layout_get_line(layout, line_count - 1);
@@ -91,8 +90,6 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     gtk_widget_set_size_request(message_text, width, height);
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
-    gtk_label_set_line_wrap(GTK_LABEL(message_text), TRUE);
-	gtk_label_set_line_wrap_mode(GTK_LABEL(message_text), PANGO_WRAP_CHAR);
     vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
 
     gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);

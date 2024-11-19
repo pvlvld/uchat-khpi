@@ -6,7 +6,21 @@ gboolean set_scroll_to_bottom(gpointer data) {
     return FALSE;
 }
 
+static gboolean is_changing_chat = FALSE;
+
+static gboolean change_chat_with_delay(gpointer data) {
+    (void)data;
+    is_changing_chat = FALSE;
+    return G_SOURCE_REMOVE;
+}
+
 void change_chat(void) {
+    if (is_changing_chat) {
+        return;
+    }
+
+    is_changing_chat = TRUE;
+
     vendor.pages.main_page.chat.page = 0;
     vendor.pages.main_page.chat.shown_messages = 0;
     vendor.pages.main_page.chat.temp_message_counter = 0;
@@ -23,6 +37,8 @@ void change_chat(void) {
 
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.main_page), vendor.pages.main_page.chat.chat_box, TRUE, TRUE, 0);
     gtk_widget_show_all(vendor.pages.current_page_widget);
+
+    g_timeout_add(300, change_chat_with_delay, NULL);
 }
 
 GtkWidget *no_chat_init(void) {
