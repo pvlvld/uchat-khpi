@@ -1,6 +1,5 @@
-#include "../../../../../libraries/cJSON/cJSON.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "utils.h"
+#include <../../../libraries/cJSON/cJSON.h>
 #include <string.h>
 
 char *strdup(const char *src) {
@@ -9,6 +8,7 @@ char *strdup(const char *src) {
     strcpy(dst, src);
     return dst;
 }
+
 
 char *extract_recipient_login(cJSON *json) {
     if (!json) { return NULL; }
@@ -41,3 +41,4 @@ char *extract_chat_id(cJSON *json) {
     // Duplicate the chat_id string to return (remember to free it later)
     return strdup(chat_id_item->valuestring);
 }
+

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 bool is_valid_username(const char *username) {
+    if (username == NULL) return false;
     // Check if the username is at least 3 characters long
     if (strlen(username) < 3 || strlen(username) > 100) return false;
 

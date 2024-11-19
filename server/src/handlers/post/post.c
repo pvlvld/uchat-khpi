@@ -27,6 +27,9 @@ void post_rout(SSL *ssl, const char *request) {
     } else if (strcmp(path, "/login") == 0) {
         handlers.post._login(ssl, request);
         return;
+    } else if (strcmp(path, "/send_message") == 0) {
+        handlers.post._send_message(ssl, request);
+        return;
     }
 
     char *token = extract_bearer_token(request);

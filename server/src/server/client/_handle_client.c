@@ -2,6 +2,37 @@
 #include "../../../inc/server/client.h"
 #include "../../../inc/websocket.h"
 
+static char *extract_token_from_query(const char *request) {
+    const char *token_key = "token=";
+    char *token_start = strstr(request, token_key);
+    if (token_start) {
+        token_start += strlen(token_key);
+        char *token_end = strchr(token_start, '&');
+        if (!token_end) {
+            token_end = strchr(token_start, ' ');
+        }
+        if (token_end) {
+            size_t token_len = token_end - token_start;
+            char *token = malloc(token_len + 1);
+            if (token) {
+                strncpy(token, token_start, token_len);
+                token[token_len] = '\0';
+                return token;
+            }
+        } else {
+            // В случае если нет '&', но есть символ конца строки
+            size_t token_len = strlen(token_start);
+            char *token = malloc(token_len + 1);
+            if (token) {
+                strcpy(token, token_start);
+                return token;
+            }
+        }
+    }
+    return NULL;
+}
+
+
 void *_handle_client(void *client_socket) {
     int sock = (intptr_t)client_socket;
     SSL *ssl;
@@ -27,7 +58,7 @@ void *_handle_client(void *client_socket) {
         if (vendor.env.dev_mode) printf("Received request:\n%s\n", buffer);
 
         // Extract JWT token from Authorization header
-        char *jwt_token = extract_bearer_token(buffer);
+        char *jwt_token = extract_token_from_query(buffer);
 
         // If this is a WebSocket request
         if (strstr(buffer, "Upgrade: websocket") != NULL) {
@@ -47,12 +78,9 @@ void *_handle_client(void *client_socket) {
                         if (vendor.env.dev_mode) printf("jwt_verify.status: %d\n", jwt_verify.status);
                         if (jwt_verify.status == 1) {
                             cJSON *jwt_payload = jwt_verify.payload;
-                            cJSON *phone_number_item = cJSON_GetObjectItem(jwt_payload, "phone_number");
-                            if (cJSON_IsString(phone_number_item)) {
-                                char *phone_number = phone_number_item->valuestring;
-                                // TODO:
-                                //  user_id = vendor.database.users_table.find_by_phone(phone_number);
-                                free(phone_number);
+                            cJSON *user_id_item = cJSON_GetObjectItem(jwt_payload, "id");
+                            if (cJSON_IsNumber(user_id_item)) {
+                                user_id = (unsigned long)user_id_item->valueint;
                             }
                         } else {
                             cJSON_AddStringToObject(response_json, "message",
