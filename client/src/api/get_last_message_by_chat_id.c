@@ -40,5 +40,7 @@ char *get_last_message_by_chat_id(int chat_id, int *sender_id) {
     printf("[DEBUG] Последнее сообщение: %s\n", message_text);
     printf("[DEBUG] ID отправителя: %d\n", *sender_id);
 
-    return vendor.helpers.strdup(message_text);  // Возвращаем текст последнего сообщения
+    char *decrypt = vendor.crypto.decrypt_data_from_db(message_text);
+
+    return decrypt;  // Возвращаем текст последнего сообщения
 }

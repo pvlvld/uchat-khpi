@@ -69,21 +69,21 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
-    if (event->keyval == GDK_KEY_space) {
-		if (vendor.active_chat.chat_sidebar_widget != NULL) {
-        	g_print("id: %d\nname: %s\nlast_message: %s\nsender_name: %s\ntype: %d\n"
-					"path_to_logo: %s\nunreaded_messages: %d\ntimestamp: %s\n",
-                          vendor.active_chat.chat->id,
-                          vendor.active_chat.chat->name,
-                          vendor.active_chat.chat->last_message,
-                          vendor.active_chat.chat->sender_name,
-                          vendor.active_chat.chat->type,
-                          vendor.active_chat.chat->path_to_logo,
-                          vendor.active_chat.chat->unreaded_messages,
-                          format_timestamp(vendor.active_chat.chat->timestamp));
-		}
-        return TRUE;
-    }
+//    if (event->keyval == GDK_KEY_space) {
+//		if (vendor.active_chat.chat_sidebar_widget != NULL) {
+//        	g_print("id: %d\nname: %s\nlast_message: %s\nsender_name: %s\ntype: %d\n"
+//					"path_to_logo: %s\nunreaded_messages: %d\ntimestamp: %s\n",
+//                          vendor.active_chat.chat->id,
+//                          vendor.active_chat.chat->name,
+//                          vendor.active_chat.chat->last_message,
+//                          vendor.active_chat.chat->sender_name,
+//                          vendor.active_chat.chat->type,
+//                          vendor.active_chat.chat->path_to_logo,
+//                          vendor.active_chat.chat->unreaded_messages,
+//                          format_timestamp(vendor.active_chat.chat->timestamp));
+//		}
+//        return TRUE;
+//    }
 
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
 
@@ -93,8 +93,8 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
 		vendor.popup.add_message("New message");
-        int is_received = rand() % 2;
-        add_chat_message("New message", is_received);
+//        int is_received = rand() % 2;
+//        add_chat_message("New message", is_received);
 
         return TRUE;
     }

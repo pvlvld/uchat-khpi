@@ -33,7 +33,7 @@ typedef struct {
 } t_widget_size_data;
 
 t_chat init_chat(void);
-void add_chat_message(const char *message_txt, int is_received);
+void add_chat_message(t_messages_struct *message, int is_received);
 GtkWidget *chat_create_scrolled_window(void);
 GtkWidget *create_message_input(void);
 GtkWidget *create_message_box(const char *message_txt, ssize_t username_length);

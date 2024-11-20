@@ -1,13 +1,16 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
-static char *format_last_message(const char *sender_name, const char *message) {
-    const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
-
-    int size = snprintf(NULL, 0, format, sender_name, message);
-    if (size < 0) {
-        return NULL;
-    }
+static char *format_last_message(const char *sender_name, const char *message, int chat_type) {
+    if (chat_type == 0 || sender_name == NULL || strlen(sender_name) == 0) {
+        return g_strdup(message);
+    } else {
+        // Групповой чат с именем отправителя
+        const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
+        int size = snprintf(NULL, 0, format, sender_name, message);
+        if (size < 0) {
+            return NULL;
+        }
 
         char *buffer = (char *)malloc(size + 1);
         if (!buffer) {
@@ -18,6 +21,7 @@ static char *format_last_message(const char *sender_name, const char *message) {
         return buffer;
     }
 }
+
 
 static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
     (void) event;
@@ -54,6 +58,36 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
     return TRUE;
 }
 
+static char *replace_newlines_with_spaces(const char *input) {
+    size_t len = strlen(input);
+    size_t new_len = len;
+
+    for (size_t i = 0; i < len; i++) {
+        if (input[i] == '\n') {
+            new_len += 2;
+        }
+    }
+
+    char *result = (char *)malloc(new_len + 1);
+    if (result == NULL) {
+        return NULL;
+    }
+
+    size_t j = 0;
+    for (size_t i = 0; i < len; i++) {
+        if (input[i] == '\n') {
+            result[j++] = ' ';
+            result[j++] = ' ';
+            result[j++] = ' ';
+        } else {
+            result[j++] = input[i];
+        }
+    }
+
+    result[j] = '\0';
+    return result;
+}
+
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock, "sidebar__chatblock");
@@ -77,7 +111,7 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     gtk_label_set_ellipsize(GTK_LABEL(chat_name), PANGO_ELLIPSIZE_END);
 
     // Проверка значений на NULL и создание копий строк
-    char *last_message_copy = g_strdup(chat_info->last_message ? chat_info->last_message : "");
+    char *last_message_copy = g_strdup(chat_info->last_message[0].message_text ? chat_info->last_message[0].message_text : "");
     char *sender_name_copy = g_strdup(chat_info->sender_name ? chat_info->sender_name : "");
 
     // Убираем лишние пробелы
@@ -93,14 +127,15 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     }
 
     // Создаем метку с разметкой
-    GtkWidget *chat_message = gtk_label_new(formatted_last_message ? formatted_last_message : "");
+    GtkWidget *chat_message = gtk_label_new(replace_newlines_with_spaces(formatted_last_message ? formatted_last_message : ""));
     gtk_label_set_use_markup(GTK_LABEL(chat_message), TRUE);
     gtk_label_set_line_wrap(GTK_LABEL(chat_message), TRUE);
+    gtk_label_set_xalign(GTK_LABEL(chat_message), 0.0);
     gtk_label_set_lines(GTK_LABEL(chat_message), 2);
     gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
     vendor.helpers.set_classname_and_id(chat_message, "sidebar__chatblock_chat__message");
 
-    GtkWidget *chat_time = gtk_label_new(format_timestamp(chat_info->timestamp));
+    GtkWidget *chat_time = gtk_label_new(format_timestamp(chat_info->last_message[0].timestamp));
     vendor.helpers.set_classname_and_id(chat_time, "sidebar__chatblock_chat__time");
 
     GtkWidget *spacer = gtk_label_new("");

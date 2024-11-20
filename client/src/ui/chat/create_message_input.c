@@ -102,12 +102,12 @@ static void send_message(GtkTextView *text_view) {
     if (g_strcmp0(text, "") != 0) {
         char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
-            vendor.database.tables.messages_table.add_message(vendor.pages.main_page.chat.total_messages + (++vendor.pages.main_page.chat.temp_message_counter),
+            t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.pages.main_page.chat.total_messages + (++vendor.pages.main_page.chat.temp_message_counter),
 			1, vendor.current_user.user_id, encrypt);
-
+            add_chat_message(message_struct, 0);
             free(encrypt);
         }
-        add_chat_message(text, 0);
+
         gtk_text_buffer_delete(buffer, &start, &end);
     } else {
         g_print("Empty message, not sending.\n");

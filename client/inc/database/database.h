@@ -14,7 +14,7 @@
 typedef struct {
     unsigned int id;
     char *name;
-    char *last_message;
+    t_messages_struct *last_message;
     char *sender_name;
     t_chats_types type;
     char *path_to_logo;

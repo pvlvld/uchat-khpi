@@ -17,8 +17,8 @@ static void create_table(void) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static void add_message(int message_id, int chat_id, int sender_id, const char *message_text) {
-    // Рассчитываем длину строки запроса с учетом всех параметров
+static t_messages_struct *add_message(int message_id, int chat_id, int sender_id, const char *message_text) {
+    // Рассчитываем длину строки запроса
     size_t sql_size = snprintf(NULL, 0,
              "INSERT INTO messages (message_id, chat_id, sender_id, message_text) "
              "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text) + 1; // +1 для null-терминатора
@@ -27,7 +27,7 @@ static void add_message(int message_id, int chat_id, int sender_id, const char *
     char *sql = malloc(sql_size);
     if (sql == NULL) {
         fprintf(stderr, "Memory allocation failed\n");
-        return;
+        return NULL;
     }
 
     // Формируем SQL запрос
@@ -35,12 +35,36 @@ static void add_message(int message_id, int chat_id, int sender_id, const char *
              "INSERT INTO messages (message_id, chat_id, sender_id, message_text) "
              "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text);
 
-    // Выполняем запрос
     vendor.database.sql.execute_sql(sql);
 
-    // Освобождаем память после использования
-    free(sql);
+    // Создаем структуру для возврата
+    t_messages_struct *message = malloc(sizeof(t_messages_struct));
+    if (message == NULL) {
+        fprintf(stderr, "Memory allocation failed for message structure\n");
+        return NULL;
+    }
+
+    // Заполняем структуру
+    message->message_id = message_id;
+    message->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id); // Получаем данные о чате
+    message->sender_struct = vendor.database.tables.users_table.get_user_by_id(sender_id); // Получаем данные об отправителе
+    char *decrypt = vendor.crypto.decrypt_data_from_db(message_text);
+    if (decrypt) {
+        message->message_text = vendor.helpers.strdup(decrypt);
+        free(decrypt);
+    }
+
+    // Устанавливаем временную метку (например, текущее время)
+    time_t current_time = time(NULL);
+    localtime_r(&current_time, &message->timestamp);
+
+    // Поля, которые отсутствуют при добавлении
+    memset(&message->read_at, 0, sizeof(message->read_at));
+    memset(&message->edited_at, 0, sizeof(message->edited_at));
+
+    return message;
 }
+
 
 static void edit_message(int message_id, const char *new_message_text) {
     char sql[1024];
@@ -51,17 +75,15 @@ static void edit_message(int message_id, const char *new_message_text) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static t_messages_struct *get_messages_by_chat_id(int chat_id, const char *sort_by, const char *order,
-                                                  int number_of_elements, int page, int *total_messages) {
+static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_elements, int page, int *total_messages) {
     int offset = (page - 1) * number_of_elements;
 
     char sql[1024];
     snprintf(sql, sizeof(sql),
              "SELECT message_id, chat_id, sender_id, message_text, timestamp, read_at, edited_at "
              "FROM messages WHERE chat_id = %d "
-             "ORDER BY %s %s "
-             "LIMIT %d OFFSET %d;",
-             chat_id, sort_by ? sort_by : "timestamp", order ? order : "DESC", number_of_elements, offset);
+             "ORDER BY timestamp DESC "
+             "LIMIT %d OFFSET %d;", chat_id, number_of_elements, offset);
 
     char **results = NULL;
     int rows, cols;
@@ -106,13 +128,13 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, const char *sort_
         }
 //        msg->message_text = vendor.helpers.strdup(results[i * cols + 3]);  // message_text
 
-    	time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
-    	localtime_r(&timestamp, &msg->timestamp);
+        time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
+        localtime_r(&timestamp, &msg->timestamp);
 
         if (results[i * cols + 5] != NULL) {
-        time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 5]));
-        localtime_r(&read_at_timestamp, &msg->read_at);
-    	}
+            time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 5]));
+            localtime_r(&read_at_timestamp, &msg->read_at);
+        }
     }
 
     return messages;

@@ -5,7 +5,7 @@
 
 #include "header.h"
 
-char *format_timestamp(time_t timestamp);
+char *format_timestamp(struct tm timestamp);
 int compare_chats(const void *a, const void *b);
 
 GtkWidget *sidebar_init(void);

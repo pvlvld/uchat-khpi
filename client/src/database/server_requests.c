@@ -30,8 +30,3 @@ t_server_requests init_server_requests(void) {
     };
     return requests;
 }
-
-// Функция для получения сообщений из базы данных с пагинацией и сортировкой
-t_messages_struct *get_messages_from_db(int chat_id, int page, int page_size, const char *sort_by, const char *order, int *total_messages) {
-    return vendor.database.tables.messages_table.get_messages_by_chat_id(chat_id, sort_by, order, page_size, page, total_messages);
-}
