@@ -90,7 +90,6 @@ static int draw_chat(GtkWidget *message_wrapper, const char *message_txt, int is
     gtk_widget_set_size_request(message_text, width, height);
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
-    vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
 
     gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);
 

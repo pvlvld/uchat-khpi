@@ -7,6 +7,20 @@ static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, 
         int x = event->x_root;
         int y = event->y_root;
 
+        // Получаем буфер текста
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+
+        GtkTextIter start, end;
+        // Проверяем, есть ли выделение
+        if (gtk_text_buffer_get_selection_bounds(buffer, &start, &end)) {
+            // Извлекаем выделенный текст
+            gchar *selected_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+            g_print("Selected text: %s\n", selected_text);
+            g_free(selected_text);
+        } else {
+            g_print("No text selected\n");
+        }
+
         vendor.modal.message_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y);
         // TODO: add logic for editing, deleting, copying and (?)replying
 
@@ -15,9 +29,11 @@ static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     return FALSE;
 }
 
+
 GtkWidget *create_message_box(const char *message_txt, ssize_t username_length) {
     GtkWidget *message_text = gtk_text_view_new();
     g_signal_connect(message_text, "button-press-event", G_CALLBACK(on_button_press_event), NULL);
+    vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
 
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(message_text));
     gtk_text_buffer_set_text(buffer, message_txt, -1);
