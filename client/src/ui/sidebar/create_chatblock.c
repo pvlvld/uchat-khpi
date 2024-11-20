@@ -1,17 +1,13 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
-char *format_last_message(const char *sender_name, const char *message, int chat_type) {
-    if (chat_type == 0 || sender_name == NULL || strlen(sender_name) == 0) {
-        // Приватный чат или отсутствует имя отправителя — просто возвращаем сообщение
-        return g_strdup(message);
-    } else {
-        // Групповой чат с именем отправителя
-        const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
-        int size = snprintf(NULL, 0, format, sender_name, message);
-        if (size < 0) {
-            return NULL;
-        }
+static char *format_last_message(const char *sender_name, const char *message) {
+    const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
+
+    int size = snprintf(NULL, 0, format, sender_name, message);
+    if (size < 0) {
+        return NULL;
+    }
 
         char *buffer = (char *)malloc(size + 1);
         if (!buffer) {
@@ -34,6 +30,7 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
             gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
         }
         vendor.active_chat.chat_sidebar_widget = widget;
+        vendor.pages.main_page.chat.change_chat();
         gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
     } else if (event->button == GDK_BUTTON_SECONDARY) {
         int x = event->x_root;
@@ -133,4 +130,3 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
 
     return event_box;
 }
-

@@ -9,7 +9,10 @@ t_crypto init_crypto(void) {
         .decrypt = decrypt,
         .encrypt_text = encrypt_text,
         .decrypt_text = decrypt_text,
+        .generate_random_key = generate_random_key,
         .verify_key_pair = verify_key_pair,
+        .encrypt_data_for_db = encrypt_data_for_db,
+        .decrypt_data_from_db = decrypt_data_from_db,
     };
 
     return crypto;

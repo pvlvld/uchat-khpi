@@ -3,11 +3,14 @@
 #include <gdk/gdk.h>
 
 static void activate(GtkApplication *app, gpointer user_data) {
-    GtkWidget *window = init_window(app);
+    (void) user_data;
+    // Создание окна при первом запуске
+    if (vendor.window == NULL) {
+        vendor.window = init_window(app);
 
-    vendor.window_content = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        vendor.window_content = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    switch (vendor.pages.current_page) {
+        switch (vendor.pages.current_page) {
         case MAIN_PAGE:
             vendor.pages.current_page_widget = create_main_page();
             break;
@@ -19,24 +22,23 @@ static void activate(GtkApplication *app, gpointer user_data) {
             break;
         default:
             break;
+        }
+
+        gtk_container_add(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
+        gtk_container_add(GTK_CONTAINER(vendor.window), vendor.window_content);
+
+        gtk_widget_show_all(vendor.window);
+
+        init_screen();
+    } else {
+        gtk_window_present(GTK_WINDOW(vendor.window));
     }
-
-    gtk_container_add(GTK_CONTAINER(vendor.window_content), vendor.pages.current_page_widget);
-    gtk_container_add(GTK_CONTAINER(window), vendor.window_content);
-
-    gtk_widget_show_all(window);
-
-    init_screen();
-
-    if (user_data) return; // Plug
 }
 
 int main(int argc, char **argv) {
     if (init_server(argc, argv) != 1) return -1;
     srand(time(NULL));
     init_vendor(&vendor);
-    vendor.database.create_database();
-    notify_init("ShadowTalk");
     GtkApplication *app;
     int status;
     app = gtk_application_new("org.example.GtkApplication", 0);

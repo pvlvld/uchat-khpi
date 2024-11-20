@@ -6,12 +6,13 @@ static gboolean on_focus_in_event(GtkWidget *widget, GdkEventFocus *event) {
     (void)widget;
     (void)event;
     vendor.modal.chat_info.destroy();
+    vendor.modal.message_info.destroy();
     vendor.modal.profile_settings.destroy();
     if (vendor.hover_chat.chat_sidebar_widget != NULL) {
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.hover_chat.chat_sidebar_widget), "hover");
         vendor.hover_chat.chat_sidebar_widget = NULL;
     }
-    vendor.popup.show();
+    vendor.popup.update();
     return FALSE;
 }
 
@@ -19,7 +20,7 @@ static gboolean on_focus_out_event(GtkWidget *widget, GdkEventFocus *event) {
     (void)widget;
     (void)event;
 
-    vendor.popup.hide();
+//    vendor.popup.hide();
     return FALSE;
 }
 
@@ -51,7 +52,7 @@ gboolean on_vendor_window_configure(GtkWidget *widget, GdkEvent *event, gpointer
         is_shown = 1;
         return FALSE;
     }
-    vendor.popup.show();
+//    vendor.popup.show();
     return FALSE;
 }
 

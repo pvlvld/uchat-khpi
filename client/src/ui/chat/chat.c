@@ -1,22 +1,58 @@
 #include "../../../inc/header.h"
 
-void on_size_allocate(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data) {
-    (void)widget;
-    (void)user_data;
-    gtk_widget_set_margin_bottom(widget, allocation->height - 18);
+gboolean set_scroll_to_bottom(gpointer data) {
+    GtkAdjustment *vadjustment = GTK_ADJUSTMENT(data);
+    gtk_adjustment_set_value(vadjustment, gtk_adjustment_get_upper(vadjustment));
+    return FALSE;
 }
 
-void on_size_allocate2(GtkWidget *widget, GdkRectangle *allocation, gpointer user_data) {
-    (void)widget;
-    (void)user_data;
-    (void)allocation;
-    static int is_called = 0;
+static gboolean is_changing_chat = FALSE;
 
-    if (allocation->height > 100 && is_called == 0) {
-        GtkAdjustment *v_adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(widget));
-        gtk_adjustment_set_value(v_adjustment, gtk_adjustment_get_upper(v_adjustment) - gtk_adjustment_get_page_size(v_adjustment));
-        is_called++;
+static gboolean change_chat_with_delay(gpointer data) {
+    (void)data;
+    is_changing_chat = FALSE;
+    return G_SOURCE_REMOVE;
+}
+
+void change_chat(void) {
+    if (is_changing_chat) {
+        return;
     }
+
+    is_changing_chat = TRUE;
+
+    vendor.pages.main_page.chat.page = 0;
+    vendor.pages.main_page.chat.shown_messages = 0;
+    vendor.pages.main_page.chat.temp_message_counter = 0;
+
+    if (vendor.pages.main_page.chat.chat_box != NULL) {
+        gtk_widget_destroy(vendor.pages.main_page.chat.chat_box);
+    }
+
+    if (vendor.active_chat.chat_sidebar_widget) {
+        vendor.pages.main_page.chat.chat_box = vendor.pages.main_page.chat.init();
+    } else {
+        vendor.pages.main_page.chat.chat_box = vendor.pages.main_page.chat.no_chat_init();
+    }
+
+    gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.main_page), vendor.pages.main_page.chat.chat_box, TRUE, TRUE, 0);
+    gtk_widget_show_all(vendor.pages.current_page_widget);
+
+    g_timeout_add(300, change_chat_with_delay, NULL);
+}
+
+GtkWidget *no_chat_init(void) {
+    GtkWidget *chat_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    vendor.helpers.set_classname_and_id(chat_box, "_right_block");
+    GtkWidget *label = gtk_label_new("Select a chat to start messaging");
+
+    gtk_widget_set_halign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_valign(label, GTK_ALIGN_FILL);
+    gtk_widget_set_hexpand(label, TRUE);
+    gtk_widget_set_vexpand(label, TRUE);
+    gtk_box_pack_start(GTK_BOX(chat_box), label, TRUE, TRUE, 0);
+
+    return chat_box;
 }
 
 GtkWidget *chat_init(void) {
@@ -32,63 +68,43 @@ GtkWidget *chat_init(void) {
     vendor.helpers.set_classname_and_id(chat_header, "chat__header");
     gtk_widget_set_size_request(chat_header, -1, 65);
     gtk_box_pack_start(GTK_BOX(chat_box), chat_header, FALSE, FALSE, 0);
+    gtk_widget_set_halign(chat_header, GTK_ALIGN_FILL);
 
-//    GtkWidget *chat_chats_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-//    vendor.helpers.set_classname_and_id(chat_chats_box, "chat__chats-box");
-//    gtk_widget_set_size_request(chat_chats_box, -1, -1);
-//    gtk_box_pack_start(GTK_BOX(chat_box), chat_chats_box, TRUE, TRUE, 0);
-//    gtk_widget_set_valign(chat_chats_box, GTK_ALIGN_END);
-////    GtkWidget *message_block = gtk_fixed_new();
-//
-//    for (unsigned int i = 0; i < 2; i++) {
-//        GtkWidget *message = gtk_fixed_new();
-//        vendor.helpers.set_classname_and_id(message, "chat__message");
-//        GtkWidget *message_text = gtk_label_new("Test1 Test2 Test3 Test4 Test5 Test6 Test7 Test8 Test9 Test10 Test11 Test12 Test13 Test14 Test15");
-//        gtk_widget_set_size_request(message_text, 500, -1);
-//        gtk_label_set_line_wrap(GTK_LABEL(message_text), TRUE);
-//        vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
-//        gtk_fixed_put(GTK_FIXED(message), message_text, 0, 0);
-//        gtk_box_pack_start(GTK_BOX(chat_chats_box), message, FALSE, FALSE, 4);
-//        g_signal_connect(message_text, "size-allocate", G_CALLBACK(on_size_allocate), NULL);
-//    }
+    GtkWidget *header_title = gtk_label_new(vendor.active_chat.chat->name);
+    vendor.helpers.set_classname_and_id(header_title, "chat__header__title");
+    gtk_label_set_line_wrap(GTK_LABEL(header_title), TRUE);
+    gtk_widget_set_halign(header_title, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(chat_header), header_title, TRUE, TRUE, 0);
 
-    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    vendor.helpers.set_classname_and_id(scrolled_window, "chat__scrolled-window");
+    char temp[48];
+    snprintf(temp, sizeof(temp), "id: %d", vendor.active_chat.chat->id);
+
+    GtkWidget *header_info = gtk_label_new(temp);
+    vendor.helpers.set_classname_and_id(header_info, "chat__header__info");
+    gtk_label_set_line_wrap(GTK_LABEL(header_info), TRUE);
+    gtk_widget_set_halign(header_info, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(chat_header), header_info, TRUE, TRUE, 0);
+
+    GtkWidget *scrolled_window = chat_create_scrolled_window();
     gtk_box_pack_start(GTK_BOX(chat_box), scrolled_window, TRUE, TRUE, 0);
 
-    GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_vexpand(stretchable_box, TRUE);
-    gtk_widget_set_valign(stretchable_box, GTK_ALIGN_END);
-    gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
-
-    for (unsigned int i = 0; i < 20; i++) {
-        GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_widget_set_hexpand(stretchable_box, TRUE);
-        gtk_widget_set_halign(message_wrapper, rand() % 2 == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
-        vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
-        gtk_box_pack_start(GTK_BOX(stretchable_box), message_wrapper, FALSE, FALSE, 0);
-
-        GtkWidget *message = gtk_overlay_new();
-        gtk_widget_set_hexpand(message, FALSE);
-        gtk_widget_set_size_request(message, 500, 36);
-        vendor.helpers.set_classname_and_id(message, "chat__message");
-        gtk_box_pack_start(GTK_BOX(message_wrapper), message, FALSE, FALSE, 0);
-
-
-        GtkWidget *message_text = gtk_label_new("Test1 Test2 Test3 Test4 Test5 Test6 Test7 Test8 Test9 Test10 Test11 Test12 Test13 Test14 Test15 Test1 Test2 Test3 Test4 Test5 Test6 Test7 Test8 Test9 Test10 Test11 Test12 Test13 Test14 Test15 ");
-        gtk_widget_set_size_request(message_text, 500, -1);
-        gtk_label_set_line_wrap(GTK_LABEL(message_text), TRUE);
-        vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
-        g_signal_connect(message_text, "size-allocate", G_CALLBACK(on_size_allocate), NULL);
-        gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);
-    }
-    g_signal_connect(scrolled_window, "size-allocate", G_CALLBACK(on_size_allocate2), NULL);
-
-    GtkWidget *chat_box_bottom = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *chat_box_bottom = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chat_box_bottom, "chat__bottom");
     gtk_widget_set_size_request(chat_box_bottom, -1, 72);
     gtk_box_pack_start(GTK_BOX(chat_box), chat_box_bottom, FALSE, FALSE, 0);
+
+    GtkWidget *message_input = create_message_input();
+    gtk_box_pack_start(GTK_BOX(chat_box_bottom), message_input, TRUE, TRUE, 0);
+
+    GtkWidget *message_send = gtk_button_new();
+    GtkWidget *message_send_image = gtk_image_new_from_file("resources/images/static/plane.svg");
+    vendor.helpers.set_classname_and_id(message_send, "chat__button");
+    gtk_container_add(GTK_CONTAINER(message_send), message_send_image);
+    vendor.helpers.add_hover(message_send);
+    gtk_box_pack_start(GTK_BOX(chat_box_bottom), message_send, FALSE, TRUE, 0);
+    gtk_widget_set_size_request(message_send, 34, -1);
+
+    g_idle_add(set_scroll_to_bottom, vendor.pages.main_page.chat.vadjustment);
 
     return chat_box;
 }
@@ -96,6 +112,11 @@ GtkWidget *chat_init(void) {
 t_chat init_chat(void) {
     t_chat chat = {
         .init = chat_init,
+        .no_chat_init = no_chat_init,
+        .change_chat = change_chat,
+        .page = 0,
+        .shown_messages = 0,
+        .temp_message_counter = 0,
     };
     return chat;
 }

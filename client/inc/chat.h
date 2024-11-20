@@ -3,10 +3,39 @@
 
 #include "header.h"
 
+#define PER_PAGE 20
+
 typedef struct {
     GtkWidget *(*init)(void);
+    GtkWidget *(*no_chat_init)(void);
+    void (*change_chat)(void);
+    GtkWidget *chat_box;
+    GtkWidget *scrolled_window;
+    GtkWidget *stretchable_box_old_messages;
+    GtkWidget *stretchable_box_new_messages;
+    GtkAdjustment *vadjustment;
+    int total_messages;
+    int temp_message_counter;
+    int page;
+    int shown_messages;
+    int chat_id;
 } t_chat;
 
-t_chat init_chat(void);
+typedef struct {
+    GtkAdjustment *adjustment;
+    double height;
+} t_scroll_data;
 
+typedef struct {
+    GtkWidget *widget;
+    int *width;
+    int *height;
+} t_widget_size_data;
+
+t_chat init_chat(void);
+void add_chat_message(const char *message_txt, int is_received);
+GtkWidget *chat_create_scrolled_window(void);
+GtkWidget *create_message_input(void);
+GtkWidget *create_message_box(const char *message_txt, ssize_t username_length);
+gboolean set_scroll_to_bottom(gpointer data);
 #endif //CHAT_H

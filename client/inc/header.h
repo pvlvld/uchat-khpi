@@ -14,7 +14,6 @@
 #include <glib.h>
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <libnotify/notify.h>
 #include "../../libraries/sqlite/inc/sqlite3.h"
 #include "../../libraries/cJSON/inc/cJSON.h"
 
@@ -35,6 +34,7 @@
 typedef struct {
     t_chat_info *chat;
     GtkWidget* chat_sidebar_widget;
+    char *recipient_public_key;
 } t_active_chat;
 
 typedef struct {

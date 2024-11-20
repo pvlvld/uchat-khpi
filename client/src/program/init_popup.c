@@ -10,12 +10,15 @@ void popup_init(void) {
     gtk_window_set_resizable(GTK_WINDOW(popup), FALSE);
     gtk_widget_set_visual(popup, gdk_screen_get_rgba_visual(gtk_widget_get_screen(popup)));
 
-    gint window_width, window_height;
-    gint window_x, window_y;
-    gtk_window_get_size(GTK_WINDOW(vendor.window), &window_width, &window_height);
-    gtk_window_get_position(GTK_WINDOW(vendor.window), &window_x, &window_y);
+    GdkDisplay *display = gdk_display_get_default();
+    GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+    GdkRectangle monitor_geometry;
+    gdk_monitor_get_geometry(monitor, &monitor_geometry);
 
-    gtk_window_move(GTK_WINDOW(popup), window_x + window_width, window_y);
+    gint popup_x = monitor_geometry.width - 250;
+    gint popup_y = 100;
+
+    gtk_window_move(GTK_WINDOW(popup), popup_x, popup_y);
 
     GtkWidget *popup_block = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_valign(popup_block, GTK_ALIGN_END);
@@ -26,12 +29,15 @@ void popup_init(void) {
 }
 
 void popup_update(void) {
-    gint window_width, window_height;
-    gint window_x, window_y;
-    gtk_window_get_size(GTK_WINDOW(vendor.window), &window_width, &window_height);
-    gtk_window_get_position(GTK_WINDOW(vendor.window), &window_x, &window_y);
-    gtk_window_move(GTK_WINDOW(vendor.popup.window), window_x + window_width - 240, window_y + 102);
-    gtk_widget_set_size_request(vendor.popup.window, 240, window_height - 136);
+    GdkDisplay *display = gdk_display_get_default();
+    GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+    GdkRectangle monitor_geometry;
+    gdk_monitor_get_geometry(monitor, &monitor_geometry);
+
+    gint popup_x = monitor_geometry.width - 250;
+    gint popup_y = 100;
+    gtk_window_move(GTK_WINDOW(vendor.popup.window), popup_x, popup_y);
+    gtk_widget_set_size_request(vendor.popup.window, 240, monitor_geometry.height - 136);
 }
 
 void popup_hide(void) {
@@ -45,6 +51,13 @@ void popup_show(void) {
 
 static gboolean remove_label(GtkWidget *label) {
     gtk_widget_destroy(label);
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(vendor.popup.block));
+    if (g_list_length(children) == 0) {
+        popup_hide();
+    }
+    g_list_free(children);
+
     return FALSE;
 }
 
@@ -63,26 +76,12 @@ void popup_add_message(const char *message) {
     vendor.helpers.set_classname_and_id(label, "_popup__message");
 
     gtk_box_pack_start(GTK_BOX(vendor.popup.block), label, FALSE, FALSE, 0);
-    gtk_widget_show(label);
+    gtk_widget_show_all(vendor.popup.window);
 
     g_timeout_add(100, (GSourceFunc)add_show, label);
     g_timeout_add(3000, (GSourceFunc)remove_show, label);
     g_timeout_add(3500, (GSourceFunc)remove_label, label);
 }
-/* void popup_add_message(const char *message) {
-    GtkWidget *text_block = gtk_overlay_new();
-    gtk_box_pack_start(GTK_BOX(vendor.popup.block), text_block, TRUE, FALSE, 0);
-
-    GtkWidget *label = gtk_label_new(message);
-    vendor.helpers.set_classname_and_id(label, "_popup__message");
-
-    gtk_box_pack_start(GTK_BOX(vendor.popup.block), label, FALSE, FALSE, 0);
-    gtk_widget_show(label);
-
-    g_timeout_add(100, (GSourceFunc)add_show, label);
-    g_timeout_add(3000, (GSourceFunc)remove_show, label);
-    g_timeout_add(3500, (GSourceFunc)remove_label, label);
-} */
 
 t_popup init_popup(void) {
     t_popup popup = {

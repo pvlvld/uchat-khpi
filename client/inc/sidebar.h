@@ -15,6 +15,7 @@ GtkWidget *sidebar_create_bottom(void);
 
 typedef struct {
     GtkWidget *(*init)(void);
+    GtkWidget *widget;
     GtkWidget *(*create_chatblock)(t_chat_info *chat_info);
     GtkWidget *(*create_avatar)(t_chat_info *chat_info);
     GtkWidget *(*create_bottom)(void);

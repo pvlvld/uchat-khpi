@@ -13,6 +13,7 @@ typedef enum {
 typedef struct {
     t_sidebar sidebar;
     t_chat chat;
+    GtkWidget *main_page;
 } t_main_page;
 
 typedef struct {
