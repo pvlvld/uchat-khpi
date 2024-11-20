@@ -83,42 +83,13 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_w)) {
-        vendor.database.tables.chats_table.add_chat(3, "personal");
-        t_chats_struct *chat = vendor.database.tables.chats_table.get_chat_by_id(3);
-        if (chat != NULL) {
-            printf("Chat ID: %d\n", chat->chat_id);
-            printf("Chat Type: %d\n", chat->chat_type);
-            printf("Created At: %s", asctime(&chat->created_at));
-
-            free(chat);
-        } else {
-            printf("Chat with ID %d not found.\n", 123);
-        }
-    }
-
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
-        int total_messages = 0;
-        int page = 1;
-        int message_count = 10;
 
-        t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, "timestamp", "DESC", message_count, page, &total_messages);
-        if (messages != NULL) {
-            printf("Total messages: %d\n", total_messages);
-            for (int i = 0; i < message_count; i++) {
-                if ((i + 1) * page > total_messages) break;
-                printf("Message ID: %d\n", messages[i].message_id);
-                printf("Sender: %d\n", messages[i].sender_struct->user_id);
-                printf("Text: %s\n", messages[i].message_text);
-            }
-
-            vendor.database.tables.messages_table.free_struct(messages);
-        }
-
-        ssize_t index = rand() % 12;
+        ssize_t index = rand() % 3 + 1;
         g_print("Element with id %zd updated!\n", index);
+
         swap_sidebar(widget, index);
-        vendor.helpers.show_notification("New notification", "New message");
+
         return TRUE;
     }
 
@@ -133,43 +104,32 @@ static void on_widget_destroy(GtkWidget *widget, gpointer user_data) {
 }
 
 GtkWidget *sidebar_init(void) {
-    (void)key_press_handler;
-    (void)on_widget_destroy;
-
-    // Создаем основной контейнер для сайдбара
     GtkWidget *sidebar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     vendor.helpers.set_classname_and_id(sidebar, "sidebar");
     gtk_widget_set_size_request(sidebar, 260, -1);
     gtk_widget_set_hexpand(sidebar, FALSE);
 
-    // Инициализируем поиск
     GtkWidget *search = init_search();
     gtk_box_pack_start(GTK_BOX(sidebar), search, FALSE, FALSE, 0);
 
-    // Создаем окно с прокруткой для чатов
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     vendor.helpers.set_classname_and_id(scrolled_window, "sidebar__scrolled-window");
 
-    // Создаем контейнер для чатов (stretchable_box)
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
+    gtk_widget_set_valign(stretchable_box, GTK_ALIGN_START);
+
     gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 
-    // Сохраняем stretchable_box в sidebar для использования в swap_sidebar
-    g_object_set_data(G_OBJECT(sidebar), "stretchable_box", stretchable_box);
-
-    // Добавляем окно с прокруткой в сайдбар
     gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
 
-    // Получаем данные чатов из БД
     t_chat_info **chats_info = parse_chats_info();
     if (!chats_info) {
         printf("[ERROR] Не удалось получить информацию о чатах.\n");
         return sidebar;
     }
 
-    // Создаем блоки чатов и добавляем их в stretchable_box
     size_t i = 0;
     while (chats_info[i] != NULL) {
         printf("[DEBUG] Создание chatblock для чата с ID: %d\n", chats_info[i]->id);
@@ -180,15 +140,22 @@ GtkWidget *sidebar_init(void) {
         }
 
         g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
-        gtk_box_pack_end(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
         gtk_widget_show(chatblock);
         i++;
     }
 
-    // Освобождаем память, если чаты были получены
-    free_chats_info(chats_info);
+    g_object_set_data(G_OBJECT(sidebar), "stretchable_box", stretchable_box);
 
-    // Возвращаем сайдбар
+    gtk_widget_set_vexpand(scrolled_window, TRUE);
+
+    GtkWidget *bottom_block = vendor.pages.main_page.sidebar.create_bottom();
+
+    gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
+
+    g_signal_connect(sidebar, "key-press-event", G_CALLBACK(key_press_handler), NULL);
+    g_signal_connect(sidebar, "destroy", G_CALLBACK(on_widget_destroy), NULL);
+
     return sidebar;
 }
 

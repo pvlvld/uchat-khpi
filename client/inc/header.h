@@ -95,6 +95,5 @@ t_chat_info **parse_chats_info(void);
 void free_chats_info(t_chat_info **chats_info);
 void init_vendor(t_vendor *vendor);
 int init_server(int argc, char **argv);
-char *strdup(const char *str);
 
 #endif //HEADER_H

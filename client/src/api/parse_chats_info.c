@@ -107,9 +107,6 @@ char *format_timestamp(time_t timestamp) {
     time_t now = time(NULL);
     double difference = difftime(now, timestamp); // Разница во времени
 
-    // Преобразуем timestamp из миллисекунд в секунды
-    timestamp /= 1000;
-
     char *buffer = malloc(50); // Выделяем память для строки
     if (buffer == NULL) {
         return NULL; // Возвращаем NULL в случае ошибки выделения памяти
@@ -136,6 +133,7 @@ char *format_timestamp(time_t timestamp) {
 
     return buffer; // Возвращаем указатель на строку
 }
+
 
 int compare_chats(const void *a, const void *b) {
     t_chat_info *chatA = *(t_chat_info **)a;
