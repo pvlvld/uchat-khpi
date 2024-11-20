@@ -13,19 +13,19 @@ char *get_group_name_by_chat_id(int chat_id) {
 
     if (rc != 0) {
         printf("[ERROR] Ошибка при выполнении SQL-запроса: %s\n", sqlite3_errmsg(vendor.database.db));
-        return strdup("Неизвестная группа");
+        return vendor.helpers.strdup("Неизвестная группа");
     }
 
     printf("Rows: %d, Cols: %d\n", rows, cols);
 
     if (rows == 0) {
         printf("[INFO] Группа не найдена. Возвращаем значение по умолчанию.\n");
-        return strdup("Неизвестная группа");
+        return vendor.helpers.strdup("Неизвестная группа");
     }
 
     // В вашем случае, предполагаем что на первом месте находится имя столбца.
     // Получаем результат из первой строки, первой колонки
     printf("Group Name: %s\n", results[cols]);  // Первая строка, первое значение в ней.
 
-    return strdup(results[cols]);  // Возвращаем правильное значение
+    return vendor.helpers.strdup(results[cols]);  // Возвращаем правильное значение
 }

@@ -87,6 +87,7 @@ typedef struct {
 
 extern t_vendor vendor;
 
+char *get_last_message_by_chat_id(int chat_id, int *sender_id);
 int get_other_user_id(int chat_id);
 char *get_group_name_by_chat_id(int chat_id);
 char *get_user_name(int user_id);
@@ -95,4 +96,5 @@ void free_chats_info(t_chat_info **chats_info);
 void init_vendor(t_vendor *vendor);
 int init_server(int argc, char **argv);
 char *strdup(const char *str);
+
 #endif //HEADER_H
