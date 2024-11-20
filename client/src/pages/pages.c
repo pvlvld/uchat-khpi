@@ -38,6 +38,10 @@ t_pages init_pages(void) {
         .current_page = MAIN_PAGE,
         .current_page_widget = NULL,
         .change_page = change_page,
+        .main_page = {
+            .sidebar = init_sidebar(),
+            .chat = init_chat(),
+        },
         .login_page = init_login(),
         .register_page = init_register(),
     };

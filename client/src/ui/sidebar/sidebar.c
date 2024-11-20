@@ -32,7 +32,7 @@ static void swap_sidebar(GtkWidget *widget, ssize_t index) {
             GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
-            GtkWidget *new_child = vendor.sidebar.create_chatblock(chat_info);
+            GtkWidget *new_child = vendor.pages.main_page.sidebar.create_chatblock(chat_info);
 
             if (vendor.active_chat.chat_sidebar_widget == target_child) {
                 vendor.active_chat.chat_sidebar_widget = new_child;
@@ -84,10 +84,12 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
     }
 
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
-        ssize_t index = rand() % 12;
+
+        ssize_t index = rand() % 3 + 1;
         g_print("Element with id %zd updated!\n", index);
+
         swap_sidebar(widget, index);
-        vendor.helpers.show_notification("New notification", "New message");
+
         return TRUE;
     }
 
@@ -116,30 +118,38 @@ GtkWidget *sidebar_init(void) {
 
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
+    gtk_widget_set_valign(stretchable_box, GTK_ALIGN_START);
 
     gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 
     gtk_box_pack_start(GTK_BOX(sidebar), scrolled_window, TRUE, TRUE, 0);
 
     t_chat_info **chats_info = parse_chats_info();
-    size_t size = 0;
-    while (chats_info[size] != NULL) {
-        size++;
+    if (!chats_info) {
+        printf("[ERROR] Не удалось получить информацию о чатах.\n");
+        return sidebar;
     }
-    qsort(chats_info, size, sizeof(t_chat_info *), compare_chats);
 
-    for (size_t i = 0; i < size; i++) {
-        GtkWidget *chatblock = vendor.sidebar.create_chatblock(chats_info[i]);
+    size_t i = 0;
+    while (chats_info[i] != NULL) {
+        printf("[DEBUG] Создание chatblock для чата с ID: %d\n", chats_info[i]->id);
+        GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
+        if (!chatblock) {
+            printf("[ERROR] Не удалось создать блок для чата с ID: %d\n", chats_info[i]->id);
+            continue;
+        }
+
         g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
-
-        gtk_box_pack_end(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
+        gtk_widget_show(chatblock);
+        i++;
     }
 
     g_object_set_data(G_OBJECT(sidebar), "stretchable_box", stretchable_box);
 
     gtk_widget_set_vexpand(scrolled_window, TRUE);
 
-    GtkWidget *bottom_block = vendor.sidebar.create_bottom();
+    GtkWidget *bottom_block = vendor.pages.main_page.sidebar.create_bottom();
 
     gtk_box_pack_end(GTK_BOX(sidebar), bottom_block, FALSE, FALSE, 0);
 

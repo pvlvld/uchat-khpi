@@ -24,10 +24,8 @@ static void create_error(GtkWidget *widget, const char *message) {
     gtk_widget_show_all(error_wrapper);
 }
 
-static gboolean validate_input(const gchar *username, const gchar *password, const gchar *password_confirm) {
-    gboolean is_valid = TRUE;
-
-    GList *usrname_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.username_wrapper));
+static void remove_errors(void) {
+	GList *usrname_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.register_page.username_wrapper));
     if (g_list_length(usrname_children) != 2) {
         GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(usrname_children, 2));
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
@@ -47,6 +45,12 @@ static gboolean validate_input(const gchar *username, const gchar *password, con
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.register_page.password_confirm_wrapper), "_form_error");
         gtk_widget_destroy(target_child);
     }
+}
+
+static gboolean validate_input(const gchar *username, const gchar *password, const gchar *password_confirm) {
+    gboolean is_valid = TRUE;
+
+    remove_errors();
 
     if (g_strcmp0(username, "") == 0 || g_utf8_strlen(username, -1) < 3) {
         create_error(vendor.pages.register_page.username_wrapper, "Username must be at least 3 characters long");
@@ -86,6 +90,17 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
 
     g_usleep(300000);
 
+//    t_active_users_struct active_users_struct = {
+//        .user_id = 1,
+//        .username = vendor.current_user.username,
+//        .user_login = vendor.current_user.username,
+//        .about = NULL,
+//        .public_key = vendor.crypto.public_key_str,
+//        .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
+//    };
+//    vendor.database.tables.active_users_table.add_user(&active_users_struct);
+//    printf("User id: %d\n", active_users_struct.user_id);
+
     g_task_return_boolean(task, TRUE);
 }
 
@@ -97,7 +112,17 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     gboolean success = g_task_propagate_boolean(task, NULL);
 
     if (success) {
+        t_active_users_struct active_users_struct = {
+            .user_id = 1,
+            .username = vendor.current_user.username,
+            .user_login = vendor.current_user.username,
+            .about = NULL,
+            .public_key = vendor.crypto.public_key_str,
+            .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
+        };
+        vendor.database.tables.active_users_table.add_user(&active_users_struct);
         vendor.pages.change_page(MAIN_PAGE);
+
     } else {
         g_print("Request failed.\n");
     }
@@ -119,7 +144,11 @@ void register_on_register_submit(GtkButton *button, gpointer user_data) {
     }
 
     g_print("login: %s\nPassword: %s\n", username, password);
+    vendor.current_user.username = vendor.helpers.strdup(username);
+    vendor.current_user.password = vendor.helpers.strdup(password);
+
     vendor.pages.change_page(LOADING_PAGE);
+    vendor.crypto.keygen();
 
     GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
     g_task_run_in_thread(task, perform_request_async);
@@ -141,6 +170,7 @@ gboolean register_on_from_entry_focus_in(GtkWidget *entry, GdkEventFocus *event,
     (void)event;
     GtkWidget *placeholder = (GtkWidget *)user_data;
     gtk_widget_hide(placeholder);
+    remove_errors();
     return FALSE;
 }
 

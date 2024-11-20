@@ -32,15 +32,17 @@ static void activate(GtkApplication *app, gpointer user_data) {
 }
 
 int main(int argc, char **argv) {
+    if (init_server(argc, argv) != 1) return -1;
     srand(time(NULL));
     init_vendor(&vendor);
+    vendor.database.create_database();
     notify_init("ShadowTalk");
     GtkApplication *app;
     int status;
     app = gtk_application_new("org.example.GtkApplication", 0);
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
-    status = g_application_run(G_APPLICATION(app), argc, argv);
+    status = g_application_run(G_APPLICATION(app), 0, NULL);
     g_object_unref(app);
 
     return status;

@@ -24,9 +24,7 @@ static void create_error(GtkWidget *widget, const char *message) {
     gtk_widget_show_all(error_wrapper);
 }
 
-static gboolean validate_input(const gchar *username, const gchar *password) {
-    gboolean is_valid = TRUE;
-
+static void remove_errors(void) {
     GList *password_children = gtk_container_get_children(GTK_CONTAINER(vendor.pages.login_page.password_wrapper));
     if (g_list_length(password_children) != 2) {
         GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(password_children, 2));
@@ -34,6 +32,12 @@ static gboolean validate_input(const gchar *username, const gchar *password) {
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.pages.login_page.username_wrapper), "_form_error");
         gtk_widget_destroy(target_child);
     }
+}
+
+static gboolean validate_input(const gchar *username, const gchar *password) {
+    gboolean is_valid = TRUE;
+
+    remove_errors();
 
     if (g_strcmp0(username, "") == 0 || g_utf8_strlen(username, -1) < 3
             || !g_regex_match_simple("^[a-zA-Z0-9_]+$", username, 0, 0)
@@ -67,10 +71,36 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
     GTask *task = G_TASK(res);
     gboolean success = g_task_propagate_boolean(task, NULL);
 
-    if (success) {
+    t_active_users_struct *active_users_struct = vendor.database.tables.active_users_table.get_user_by_user_login(vendor.current_user.username);
+    vendor.crypto.public_key_str = active_users_struct->public_key;
+    vendor.crypto.private_key_str = vendor.crypto.decrypt_text(active_users_struct->private_key, vendor.current_user.password);
+
+    if (!active_users_struct) {
+        vendor.popup.add_message("Unexpected error");
+        vendor.pages.change_page(LOGIN_PAGE);
+        return;
+    }
+
+    if (success && vendor.crypto.verify_key_pair()) {
+        vendor.current_user.user_id = active_users_struct->user_id;
+        vendor.current_user.username = active_users_struct->username;
+        vendor.current_user.user_login = active_users_struct->user_login;
+        vendor.current_user.about = active_users_struct->about;
+
+        char *encrypt = vendor.crypto.encrypt(active_users_struct->public_key, "Test message");
+        if (encrypt) {
+            char *decrypt = vendor.crypto.decrypt(encrypt);
+            if (decrypt) {
+                printf("%s\n", decrypt);
+                free(decrypt);
+            }
+            free(encrypt);
+        }
         vendor.pages.change_page(MAIN_PAGE);
     } else {
-        g_print("Request failed.\n");
+        vendor.pages.change_page(LOGIN_PAGE);
+        create_error(vendor.pages.login_page.password_wrapper, "Incorrect username or password");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.login_page.username_wrapper), "_form_error");
     }
 }
 
@@ -89,6 +119,8 @@ void login_on_login_submit(GtkButton *button, gpointer user_data) {
     }
 
     g_print("Login: %s\nPassword: %s\n", username, password);
+    vendor.current_user.username = vendor.helpers.strdup(username);
+    vendor.current_user.password = vendor.helpers.strdup(password);
     vendor.pages.change_page(LOADING_PAGE);
 
     GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
@@ -111,6 +143,7 @@ gboolean login_on_from_entry_focus_in(GtkWidget *entry, GdkEventFocus *event, gp
     (void)event;
     GtkWidget *placeholder = (GtkWidget *)user_data;
     gtk_widget_hide(placeholder);
+    remove_errors();
     return FALSE;
 }
 

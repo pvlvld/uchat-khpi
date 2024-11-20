@@ -1,21 +1,26 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
-char *format_last_message(const char *sender_name, const char *message) {
-    const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
+char *format_last_message(const char *sender_name, const char *message, int chat_type) {
+    if (chat_type == 0 || sender_name == NULL || strlen(sender_name) == 0) {
+        // Приватный чат или отсутствует имя отправителя — просто возвращаем сообщение
+        return g_strdup(message);
+    } else {
+        // Групповой чат с именем отправителя
+        const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
+        int size = snprintf(NULL, 0, format, sender_name, message);
+        if (size < 0) {
+            return NULL;
+        }
 
-    int size = snprintf(NULL, 0, format, sender_name, message);
-    if (size < 0) {
-        return NULL;
+        char *buffer = (char *)malloc(size + 1);
+        if (!buffer) {
+            return NULL;
+        }
+
+        snprintf(buffer, size + 1, format, sender_name, message);
+        return buffer;
     }
-
-    char *buffer = (char *)malloc(size + 1);
-    if (!buffer) {
-        return NULL;
-    }
-
-    snprintf(buffer, size + 1, format, sender_name, message);
-    return buffer;
 }
 
 static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
@@ -56,7 +61,7 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock, "sidebar__chatblock");
     gtk_widget_set_size_request(chatblock, 177, -1);
-    GtkWidget *avatar_wrapper = vendor.sidebar.create_avatar(chat_info);
+    GtkWidget *avatar_wrapper = vendor.pages.main_page.sidebar.create_avatar(chat_info);
 
     GtkWidget *chatblock_text = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     vendor.helpers.set_classname_and_id(chatblock_text, "sidebar__chatblock_text");
@@ -64,16 +69,34 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock_text_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock_text_header, "sidebar__chatblock_chat__header");
 
+    // Получаем имя группы для группового чата
+    if (chat_info->type == 1) { // Групповой чат
+        chat_info->name = get_group_name_by_chat_id(chat_info->id);
+    }
+
     GtkWidget *chat_name = gtk_label_new(chat_info->name);
     vendor.helpers.set_classname_and_id(chat_name, "sidebar__chatblock_chat__name");
     gtk_label_set_lines(GTK_LABEL(chat_name), 1);
     gtk_label_set_ellipsize(GTK_LABEL(chat_name), PANGO_ELLIPSIZE_END);
 
+    // Проверка значений на NULL и создание копий строк
+    char *last_message_copy = g_strdup(chat_info->last_message ? chat_info->last_message : "");
+    char *sender_name_copy = g_strdup(chat_info->sender_name ? chat_info->sender_name : "");
+
+    // Убираем лишние пробелы
+    char *stripped_last_message = g_strstrip(last_message_copy);
+    char *stripped_sender_name = g_strstrip(sender_name_copy);
+
     // Форматируем сообщение
-    char *formatted_last_message = format_last_message(chat_info->sender_name, chat_info->last_message);
+    char *formatted_last_message = NULL;
+    if (chat_info->type == 0) {  // Приватный чат
+        formatted_last_message = g_strdup(stripped_last_message);
+    } else {  // Групповой чат
+        formatted_last_message = format_last_message(stripped_sender_name, stripped_last_message, chat_info->type);
+    }
 
     // Создаем метку с разметкой
-    GtkWidget *chat_message = gtk_label_new(chat_info->type == 0 ? chat_info->last_message : formatted_last_message);
+    GtkWidget *chat_message = gtk_label_new(formatted_last_message ? formatted_last_message : "");
     gtk_label_set_use_markup(GTK_LABEL(chat_message), TRUE);
     gtk_label_set_line_wrap(GTK_LABEL(chat_message), TRUE);
     gtk_label_set_lines(GTK_LABEL(chat_message), 2);
@@ -103,8 +126,11 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     vendor.helpers.add_hover(event_box);
     gtk_container_add(GTK_CONTAINER(event_box), chatblock);
 
-    // Освобождение памяти
+    // Освобождаем память
+    g_free(last_message_copy);
+    g_free(sender_name_copy);
     g_free(formatted_last_message);
 
     return event_box;
 }
+
