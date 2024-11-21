@@ -10,6 +10,8 @@ static void show_modal(GtkWindow *parent) {
     GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(dialog), "Profile settings");
     vendor.helpers.set_classname_and_id(dialog, "modal__profile-settings");
+    gtk_style_context_add_class(gtk_widget_get_style_context(dialog), "_modal-base");
+    gtk_widget_set_visual(dialog, gdk_screen_get_rgba_visual(gtk_widget_get_screen(dialog)));
 
     gtk_window_set_default_size(GTK_WINDOW(dialog), 230, 143);
 

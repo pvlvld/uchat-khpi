@@ -1,34 +1,32 @@
 #include "../../../inc/header.h"
 
 static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    (void) widget;
-    (void) data;
+    (void)widget;
+    (void)data;
     if (event->button == GDK_BUTTON_SECONDARY) {
-        int x = event->x_root;
-        int y = event->y_root;
+        int x = event->x_root; // x for modal
+        int y = event->y_root; // y for modal
 
-        // Получаем буфер текста
         GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+        gchar *text = NULL;
+        gboolean is_full = 1;
 
         GtkTextIter start, end;
-        // Проверяем, есть ли выделение
         if (gtk_text_buffer_get_selection_bounds(buffer, &start, &end)) {
-            // Извлекаем выделенный текст
-            gchar *selected_text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
-            g_print("Selected text: %s\n", selected_text);
-            g_free(selected_text);
+            is_full = 0;
+            text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
         } else {
-            g_print("No text selected\n");
+            GtkTextIter start_iter, end_iter;
+            gtk_text_buffer_get_start_iter(buffer, &start_iter);
+            gtk_text_buffer_get_end_iter(buffer, &end_iter);
+            text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
         }
 
-        vendor.modal.message_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y);
-        // TODO: add logic for editing, deleting, copying and (?)replying
-
+        vendor.modal.message_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y, text, is_full);
         return TRUE;
     }
     return FALSE;
 }
-
 
 GtkWidget *create_message_box(const char *message_txt, ssize_t username_length) {
     GtkWidget *message_text = gtk_text_view_new();
