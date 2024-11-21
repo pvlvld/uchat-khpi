@@ -74,22 +74,7 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     int height_in_pixels = _height / PANGO_SCALE;
     int height = height_in_pixels + 24;
 
-    int line_count = pango_layout_get_line_count(layout);
-    g_print("line count: %d\n", line_count);
-//    g_print ("line_count: %d\n", line_count);
-//    if (line_count > 0) {
-//        PangoLayoutLine *last_line = pango_layout_get_line(layout, line_count - 1);
-//        if (last_line) {
-//            PangoRectangle ink_rect;
-//            pango_layout_line_get_extents(last_line, &ink_rect, NULL);
-//
-//            int last_line_width = ink_rect.width / PANGO_SCALE;
-//
-//            if (last_line_width + 60 >= width) {
-//                height += 16;
-//            }
-//        }
-//    }
+//    int line_count = pango_layout_get_line_count(layout);
 
     gtk_widget_set_size_request(message, width, height);
     gtk_widget_set_size_request(message_text, width, height);
@@ -108,7 +93,6 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     gtk_widget_set_halign(time, GTK_ALIGN_END);
     gtk_widget_set_valign(time, GTK_ALIGN_END);
 
-    gtk_widget_show_all(message_wrapper);
     return height + 12;
 }
 
@@ -122,6 +106,7 @@ void add_chat_message(t_messages_struct *message, int is_received) {
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_new_messages), message_wrapper, FALSE, FALSE, 0);
 
     draw_chat(message_wrapper, message, is_received);
+    gtk_widget_show_all(message_wrapper);
 
     if (!is_received) {
         g_idle_add(set_scroll_to_bottom, adjustment);
@@ -169,28 +154,30 @@ void on_scroll_value_changed(GtkAdjustment *adjustment, gpointer user_data) {
 
         int height = 0;
         int dif = vendor.pages.main_page.chat.total_messages - vendor.pages.main_page.chat.page * PER_PAGE;
-	int messages_count = dif >= PER_PAGE ? PER_PAGE : dif;
-	if (messages_count <= 0) return;
-
+		int messages_count = dif >= PER_PAGE ? PER_PAGE : dif;
+		if (messages_count <= 0) return;
     	t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, PER_PAGE,
 			++vendor.pages.main_page.chat.page, &vendor.pages.main_page.chat.total_messages);
 
     	if (messages != NULL) {
             for (int i = 0; i < messages_count; i++) {
-	        int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
+	        	int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
             	height += add_old_chat_message(&messages[i], is_received);
             	vendor.pages.main_page.chat.shown_messages++;
             }
-
-            vendor.database.tables.messages_table.free_struct(messages);
-	}
+			vendor.database.tables.messages_table.free_struct(messages);
+		}
 
         GtkAdjustment *v_adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
         t_scroll_data *scroll_data = g_malloc(sizeof(t_scroll_data));
         scroll_data->adjustment = v_adjustment;
         scroll_data->height = height;
 
+        int _height = gtk_widget_get_allocated_height(vendor.pages.main_page.chat.stretchable_box_old_messages);
+        gtk_widget_set_size_request(vendor.pages.main_page.chat.stretchable_box_old_messages, -1, _height + height);
         g_idle_add(scroll_to_height, scroll_data);
+
+        g_timeout_add(300, (GSourceFunc)gtk_widget_show_all, vendor.pages.main_page.chat.stretchable_box_old_messages);
     }
 }
 
@@ -201,6 +188,7 @@ GtkWidget *chat_create_scrolled_window(void) {
     vendor.helpers.set_classname_and_id(scrolled_window, "chat__scrolled-window");
 
     GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    vendor.pages.main_page.chat.content_box = content_box;
     gtk_container_add(GTK_CONTAINER(scrolled_window), content_box);
     gtk_widget_set_valign(content_box, GTK_ALIGN_END);
 

@@ -11,6 +11,7 @@ typedef struct {
     void (*change_chat)(void);
     GtkWidget *chat_box;
     GtkWidget *scrolled_window;
+    GtkWidget *content_box;
     GtkWidget *stretchable_box_old_messages;
     GtkWidget *stretchable_box_new_messages;
     GtkAdjustment *vadjustment;
