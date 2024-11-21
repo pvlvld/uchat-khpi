@@ -6,14 +6,46 @@
 #include "../../../../../../libraries/cJSON/cJSON.h"
 #include "../../../../../inc/utils.h"
 
-int store_group_message(PGconn *conn, int chat_id, int sender_id, const char *message_text,
-                        int media_id, int reply_to_chat, int reply_to_message, int forwarded_from_chat, int forwarded_from_message) {
-    if (!send_message(conn, chat_id, sender_id, message_text, media_id, reply_to_chat, reply_to_message, forwarded_from_chat, forwarded_from_message)) {
-        fprintf(stderr, "Error: Failed to store group message in database\n");
-        return -1;
+MessageResult_t store_message_return_message_info(PGconn *conn, int chat_id, int sender_id, const char *message_text,
+                                  int media_id, int reply_to_chat, int reply_to_message,
+                                  int forwarded_from_chat, int forwarded_from_message) {
+    MessageResult_t result = { .Success = 0, .message_id = -1, .timestamp = "" };
+
+    const char *query =
+        "INSERT INTO messages (chat_id, sender_id, message_text, media, reply_to_chat, reply_to_message, "
+        "forwarded_from_chat, forwarded_from_message) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) "
+        "RETURNING message_id, timestamp";
+
+    char chat_id_str[12], sender_id_str[12], media_id_str[12], reply_to_chat_str[12], reply_to_message_str[12],
+        forwarded_from_chat_str[12], forwarded_from_message_str[12];
+    const char *params[8] = {
+        itoa(chat_id, chat_id_str),
+        itoa(sender_id, sender_id_str),
+        message_text,
+        media_id ? itoa(media_id, media_id_str) : NULL,
+        reply_to_chat ? itoa(reply_to_chat, reply_to_chat_str) : NULL,
+        reply_to_message ? itoa(reply_to_message, reply_to_message_str) : NULL,
+        forwarded_from_chat ? itoa(forwarded_from_chat, forwarded_from_chat_str) : NULL,
+        forwarded_from_message ? itoa(forwarded_from_message, forwarded_from_message_str) : NULL
+    };
+
+    PGresult *res = PQexecParams(conn, query, 8, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Error: Failed to store group message in database: %s\n", PQerrorMessage(conn));
+        PQclear(res);
+        return result;
     }
-    return 1;
+
+    // Extract message_id and timestamp
+    result.message_id = atoi(PQgetvalue(res, 0, 0));
+    strncpy(result.timestamp, PQgetvalue(res, 0, 1), sizeof(result.timestamp) - 1);
+    result.Success = 1;
+
+    PQclear(res);
+    return result;
 }
+
 
 // Helper function: Get all recipients of a group or channel chat
 PGresult *get_group_recipients(PGconn *conn, int chat_id) {
@@ -38,17 +70,19 @@ void deliver_message_to_online_user(int recipient_id, cJSON *json_message) {
     _send_message_to_client(recipient_id, json_message);
 }
 
-int handle_group_or_channel_message(PGconn *conn, int chat_id, int sender_id, const char *message_text,
+MessageResult_t handle_group_or_channel_message(PGconn *conn, int chat_id, int sender_id, const char *message_text,
                                     int media_id, int reply_to_chat, int reply_to_message, int forwarded_from_chat, int forwarded_from_message) {
+    MessageResult_t result = store_message_return_message_info(conn, chat_id, sender_id, message_text, media_id, reply_to_chat, reply_to_message, forwarded_from_chat, forwarded_from_message);
     // Store the message in the database
-    if (store_group_message(conn, chat_id, sender_id, message_text, media_id, reply_to_chat, reply_to_message, forwarded_from_chat, forwarded_from_message) < 0) {
-        return -1;
+    if (!result.Success) {
+        return result;
     }
 
     // Get recipients for the group or channel
     PGresult *recipients = get_group_recipients(conn, chat_id);
     if (!recipients) {
-        return -2;
+        result.Success = -2;
+        return result;
     }
 
     int recipient_count = PQntuples(recipients);
@@ -70,7 +104,7 @@ int handle_group_or_channel_message(PGconn *conn, int chat_id, int sender_id, co
     }
 
     PQclear(recipients);
-    return 1;
+    return result;
 }
 
 

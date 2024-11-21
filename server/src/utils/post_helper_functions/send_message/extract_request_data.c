@@ -42,3 +42,18 @@ char *extract_chat_id(cJSON *json) {
     return strdup(chat_id_item->valuestring);
 }
 
+char *extract_message_id(cJSON *json) {
+    if (!json) {
+        return NULL;
+    }
+
+    // Get the message_id field
+    cJSON *message_id_item = cJSON_GetObjectItem(json, "message_id");
+    if (!cJSON_IsString(message_id_item)) {
+        return NULL;
+    }
+
+    // Duplicate the message_id string to return (remember to free it later)
+    return strdup(message_id_item->valuestring);
+}
+

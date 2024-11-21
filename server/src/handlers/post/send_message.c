@@ -28,7 +28,7 @@ void send_message_rout(SSL *ssl, const char *request) {
 
     char *chat_id_str = extract_chat_id(json);
     char *message_str = extract_message(json); // TODO: Validate message for supported types and potentially return an object
-    char *sender_login_str = get_sender_from_token(request);
+    char *sender_login_str = get_sender_login_from_token(request);
 
     if (!is_valid_chat_id(chat_id_str)) {
         cJSON_AddBoolToObject(response_json, "error", true);
@@ -71,6 +71,7 @@ void send_message_rout(SSL *ssl, const char *request) {
     }*/
 
     int chat_id = atoi(chat_id_str);
+    free(chat_id_str);
 
     // Connect to the database
     PGconn *conn = vendor.database.pool.acquire_connection();
@@ -128,20 +129,22 @@ void send_message_rout(SSL *ssl, const char *request) {
             return;
         }
 
-        int group_chat_message_res = handle_group_or_channel_message(conn, chat_id, sender_id, message_str,
+        MessageResult_t group_chat_message_res = handle_group_or_channel_message(conn, chat_id, sender_id, message_str,
                                                                      0, 0, 0, 0, 0);
 
-        if (group_chat_message_res == 1) {
+        if (group_chat_message_res.Success== 1) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "status", "success");
             cJSON_AddStringToObject(response_json, "message", "Message sent successfully.");
+            cJSON_AddNumberToObject(response_json, "message_id", group_chat_message_res.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", group_chat_message_res.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
-        } else if (group_chat_message_res == -1) {
+        } else if (group_chat_message_res.Success== -1) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "DB_INSERT_FAILED");
             cJSON_AddStringToObject(response_json, "message", "Message failed to be added to the database.");
             vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
-        } else if (group_chat_message_res == -2) {
+        } else if (group_chat_message_res.Success == -2) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "RECIPIENTS_NOT_FOUND");
             cJSON_AddStringToObject(response_json, "message", "Failed to find group recipients.");
@@ -170,20 +173,22 @@ void send_message_rout(SSL *ssl, const char *request) {
             return;
         }
 
-        int channel_chat_message_res = handle_group_or_channel_message(conn, chat_id, sender_id, message_str,
+        MessageResult_t channel_chat_message_res = handle_group_or_channel_message(conn, chat_id, sender_id, message_str,
                                                                        0, 0, 0, 0, 0);
 
-        if (channel_chat_message_res == 1) {
+        if (channel_chat_message_res.Success == 1) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "status", "success");
             cJSON_AddStringToObject(response_json, "message", "Message sent successfully.");
+            cJSON_AddNumberToObject(response_json, "message_id", channel_chat_message_res.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", channel_chat_message_res.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
-        } else if (channel_chat_message_res == -1) {
+        } else if (channel_chat_message_res.Success == -1) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "DB_INSERT_FAILED");
             cJSON_AddStringToObject(response_json, "message", "Message failed to be added to the database.");
             vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
-        } else if (channel_chat_message_res == -2) {
+        } else if (channel_chat_message_res.Success == -2) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "RECIPIENTS_NOT_FOUND");
             cJSON_AddStringToObject(response_json, "message", "Failed to find channel recipients.");
@@ -200,20 +205,24 @@ void send_message_rout(SSL *ssl, const char *request) {
 
     } else if (strcmp(&chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
-        int personal_chat_message_res = handle_personal_chat_message(conn, chat_id, sender_id, recipient_id, message_str,
+        MessageResult_t personal_chat_message_res = handle_personal_chat_message(conn, chat_id, sender_id, recipient_id, message_str,
                                                                      0, 0, 0, 0, 0);
 
-        if (personal_chat_message_res == 1) {
+        if (personal_chat_message_res.Success == 1) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "status", "success");
             cJSON_AddStringToObject(response_json, "message", "Message sent successfully.");
+            cJSON_AddNumberToObject(response_json, "message_id", personal_chat_message_res.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", personal_chat_message_res.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
-        } else if (personal_chat_message_res == 2) {
+        } else if (personal_chat_message_res.Success == 2) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "status", "success");
             cJSON_AddStringToObject(response_json, "message", "Message added to the database successfully, user is not online.");
+            cJSON_AddNumberToObject(response_json, "message_id", personal_chat_message_res.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", personal_chat_message_res.timestamp);
             vendor.server.https.send_https_response(ssl, "201 Created", "application/json", cJSON_Print(response_json));
-        } else if (personal_chat_message_res == -1) {
+        } else if (personal_chat_message_res.Success == -1) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "DB_INSERT_FAILED");
             cJSON_AddStringToObject(response_json, "message", "Message failed to be added to the database.");
