@@ -47,6 +47,9 @@ t_chat_info **parse_chats_info(void) {
         printf("[DEBUG] Тип чата: %d\n", chats_info[i]->type);
         printf("[DEBUG] Timestamp: %ld\n", chats_info[i]->timestamp);
 
+        chats_info[i]->path_to_logo = "logo_2.jpg";
+        chats_info[i]->unreaded_messages = 0;
+
         // Получаем имя чата и последнее сообщение
         if (chats_info[i]->type == PERSONAL) {
             printf("[DEBUG] Это персональный чат\n");
@@ -56,16 +59,22 @@ t_chat_info **parse_chats_info(void) {
             // Получаем последнее сообщение для персонального чата
 //            chats_info[i]->last_message = get_last_message_by_chat_id(chats_info[i]->id, &sender_id);
             chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
-            if (!chats_info[i]->last_message) break;
+//            if (!chats_info[i]->last_message) break;
             chats_info[i]->sender_name = vendor.helpers.strdup("");
 
         } else if (chats_info[i]->type == GROUP) {
             printf("[DEBUG] Это групповой чат\n");
             chats_info[i]->name = get_group_name_by_chat_id(chats_info[i]->id);
+            chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
+            if (chats_info[i]->last_message) {
+                chats_info[i]->sender_name = vendor.helpers.strdup(chats_info[i]->last_message->sender_struct->username);
+            } else {
+                chats_info[i]->sender_name = "";
+            }
+
 //            int sender_id;
             // Получаем последнее сообщение и имя отправителя для группового чата
-//            chats_info[i]->last_message = get_last_message_by_chat_id(chats_info[i]->id, &sender_id);
-            chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
+//            chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
 //            if (sender_id > 0) {
 //                chats_info[i]->sender_name = get_user_name(sender_id);  // Получаем имя отправителя
 //            } else {
@@ -77,16 +86,13 @@ t_chat_info **parse_chats_info(void) {
             chats_info[i]->sender_name = vendor.helpers.strdup("");  // Не нужно имя отправителя для канала
         }
 
-        chats_info[i]->path_to_logo = "logo_2.jpg";  // Путь к логотипу
-        chats_info[i]->unreaded_messages = 0;
-
         // Отладочный вывод для проверки
         printf("[DEBUG] Chat #%d\n", i);
         printf("  ID: %d\n", chats_info[i]->id);
         printf("  Type: %d\n", chats_info[i]->type);
         printf("  Timestamp: %ld\n", chats_info[i]->timestamp);
         printf("  Name: %s\n", chats_info[i]->name);
-        printf("  Last Message: %s\n", chats_info[i]->last_message->message_text);
+//        printf("  Last Message: %s\n", chats_info[i]->last_message->message_text ? chats_info[i]->last_message->message_text : "");
         printf("  Sender Name: %s\n", chats_info[i]->sender_name);
     }
 

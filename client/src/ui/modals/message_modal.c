@@ -72,7 +72,6 @@ static void show_modal(GtkWindow *parent, int x, int y, const char *text, gboole
 
     g_signal_connect(copy_event, "button-press-event", G_CALLBACK(on_copy_clicked), (gpointer)text);
 
-
     gtk_box_pack_start(GTK_BOX(content), add_reaction_event, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(content), edit_event, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(content), copy_event, FALSE, FALSE, 0);
@@ -80,8 +79,6 @@ static void show_modal(GtkWindow *parent, int x, int y, const char *text, gboole
 
     gtk_widget_show_all(dialog);
     g_signal_connect(dialog, "destroy", G_CALLBACK(gtk_widget_destroy), NULL);
-
-    g_print("%s\n",text);
 
     vendor.modal.message_info.window = dialog;
 }

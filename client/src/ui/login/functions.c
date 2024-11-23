@@ -148,7 +148,7 @@ void login_on_login_submit(GtkButton *button, gpointer user_data) {
 
 gboolean login_input_on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
     (void)widget;
-    if (event->keyval == GDK_KEY_Return) {
+    if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
         login_on_login_submit(NULL, user_data);
         return TRUE;
     }

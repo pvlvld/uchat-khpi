@@ -117,6 +117,7 @@ void add_chat_message(t_messages_struct *message, int is_received) {
         g_idle_add(set_scroll_to_bottom, adjustment);
     }
 
+    gtk_widget_show(vendor.active_chat.chat_sidebar_widget);
 }
 
 static int add_old_chat_message(t_messages_struct *message, int is_received) {
@@ -205,7 +206,7 @@ GtkWidget *chat_create_scrolled_window(void) {
     gtk_box_pack_start(GTK_BOX(content_box), stretchable_box_new_messages, TRUE, TRUE, 0);
 
     int height = 0;
-    t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, PER_PAGE,
+    t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(vendor.active_chat.chat->id, PER_PAGE,
 			++vendor.pages.main_page.chat.page, &vendor.pages.main_page.chat.total_messages);
 
     if (messages != NULL) {

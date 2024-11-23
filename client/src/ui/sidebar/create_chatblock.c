@@ -100,30 +100,33 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock_text_header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     vendor.helpers.set_classname_and_id(chatblock_text_header, "sidebar__chatblock_chat__header");
 
-    // Получаем имя группы для группового чата
-    if (chat_info->type == 1) { // Групповой чат
-        chat_info->name = get_group_name_by_chat_id(chat_info->id);
-    }
-
     GtkWidget *chat_name = gtk_label_new(chat_info->name);
     vendor.helpers.set_classname_and_id(chat_name, "sidebar__chatblock_chat__name");
     gtk_label_set_lines(GTK_LABEL(chat_name), 1);
     gtk_label_set_ellipsize(GTK_LABEL(chat_name), PANGO_ELLIPSIZE_END);
 
-    // Проверка значений на NULL и создание копий строк
-    char *last_message_copy = g_strdup(chat_info->last_message[0].message_text ? chat_info->last_message[0].message_text : "");
-    char *sender_name_copy = g_strdup(chat_info->sender_name ? chat_info->sender_name : "");
-
-    // Убираем лишние пробелы
-    char *stripped_last_message = g_strstrip(last_message_copy);
-    char *stripped_sender_name = g_strstrip(sender_name_copy);
-
-    // Форматируем сообщение
+    char *stripped_last_message = NULL;
+    char *stripped_sender_name = NULL;
     char *formatted_last_message = NULL;
-    if (chat_info->type == 0) {  // Приватный чат
-        formatted_last_message = g_strdup(stripped_last_message);
-    } else {  // Групповой чат
-        formatted_last_message = format_last_message(stripped_sender_name, stripped_last_message, chat_info->type);
+
+    if (chat_info->last_message && chat_info->sender_name) {
+        // Проверка значений на NULL и создание копий строк
+        char *last_message_copy = g_strdup(chat_info->last_message[0].message_text ? chat_info->last_message[0].message_text : "");
+        char *sender_name_copy = g_strdup(chat_info->sender_name ? chat_info->sender_name : "");
+
+        // Убираем лишние пробелы
+        stripped_last_message = g_strstrip(last_message_copy);
+        stripped_sender_name = g_strstrip(sender_name_copy);
+        // Форматируем сообщение
+        if (chat_info->type == 0) {  // Приватный чат
+            formatted_last_message = g_strdup(stripped_last_message);
+        } else {  // Групповой чат
+            formatted_last_message = format_last_message(stripped_sender_name, stripped_last_message, chat_info->type);
+        }
+        g_free(last_message_copy);
+        g_free(sender_name_copy);
+    } else {
+        formatted_last_message = "No messages";
     }
 
     // Создаем метку с разметкой
@@ -135,7 +138,7 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     gtk_label_set_ellipsize(GTK_LABEL(chat_message), PANGO_ELLIPSIZE_END);
     vendor.helpers.set_classname_and_id(chat_message, "sidebar__chatblock_chat__message");
 
-    GtkWidget *chat_time = gtk_label_new(format_timestamp(chat_info->last_message[0].timestamp));
+    GtkWidget *chat_time = gtk_label_new(format_timestamp(chat_info->last_message ? chat_info->last_message[0].timestamp : *localtime(&chat_info->timestamp)));
     vendor.helpers.set_classname_and_id(chat_time, "sidebar__chatblock_chat__time");
 
     GtkWidget *spacer = gtk_label_new("");
@@ -157,11 +160,6 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     g_signal_connect(event_box, "button-press-event", G_CALLBACK(click_handler), NULL);
     vendor.helpers.add_hover(event_box);
     gtk_container_add(GTK_CONTAINER(event_box), chatblock);
-
-    // Освобождаем память
-    g_free(last_message_copy);
-    g_free(sender_name_copy);
-    g_free(formatted_last_message);
 
     return event_box;
 }

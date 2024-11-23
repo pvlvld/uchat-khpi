@@ -22,7 +22,7 @@ static GtkWidget *init_search(void) {
     return entry_wrapper;
 }
 
-static void swap_sidebar(GtkWidget *widget, ssize_t index) {
+void swap_sidebar(GtkWidget *widget, ssize_t index) {
     GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
 
     GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));

@@ -157,6 +157,24 @@ static void free_struct(t_messages_struct *message) {
     }
 }
 
+static int get_total_messages(void) {
+    const char *sql = "SELECT COUNT(*) FROM messages;";
+    char **results = NULL;
+    int rows, cols;
+
+    int rc = vendor.database.sql.execute_query(sql, &results, &rows, &cols);
+
+    if (rc != 0 || rows == 0 || cols == 0) {
+        fprintf(stderr, "Failed to fetch total messages count: %s\n", sqlite3_errmsg(vendor.database.db));
+        return -1;
+    }
+
+    // Поскольку COUNT(*) возвращает один результат, он находится в results[1] (индексация начинается с 1)
+    int total_messages = atoi(results[1]);
+
+    return total_messages;
+}
+
 t_messages_table init_messages_table(void) {
     t_messages_table table = {
         .create_table = create_table,
@@ -164,6 +182,7 @@ t_messages_table init_messages_table(void) {
         .edit_message = edit_message,
         .get_messages_by_chat_id = get_messages_by_chat_id,
         .free_struct = free_struct,
+        .get_total_messages = get_total_messages,
     };
 
     return table;

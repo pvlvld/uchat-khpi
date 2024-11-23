@@ -83,6 +83,7 @@ typedef struct {
     t_user current_user;
     t_server server;
     t_server_requests server_requests;
+    int total_messages;
 } t_vendor;
 
 extern t_vendor vendor;
