@@ -12,6 +12,12 @@ typedef struct {
     char timestamp[20]; // Timestamp as a string (format: "YYYY-MM-DD HH:MM:SS")
 } MessageResult_t;
 
+typedef struct {
+    int Success;  // Indicates whether the operation succeeded (1 for success, 0 for failure)
+    int sender_id;
+} MessageSenderResult_t;
+
+
 bool is_user_online(int user_id);
 
 char *itoa(int value, char *buffer);
@@ -45,6 +51,8 @@ char *extract_message(cJSON *json);
 char *extract_message_id(cJSON *json);
 bool is_valid_message(const char *message);
 bool is_valid_message_id(char *message_id);
+
+MessageSenderResult_t get_message_sender(PGconn *conn, int chat_id, int message_id);
 
 MessageResult_t store_message_return_message_info(PGconn *conn, int chat_id, int sender_id, const char *message_text,
                                                 int media_id, int reply_to_chat, int reply_to_message,

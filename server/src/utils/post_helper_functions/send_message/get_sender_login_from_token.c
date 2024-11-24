@@ -41,12 +41,13 @@ char *get_sender_id_from_token(const char *request) {
 
     // Extract the `id` field from the JWT payload
     cJSON *user_id_item = cJSON_GetObjectItem(jwt_verify.payload, "id");
-    if (!cJSON_IsString(user_id_item)) {
+    if (!cJSON_IsNumber(user_id_item)) {
         cJSON_Delete(jwt_verify.payload);
         return NULL; // `user_id` field not found or invalid
     }
 
-    char *user_id_str = mx_strdup(user_id_item->valuestring);
+    char *user_id_str = malloc(10 * sizeof(char));
+    itoa(user_id_item->valueint, user_id_str);
     cJSON_Delete(jwt_verify.payload);
     return user_id_str; // Remember to free this in the calling function
 }
