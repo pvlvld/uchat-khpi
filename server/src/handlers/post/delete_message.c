@@ -82,7 +82,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
     }
     const char *chat_type = get_chat_type(conn, chat_id);
     if (strcmp(chat_type, "group") == 0) {
-        const char *user_role = get_user_role_in_group(conn, chat_id, sender_id);
+        const char *user_role = get_user_role_in_group(conn, chat_id, user_id);
         if (!user_role || strcmp(user_role, "banned") == 0 || strcmp(user_role, "restricted") == 0) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "FORBIDDEN");
@@ -96,12 +96,14 @@ void delete_message_rout(SSL *ssl, const char *request) {
             PQfinish(conn);
             return;
 
-        } else if (strcmp(user_role, "admin") == 0 || strcmp(user_role, "owner") == 0) {
+        }
+        deleteMessageResult_t result = { .Success = -1, .message_id = -1, .timestamp = {'\0'} };
+        if (strcmp(user_role, "admin") == 0 || strcmp(user_role, "owner") == 0) {
             bool any_delete_allowed = true;
-            deleteMessageResult_t result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
+            result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
         } else if (strcmp(user_role, "member") == 0) {
             bool any_delete_allowed = false;
-            deleteMessageResult_t result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
+            result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");
@@ -128,7 +130,14 @@ void delete_message_rout(SSL *ssl, const char *request) {
         } else if (result.Success == 1) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "code", "OK");
-            cJSON_AddStringToObject(response_json, "message", "Message deleted successfully");
+            cJSON_AddStringToObject(response_json, "message", "Message deleted successfully.");
+            cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
+            vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+        } else if (result.Success == 2) {
+            cJSON_AddBoolToObject(response_json, "error", false);
+            cJSON_AddStringToObject(response_json, "code", "OK");
+            cJSON_AddStringToObject(response_json, "message", "Message was already deleted.");
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
@@ -139,7 +148,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
             vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         }
     } else if (strcmp(chat_type, "channel") == 0) {
-        const char *user_role = get_user_role_in_group(conn, chat_id, sender_id);
+        const char *user_role = get_user_role_in_group(conn, chat_id, user_id);
         if (!user_role || strcmp(user_role, "admin") != 0 || strcmp(user_role, "owner") != 0) {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "FORBIDDEN");
@@ -153,9 +162,11 @@ void delete_message_rout(SSL *ssl, const char *request) {
             PQfinish(conn);
             return;
 
-        } else if (strcmp(user_role, "admin") == 0 || strcmp(user_role, "owner") == 0) {
+        }
+        deleteMessageResult_t result = { .Success = -1, .message_id = -1, .timestamp = {'\0'} };
+        if (strcmp(user_role, "admin") == 0 || strcmp(user_role, "owner") == 0) {
             bool any_delete_allowed = true;
-            delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
+            result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");
@@ -186,6 +197,13 @@ void delete_message_rout(SSL *ssl, const char *request) {
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+        } else if (result.Success == 2) {
+            cJSON_AddBoolToObject(response_json, "error", false);
+            cJSON_AddStringToObject(response_json, "code", "OK");
+            cJSON_AddStringToObject(response_json, "message", "Message was already deleted.");
+            cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
+            vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");
@@ -193,7 +211,8 @@ void delete_message_rout(SSL *ssl, const char *request) {
             vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         }
     } else if (strcmp(chat_type, "personal") == 0) {
-        deleteMessageResult_t result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id);
+        bool any_delete_allowed = false;
+        deleteMessageResult_t result = delete_message_db_and_return_data(conn, chat_id, message_id, user_id, any_delete_allowed);
 
         if (result.Success == -1) {
             cJSON_AddBoolToObject(response_json, "error", true);
@@ -212,6 +231,13 @@ void delete_message_rout(SSL *ssl, const char *request) {
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+        } else if (result.Success == 2) {
+            cJSON_AddBoolToObject(response_json, "error", false);
+            cJSON_AddStringToObject(response_json, "code", "OK");
+            cJSON_AddStringToObject(response_json, "message", "Message was already deleted.");
+            cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
+            cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
+            vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");
@@ -220,14 +246,28 @@ void delete_message_rout(SSL *ssl, const char *request) {
         }
 
     } else {
-        // TODO: unknown chat type error response
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "UNKNOWN_CHAT_TYPE");
+        cJSON_AddStringToObject(response_json, "message", "The type of the chat under given chat_id is invalid or not supported.");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        free(chat_id_str);
+        free(message_id_str);
+        free(user_id_str);
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        PQfinish(conn);
+        return;
     }
 
-    free(chat_id_str);
-    free(message_id_str);
-    free(user_id_str);
-    cJSON_Delete(json);
-    cJSON_Delete(response_json);
+
+    if (chat_id_str) free(chat_id_str);
+    if (message_id_str) free(message_id_str);
+    if (user_id_str) free(user_id_str);
+    if (json) cJSON_Delete(json);
+    if (response_json) {
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+    }
     PQfinish(conn);
     return;
 
