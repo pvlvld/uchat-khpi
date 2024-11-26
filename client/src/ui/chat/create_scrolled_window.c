@@ -17,6 +17,30 @@ static char *format_last_message(const char *sender_name, const char *message) {
     return buffer;
 }
 
+static gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
+    (void) widget;
+    GtkWidget *image = GTK_WIDGET(user_data);
+    GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
+
+    if (pixbuf) {
+        // Получаем размеры изображения
+        int width = gdk_pixbuf_get_width(pixbuf);
+        int height = gdk_pixbuf_get_height(pixbuf);
+
+        // Рисуем круг
+        cairo_save(cr);
+        cairo_arc(cr, width / 2, height / 2, MIN(width, height) / 2, 0, 2 * G_PI);
+        cairo_clip(cr);  // Применяем маску
+
+        // Рисуем изображение внутри круга
+        gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
+        cairo_paint(cr);
+        cairo_restore(cr);
+    }
+
+    return FALSE;
+}
+
 static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_struct, int is_received) {
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
@@ -32,8 +56,6 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     gtk_container_add(GTK_CONTAINER(event_box), message);
 
     vendor.helpers.set_classname_and_id(event_box, "chat__message");
-    gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
-
     char *message_text_txt = message_struct->message_text;
     if (!g_utf8_validate(message_text_txt, -1, NULL)) {
         g_warning("Invalid UTF-8 detected!");
@@ -42,7 +64,19 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
         message_text_txt = format_last_message(vendor.active_chat.chat->last_message->sender_struct->username, message_struct->message_text);
         sender_length = strlen(vendor.active_chat.chat->last_message->sender_struct->username);
+
+        GtkWidget *image = gtk_image_new_from_file("resources/images/avatars/logo_3.jpg");
+        gtk_widget_set_size_request(image, 40, 40);
+
+        GtkWidget *drawing_area = gtk_drawing_area_new();
+        gtk_widget_set_size_request(drawing_area, 50, 50);
+        gtk_box_pack_start(GTK_BOX(message_wrapper), drawing_area, FALSE, FALSE, 4);
+        gtk_widget_set_valign(drawing_area, GTK_ALIGN_END);
+
+        g_signal_connect(drawing_area, "draw", G_CALLBACK(on_draw), image);
     }
+
+    gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
 
     GtkWidget *message_text = create_message_box(message_text_txt, sender_length);
 
@@ -102,7 +136,7 @@ void add_chat_message(t_messages_struct *message, int is_received) {
     double current_value = gtk_adjustment_get_value(adjustment);
     double page_size = gtk_adjustment_get_page_size(adjustment);
 
-    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_new_messages), message_wrapper, FALSE, FALSE, 0);
 
     draw_chat(message_wrapper, message, is_received);
@@ -121,7 +155,7 @@ void add_chat_message(t_messages_struct *message, int is_received) {
 }
 
 static int add_old_chat_message(t_messages_struct *message, int is_received) {
-    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
     gtk_box_pack_end(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_old_messages), message_wrapper, FALSE, FALSE, 0);
