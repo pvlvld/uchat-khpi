@@ -169,7 +169,6 @@ static int get_total_messages(void) {
         return -1;
     }
 
-    // Поскольку COUNT(*) возвращает один результат, он находится в results[1] (индексация начинается с 1)
     int total_messages = atoi(results[1]);
 
     return total_messages;

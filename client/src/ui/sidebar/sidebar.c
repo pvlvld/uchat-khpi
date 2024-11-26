@@ -32,23 +32,8 @@ void swap_sidebar(GtkWidget *widget, ssize_t index) {
             GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
-            GtkWidget *new_child = vendor.pages.main_page.sidebar.create_chatblock(chat_info);
-
-            if (vendor.active_chat.chat_sidebar_widget == target_child) {
-                vendor.active_chat.chat_sidebar_widget = new_child;
-                gtk_style_context_add_class(gtk_widget_get_style_context(new_child), "active");
-                vendor.pages.main_page.chat.change_chat();
-            }
-            if (vendor.hover_chat.chat_sidebar_widget == target_child) {
-                vendor.hover_chat.chat_sidebar_widget = new_child;
-                gtk_style_context_add_class(gtk_widget_get_style_context(new_child), "hover");
-            }
-            gtk_widget_destroy(target_child);
-
-            gtk_box_pack_end(GTK_BOX(stretchable_box), new_child, TRUE, FALSE, 0);
-            gtk_widget_show(new_child);
-
-            gtk_widget_show_all(stretchable_box);
+            gtk_box_reorder_child(GTK_BOX(stretchable_box), target_child, 0);
+            break;
         }
         g_list_free(children);
     }
@@ -68,22 +53,6 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         }
         return TRUE;
     }
-
-//    if (event->keyval == GDK_KEY_space) {
-//		if (vendor.active_chat.chat_sidebar_widget != NULL) {
-//        	g_print("id: %d\nname: %s\nlast_message: %s\nsender_name: %s\ntype: %d\n"
-//					"path_to_logo: %s\nunreaded_messages: %d\ntimestamp: %s\n",
-//                          vendor.active_chat.chat->id,
-//                          vendor.active_chat.chat->name,
-//                          vendor.active_chat.chat->last_message,
-//                          vendor.active_chat.chat->sender_name,
-//                          vendor.active_chat.chat->type,
-//                          vendor.active_chat.chat->path_to_logo,
-//                          vendor.active_chat.chat->unreaded_messages,
-//                          format_timestamp(vendor.active_chat.chat->timestamp));
-//		}
-//        return TRUE;
-//    }
 
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
 

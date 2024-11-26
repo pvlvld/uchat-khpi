@@ -40,8 +40,8 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     }
     ssize_t sender_length = 0;
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
-        message_text_txt = format_last_message(vendor.active_chat.chat->sender_name, message_struct->message_text);
-        sender_length = strlen(vendor.active_chat.chat->sender_name);
+        message_text_txt = format_last_message(vendor.active_chat.chat->last_message->sender_struct->username, message_struct->message_text);
+        sender_length = strlen(vendor.active_chat.chat->last_message->sender_struct->username);
     }
 
     GtkWidget *message_text = create_message_box(message_text_txt, sender_length);
@@ -51,7 +51,7 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
 
     PangoFontDescription *font_desc = pango_font_description_new();
     pango_font_description_set_family(font_desc, "Ubuntu Sans");
-    pango_font_description_set_size(font_desc, 16 * PANGO_SCALE);
+    pango_font_description_set_size(font_desc, 12.2 * PANGO_SCALE);
     pango_layout_set_font_description(layout, font_desc);
     pango_font_description_free(font_desc);
 
@@ -67,12 +67,12 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
         width = width_in_pixels + 40;
     }
 
-    pango_layout_set_width(layout, width * PANGO_SCALE * 1.8);
+    pango_layout_set_width(layout, width * PANGO_SCALE);
     int _height;
     pango_layout_get_size(layout, NULL, &_height);
 
     int height_in_pixels = _height / PANGO_SCALE;
-    int height = height_in_pixels + 24;
+    int height = height_in_pixels + 32;
 
 //    int line_count = pango_layout_get_line_count(layout);
 

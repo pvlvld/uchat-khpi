@@ -40,7 +40,7 @@ t_chat_info **parse_chats_info(void) {
         const char *type_str = results[(i + 1) * cols + 1];
         chats_info[i]->type = (strcmp(type_str, "personal") == 0) ? PERSONAL :
                               (strcmp(type_str, "group") == 0) ? GROUP : CHANNEL;
-//        chats_info[i]->timestamp = (time_t)atoll(results[(i + 1) * cols + 2]);
+        chats_info[i]->timestamp = (time_t)atoll(results[(i + 1) * cols + 2]);
 
         printf("[DEBUG] Обрабатываем чат #%d\n", i);
         printf("[DEBUG] ID чата: %d\n", chats_info[i]->id);
@@ -60,17 +60,17 @@ t_chat_info **parse_chats_info(void) {
 //            chats_info[i]->last_message = get_last_message_by_chat_id(chats_info[i]->id, &sender_id);
             chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
 //            if (!chats_info[i]->last_message) break;
-            chats_info[i]->sender_name = vendor.helpers.strdup("");
+//            chats_info[i]->sender_name = vendor.helpers.strdup("");
 
         } else if (chats_info[i]->type == GROUP) {
             printf("[DEBUG] Это групповой чат\n");
             chats_info[i]->name = get_group_name_by_chat_id(chats_info[i]->id);
             chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
-            if (chats_info[i]->last_message) {
-                chats_info[i]->sender_name = vendor.helpers.strdup(chats_info[i]->last_message->sender_struct->username);
-            } else {
-                chats_info[i]->sender_name = "";
-            }
+//            if (chats_info[i]->last_message) {
+//                chats_info[i]->sender_name = vendor.helpers.strdup(chats_info[i]->last_message->sender_struct->username);
+//            } else {
+//                chats_info[i]->sender_name = "";
+//            }
 
 //            int sender_id;
             // Получаем последнее сообщение и имя отправителя для группового чата
@@ -83,7 +83,7 @@ t_chat_info **parse_chats_info(void) {
         } else {
             chats_info[i]->name = vendor.helpers.strdup("Неизвестный чат");
             chats_info[i]->last_message->message_text = vendor.helpers.strdup("Нет сообщений");
-            chats_info[i]->sender_name = vendor.helpers.strdup("");  // Не нужно имя отправителя для канала
+//            chats_info[i]->sender_name = vendor.helpers.strdup("");
         }
 
         // Отладочный вывод для проверки
@@ -93,10 +93,12 @@ t_chat_info **parse_chats_info(void) {
         printf("  Timestamp: %ld\n", chats_info[i]->timestamp);
         printf("  Name: %s\n", chats_info[i]->name);
 //        printf("  Last Message: %s\n", chats_info[i]->last_message->message_text ? chats_info[i]->last_message->message_text : "");
-        printf("  Sender Name: %s\n", chats_info[i]->sender_name);
+//        printf("  Sender Name: %s\n", chats_info[i]->sender_name);
     }
 
     chats_info[rows] = NULL;
+
+    qsort(chats_info, rows, sizeof(t_chat_info *), compare_chats);
 
     // Освобождаем память
     sqlite3_free_table(results);
@@ -147,10 +149,13 @@ char *format_timestamp(struct tm timestamp) {
 
 
 int compare_chats(const void *a, const void *b) {
-    t_chat_info *chatA = *(t_chat_info **)a;
-    t_chat_info *chatB = *(t_chat_info **)b;
+    t_chat_info *chat_a = *(t_chat_info **)a;
+    t_chat_info *chat_b = *(t_chat_info **)b;
 
-    if (chatA->timestamp > chatB->timestamp) return 1;
-    if (chatA->timestamp < chatB->timestamp) return -1;
-    return 0;
+    time_t time_a = chat_a->last_message ? mktime(&chat_a->last_message->timestamp) : chat_a->timestamp;
+    time_t time_b = chat_b->last_message ? mktime(&chat_b->last_message->timestamp) : chat_b->timestamp;
+
+    if (time_a > time_b) return -1; // Сначала новые
+    if (time_a < time_b) return 1;  // Затем старые
+    return 0; // Равные
 }

@@ -13,6 +13,7 @@ GtkWidget *sidebar_create_avatar(t_chat_info *chat_info);
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info);
 GtkWidget *sidebar_create_bottom(void);
 void swap_sidebar(GtkWidget *widget, ssize_t index);
+void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info);
 
 typedef struct {
     GtkWidget *(*init)(void);
