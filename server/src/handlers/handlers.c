@@ -11,6 +11,7 @@ t_handlers init_handlers(void) {
         ._register = register_rout,
         ._send_message = protected_send_message_rout,
         ._delete_message = protected_delete_message_rout,
+        ._edit_message = protected_edit_message_rout,
         .middleware = middleware,
     };
 

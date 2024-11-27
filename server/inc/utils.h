@@ -22,6 +22,7 @@ bool is_user_online(int user_id);
 
 char *itoa(int value, char *buffer);
 char *mx_strdup(const char *s1);
+void get_current_timestamp(char **timestamp_ptr);
 
 char *hash_password(const char *password);
 

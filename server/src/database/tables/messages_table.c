@@ -47,7 +47,7 @@ bool delete_message(PGconn *conn, int chat_id, int message_id) {
 
 
 bool edit_message_text(PGconn *conn, int chat_id, int message_id, const char *new_message_text) {
-    const char *query = "UPDATE messages SET message_text = $1, edited = true WHERE chat_id = $2 AND message_id = $3";
+    const char *query = "UPDATE messages SET message_text = $1, edited_at = CURRENT_TIMESTAMP WHERE chat_id = $2 AND message_id = $3";
     char chat_id_str[12], message_id_str[12];
     const char *params[3] = {new_message_text, itoa(chat_id, chat_id_str), itoa(message_id, message_id_str)};
 

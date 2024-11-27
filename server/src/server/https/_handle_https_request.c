@@ -35,6 +35,11 @@ void _handle_https_request(SSL *ssl, const char *request) {
         return;
     }
 
+    if (strstr(request, "POST /edit_message") == request) {
+        vendor.handlers.post._edit_message(ssl, request);
+        return;
+    }
+
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "message", "Not found");
     vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
