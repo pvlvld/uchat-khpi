@@ -19,7 +19,7 @@ typedef struct {
 
 typedef struct {
     GtkWidget *window;
-    void (*show)(GtkWindow *parent, int x, int y, const char *text, gboolean is_full);
+    void (*show)(GtkWindow *parent, t_message_info_struct *message_info_struct, int x, int y, const char *text, gboolean is_full);
     void (*destroy)(void);
 } t_modal_message_info;
 

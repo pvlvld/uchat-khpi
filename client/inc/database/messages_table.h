@@ -20,6 +20,7 @@ typedef struct {
     t_messages_struct *(*get_messages_by_chat_id)(int chat_id, int number_of_elements, int page, int *total_messages);
     void (*free_struct)(t_messages_struct *message);
     int (*get_total_messages)(void);
+    int (*delete_message)(int message_id, int chat_id);
 } t_messages_table;
 t_messages_table init_messages_table(void);
 

@@ -174,6 +174,17 @@ static int get_total_messages(void) {
     return total_messages;
 }
 
+static int delete_message(int message_id, int chat_id) {
+    char sql[1024];
+    snprintf(sql, sizeof(sql),
+             "DELETE FROM messages WHERE message_id = %d AND chat_id = %d;",
+             message_id, chat_id);
+
+    vendor.database.sql.execute_sql(sql);
+
+    return 0;
+}
+
 t_messages_table init_messages_table(void) {
     t_messages_table table = {
         .create_table = create_table,
@@ -182,6 +193,7 @@ t_messages_table init_messages_table(void) {
         .get_messages_by_chat_id = get_messages_by_chat_id,
         .free_struct = free_struct,
         .get_total_messages = get_total_messages,
+        .delete_message = delete_message,
     };
 
     return table;

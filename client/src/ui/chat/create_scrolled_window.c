@@ -34,7 +34,7 @@ static GtkWidget *create_sender_event_box(t_messages_struct *message_struct, int
     return sender_event_box;
 }
 
-static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_struct, int is_received) {
+static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_struct, int is_received, int is_new) {
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
     int width = 500;
@@ -75,7 +75,13 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
 
     gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
 
-    GtkWidget *message_text = create_message_box(message_text_txt);
+    t_message_info_struct *message_info_struct = g_new(t_message_info_struct, 1);
+    message_info_struct->widget = message_wrapper;
+    message_info_struct->chat_id = message_struct->chat_struct->chat_id;
+    message_info_struct->message_id = message_struct->message_id;
+    message_info_struct->is_new = is_new;
+
+    GtkWidget *message_text = create_message_box(message_text_txt, message_info_struct);
 
     PangoLayout *layout = gtk_widget_create_pango_layout(message_text, message_struct->message_text);
     pango_layout_set_text(layout, message_text_txt, -1);
@@ -140,7 +146,7 @@ void add_chat_message(t_messages_struct *message, int is_received) {
     GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_new_messages), message_wrapper, FALSE, FALSE, 0);
 
-    draw_chat(message_wrapper, message, is_received);
+    draw_chat(message_wrapper, message, is_received, 1);
     gtk_widget_show_all(message_wrapper);
 
     if (!is_received) {
@@ -161,7 +167,7 @@ static int add_old_chat_message(t_messages_struct *message, int is_received) {
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
     gtk_box_pack_end(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_old_messages), message_wrapper, FALSE, FALSE, 0);
 
-    return draw_chat(message_wrapper, message, is_received);
+    return draw_chat(message_wrapper, message, is_received, 0);
 }
 
 static gboolean scroll_to_height(gpointer data) {
@@ -247,14 +253,14 @@ GtkWidget *chat_create_scrolled_window(void) {
     if (messages != NULL) {
         for (int i = 0; i < PER_PAGE; i++) {
             if ((i + 1) * vendor.pages.main_page.chat.page > vendor.pages.main_page.chat.total_messages) {
-		break;
+		        break;
             }
-	    int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
+	        int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
 
             height += add_old_chat_message(&messages[i], is_received);
             vendor.pages.main_page.chat.shown_messages++;
-	}
-	vendor.database.tables.messages_table.free_struct(messages);
+	    }
+	    vendor.database.tables.messages_table.free_struct(messages);
     }
 
     gtk_widget_set_size_request(stretchable_box_old_messages, -1, height);

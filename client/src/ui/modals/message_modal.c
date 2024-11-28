@@ -33,6 +33,26 @@ static void on_copy_clicked(GtkWidget *widget, GdkEventButton *event, gpointer u
         vendor.popup.add_message("Added to clipboard");
         vendor.modal.message_info.destroy();
         g_free(text);
+        vendor.modal.message_info.destroy();
+    }
+}
+
+static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    (void) widget;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
+        t_message_info_struct *message_info_struct = (t_message_info_struct *)user_data;
+
+        GtkWidget *stretchable_box = message_info_struct->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+
+        int height = gtk_widget_get_allocated_height(message_info_struct->widget);
+        int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+
+        gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
+        gtk_widget_destroy(message_info_struct->widget);
+
+        vendor.modal.message_info.destroy();
+        vendor.database.tables.messages_table.delete_message(message_info_struct->message_id, message_info_struct->chat_id);
+
     }
 }
 
@@ -124,7 +144,7 @@ static void on_file_open(GtkWidget *widget, gpointer user_data) {
     gtk_widget_destroy(GTK_WIDGET(dialog_window));
 }
 
-static void show_modal(GtkWindow *parent, int x, int y, const char *text, gboolean is_full) {
+static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_struct, int x, int y, const char *text, gboolean is_full) {
     int width = 201;
     int height = 176;
     int window_width;
@@ -163,6 +183,7 @@ static void show_modal(GtkWindow *parent, int x, int y, const char *text, gboole
 
     g_signal_connect(edit_event, "button-press-event", G_CALLBACK(on_file_open), vendor.window);
     g_signal_connect(copy_event, "button-press-event", G_CALLBACK(on_copy_clicked), (gpointer)text);
+    g_signal_connect(delete_event, "button-press-event", G_CALLBACK(on_delete_clicked), message_info_struct);
 
     gtk_box_pack_start(GTK_BOX(content), add_reaction_event, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(content), edit_event, FALSE, FALSE, 0);

@@ -33,10 +33,17 @@ typedef struct {
     int *height;
 } t_widget_size_data;
 
+typedef struct {
+    GtkWidget *widget;
+    int is_new;
+    int chat_id;
+    int message_id;
+} t_message_info_struct;
+
 t_chat init_chat(void);
 void add_chat_message(t_messages_struct *message, int is_received);
 GtkWidget *chat_create_scrolled_window(void);
 GtkWidget *create_message_input(void);
-GtkWidget *create_message_box(const char *message_txt);
+GtkWidget *create_message_box(const char *message_txt, t_message_info_struct *message_info_struct);
 gboolean set_scroll_to_bottom(gpointer data);
 #endif //CHAT_H

@@ -22,15 +22,17 @@ static gboolean on_button_press_event(GtkWidget *widget, GdkEventButton *event, 
             text = gtk_text_buffer_get_text(buffer, &start_iter, &end_iter, FALSE);
         }
 
-        vendor.modal.message_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y, text, is_full);
+        t_message_info_struct *message_info_struct = (t_message_info_struct *)data;
+
+        vendor.modal.message_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), message_info_struct, x, y, text, is_full);
         return TRUE;
     }
     return FALSE;
 }
 
-GtkWidget *create_message_box(const char *message_txt) {
+GtkWidget *create_message_box(const char *message_txt, t_message_info_struct *message_info_struct) {
     GtkWidget *message_text = gtk_text_view_new();
-    g_signal_connect(message_text, "button-press-event", G_CALLBACK(on_button_press_event), NULL);
+    g_signal_connect(message_text, "button-press-event", G_CALLBACK(on_button_press_event), message_info_struct);
     vendor.helpers.set_classname_and_id(message_text, "chat__message__text");
 
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(message_text));
