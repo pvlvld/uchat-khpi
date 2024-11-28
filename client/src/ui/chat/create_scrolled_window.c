@@ -62,8 +62,8 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     }
     ssize_t sender_length = 0;
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
-        message_text_txt = format_last_message(vendor.active_chat.chat->last_message->sender_struct->username, message_struct->message_text);
-        sender_length = strlen(vendor.active_chat.chat->last_message->sender_struct->username);
+        message_text_txt = format_last_message(message_struct->sender_struct->username, message_struct->message_text);
+        sender_length = strlen(message_struct->sender_struct->username);
 
         GtkWidget *image = gtk_image_new_from_file("resources/images/avatars/logo_3.jpg");
         gtk_widget_set_size_request(image, 40, 40);
@@ -106,16 +106,28 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     pango_layout_get_size(layout, NULL, &_height);
 
     int height_in_pixels = _height / PANGO_SCALE;
-    int height = height_in_pixels + 32;
+    int height = height_in_pixels + 32 + 80;
 
 //    int line_count = pango_layout_get_line_count(layout);
 
     gtk_widget_set_size_request(message, width, height);
-    gtk_widget_set_size_request(message_text, width, height);
+    gtk_widget_set_size_request(message_text, width, height - 80);
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
 
     gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);
+
+    GtkWidget *sender_name = gtk_label_new("Test_name");
+
+    GtkWidget *sender_event_box = gtk_event_box_new();
+    vendor.helpers.add_hover(sender_event_box);
+    gtk_container_add(GTK_CONTAINER(sender_event_box), sender_name);
+
+    gtk_overlay_add_overlay(GTK_OVERLAY(message), sender_event_box);
+    gtk_widget_set_margin_start(sender_event_box, 10);
+    gtk_widget_set_margin_top(sender_event_box, 12);
+    gtk_widget_set_halign(sender_event_box, GTK_ALIGN_START);
+    gtk_widget_set_valign(sender_event_box, GTK_ALIGN_START);
 
     GtkWidget *time = gtk_label_new(format_timestamp(message_struct->timestamp));
 
