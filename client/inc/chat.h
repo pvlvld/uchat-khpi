@@ -37,6 +37,6 @@ t_chat init_chat(void);
 void add_chat_message(t_messages_struct *message, int is_received);
 GtkWidget *chat_create_scrolled_window(void);
 GtkWidget *create_message_input(void);
-GtkWidget *create_message_box(const char *message_txt, ssize_t username_length);
+GtkWidget *create_message_box(const char *message_txt);
 gboolean set_scroll_to_bottom(gpointer data);
 #endif //CHAT_H
