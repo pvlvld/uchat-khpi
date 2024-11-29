@@ -80,6 +80,7 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     message_info_struct->chat_id = message_struct->chat_struct->chat_id;
     message_info_struct->message_id = message_struct->message_id;
     message_info_struct->is_new = is_new;
+    message_info_struct->message_wrapper = message_wrapper;
 
     GtkWidget *message_text = create_message_box(message_text_txt, message_info_struct);
 
@@ -136,6 +137,26 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
 
     return height + 12;
 }
+
+static void clear_widget(GtkWidget *container) {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(container));
+
+    for (GList *child = children; child != NULL; child = child->next) {
+        gtk_widget_destroy(GTK_WIDGET(child->data));
+    }
+
+    g_list_free(children);
+}
+
+
+void redraw_message_wrapper(GtkWidget *message_wrapper, t_messages_struct *message_struct) {
+    clear_widget(message_wrapper);
+    draw_chat(message_wrapper, message_struct, 0, 0);
+
+    gtk_widget_queue_resize(message_wrapper);
+    gtk_widget_show_all(message_wrapper);
+}
+
 
 void add_chat_message(t_messages_struct *message, int is_received) {
     GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(vendor.pages.main_page.chat.scrolled_window));

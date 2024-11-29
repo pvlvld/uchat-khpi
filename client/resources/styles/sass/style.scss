@@ -52,3 +52,28 @@
     font-size: 16px;
   }
 }
+
+.test__content {
+  background: red;
+}
+
+
+.modal__edit {
+  &_wrapper {
+    padding: 20px;
+  }
+  &_title {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  &_input text{
+    background: $neutral-900;
+    border-radius: 16px;
+    padding-bottom: 32px;
+  }
+  &_button {
+    background: $emerald-900;
+    padding: 8px;
+    font-size: 20px;
+  }
+}

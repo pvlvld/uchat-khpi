@@ -21,6 +21,7 @@ typedef struct {
     void (*free_struct)(t_messages_struct *message);
     int (*get_total_messages)(void);
     int (*delete_message)(int message_id, int chat_id);
+    t_messages_struct *(*edit_message_and_get)(int message_id, int chat_id, const char *new_message_text);
 } t_messages_table;
 t_messages_table init_messages_table(void);
 

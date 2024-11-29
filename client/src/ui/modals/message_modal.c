@@ -37,6 +37,15 @@ static void on_copy_clicked(GtkWidget *widget, GdkEventButton *event, gpointer u
     }
 }
 
+static void on_edit_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    (void) widget;
+    (void) user_data;
+    if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
+        t_message_info_modal *message_info = (t_message_info_modal *)user_data;
+        vendor.modal.message_info.edit_modal.show(GTK_WINDOW(vendor.window), message_info);
+    }
+}
+
 static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
     (void) widget;
     if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
@@ -54,94 +63,6 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
         vendor.database.tables.messages_table.delete_message(message_info_struct->message_id, message_info_struct->chat_id);
 
     }
-}
-
-static void on_file_open(GtkWidget *widget, gpointer user_data) {
-    (void)widget;
-    (void)user_data;
-
-    GtkWindow *dialog_window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-
-    gtk_window_set_default_size(dialog_window, 600, 303);
-
-    gtk_window_set_resizable(dialog_window, TRUE);
-
-    int parent_width, parent_height;
-    gtk_window_get_size(GTK_WINDOW(vendor.window), &parent_width, &parent_height);
-    int parent_x, parent_y;
-    gtk_window_get_position(GTK_WINDOW(vendor.window), &parent_x, &parent_y);
-
-    gtk_window_move(dialog_window,
-                    parent_x + (parent_width / 2) - 300,
-                    parent_y + (parent_height / 2) - 150);
-
-    GtkWidget *dialog = gtk_file_chooser_dialog_new("Open File",
-                                                    dialog_window,
-                                                    GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                    "_Cancel", GTK_RESPONSE_CANCEL,
-                                                    "_Open", GTK_RESPONSE_ACCEPT,
-                                                    NULL);
-
-    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
-
-    if (res == GTK_RESPONSE_ACCEPT) {
-        GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
-        char *file_path = gtk_file_chooser_get_filename(chooser);
-
-        if (file_path) {
-            const char *valid_extensions[] = {"jpg", "jpeg", "png", NULL};
-            const char *file_extension = g_strrstr(file_path, ".");
-            gboolean is_valid_image = FALSE;
-
-            for (int i = 0; valid_extensions[i] != NULL; i++) {
-                if (file_extension && g_str_has_suffix(file_extension, valid_extensions[i])) {
-                    is_valid_image = TRUE;
-                    break;
-                }
-            }
-
-            if (is_valid_image) {
-                GDateTime *now = g_date_time_new_now_utc();
-                gchar *timestamp = g_date_time_format(now, "%Y%m%d%H%M%S");
-                g_date_time_unref(now);
-
-                const char *basename = g_path_get_basename(file_path);
-                gchar *new_filename = g_strdup_printf("%s_%s%s", timestamp, basename, file_extension);
-
-                const char *dest_dir = "resources/images/user_uploads";
-                gchar *destination_path = g_build_filename(dest_dir, new_filename, NULL);
-
-                g_mkdir_with_parents(dest_dir, 0755);
-
-                GFile *src_file = g_file_new_for_path(file_path);
-                GFile *dst_file = g_file_new_for_path(destination_path);
-
-                // Копируем файл
-                if (g_file_test(file_path, G_FILE_TEST_EXISTS)) {
-                    if (g_file_copy(src_file, dst_file, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, NULL)) {
-                        g_print("File successfully copied to: %s\n", destination_path);
-                    } else {
-                        g_warning("Failed to copy file to: %s\n", destination_path);
-                    }
-                }
-
-                g_object_unref(src_file);
-                g_object_unref(dst_file);
-
-                g_free(destination_path);
-                g_free(new_filename);
-            } else {
-                g_warning("Selected file is not a valid image.\n");
-            }
-
-            g_free(file_path);
-        } else {
-            g_warning("No file selected.");
-        }
-    }
-
-    gtk_widget_destroy(dialog);
-    gtk_widget_destroy(GTK_WIDGET(dialog_window));
 }
 
 static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_struct, int x, int y, const char *text, gboolean is_full) {
@@ -164,8 +85,6 @@ static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_st
     gtk_window_set_transient_for(GTK_WINDOW(dialog), parent);
     gtk_window_set_destroy_with_parent(GTK_WINDOW(dialog), FALSE);
 
-    g_print("x: %d y: %d\n", x, y);
-
 //    gtk_window_move(GTK_WINDOW(dialog), x + width < window_width + 54 ? x : window_width - width + 54, y - 40 < 900 ? y - 40 : 840);
     gtk_window_move(GTK_WINDOW(dialog), x, y - 40 < 940 ? y - 40 : 880);
 
@@ -180,8 +99,10 @@ static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_st
 
     gtk_widget_set_margin_top(add_reaction_event, 8);
     gtk_widget_set_margin_bottom(delete_event, 8);
-
-    g_signal_connect(edit_event, "button-press-event", G_CALLBACK(on_file_open), vendor.window);
+	t_message_info_modal *message_info = malloc(sizeof(t_message_info_modal *));
+    message_info->text = vendor.helpers.strdup(text);
+    message_info->info = message_info_struct;
+    g_signal_connect(edit_event, "button-press-event", G_CALLBACK(on_edit_clicked), message_info);
     g_signal_connect(copy_event, "button-press-event", G_CALLBACK(on_copy_clicked), (gpointer)text);
     g_signal_connect(delete_event, "button-press-event", G_CALLBACK(on_delete_clicked), message_info_struct);
 
@@ -208,6 +129,7 @@ t_modal_message_info init_modal_message_info(void) {
         .window = NULL,
         .show = show_modal,
         .destroy = destroy_modal,
+        .edit_modal = init_edit_modal(),
     };
 
     return message_info;
