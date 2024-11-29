@@ -35,10 +35,11 @@ typedef struct {
 
 typedef struct {
     GtkWidget *widget;
-    GtkWidget *message_wrapper;
+//    GtkWidget *message_wrapper;
     int is_new;
     int chat_id;
     int message_id;
+    int sender_id;
 } t_message_info_struct;
 
 typedef struct {
@@ -54,5 +55,5 @@ GtkWidget *chat_create_scrolled_window(void);
 GtkWidget *create_message_input(void);
 GtkWidget *create_message_box(const char *message_txt, t_message_info_struct *message_info_struct);
 gboolean set_scroll_to_bottom(gpointer data);
-void redraw_message_wrapper(GtkWidget *message_wrapper, t_messages_struct *message_struct);
+void redraw_message_wrapper(t_message_info_struct *info, t_messages_struct *message_struct);
 #endif //CHAT_H

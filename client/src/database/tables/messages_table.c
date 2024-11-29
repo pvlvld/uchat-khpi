@@ -270,28 +270,13 @@ static t_messages_struct *edit_message_and_get(int message_id, int chat_id, cons
     vendor.database.sql.execute_sql(sql);
     free(sql);
 
-    t_messages_struct *message = malloc(sizeof(t_messages_struct));
-    if (message == NULL) {
-        fprintf(stderr, "Memory allocation failed for message structure\n");
-        return NULL;
-    }
-
-    message->message_id = message_id;
-    message->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
-    message->sender_struct = vendor.database.tables.users_table.get_user_by_id(chat_id);
-
     char *decrypt = vendor.crypto.decrypt_data_from_db(new_message_text);
     if (decrypt) {
-        message->message_text = vendor.helpers.strdup(decrypt);
+        message_before->message_text = vendor.helpers.strdup(decrypt);
         free(decrypt);
     }
 
-    message->timestamp = message_before->timestamp;
-    message->edited_at = message_before->edited_at;
-
-    memset(&message->read_at, 0, sizeof(message->read_at));
-
-    return message;
+    return message_before;
 }
 
 t_messages_table init_messages_table(void) {

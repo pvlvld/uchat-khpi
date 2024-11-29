@@ -77,7 +77,7 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
         char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
             t_messages_struct *message_struct = vendor.database.tables.messages_table.edit_message_and_get(message_info->info->message_id, message_info->info->chat_id, encrypt);
-            redraw_message_wrapper(message_info->info->message_wrapper, message_struct);
+            redraw_message_wrapper(message_info->info, message_struct);
             free(encrypt);
         }
 

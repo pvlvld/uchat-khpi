@@ -80,7 +80,7 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     message_info_struct->chat_id = message_struct->chat_struct->chat_id;
     message_info_struct->message_id = message_struct->message_id;
     message_info_struct->is_new = is_new;
-    message_info_struct->message_wrapper = message_wrapper;
+    message_info_struct->sender_id = message_struct->sender_struct->user_id;
 
     GtkWidget *message_text = create_message_box(message_text_txt, message_info_struct);
 
@@ -149,14 +149,20 @@ static void clear_widget(GtkWidget *container) {
 }
 
 
-void redraw_message_wrapper(GtkWidget *message_wrapper, t_messages_struct *message_struct) {
-    clear_widget(message_wrapper);
-    draw_chat(message_wrapper, message_struct, 0, 0);
+void redraw_message_wrapper(t_message_info_struct *info, t_messages_struct *message_struct) {
+    clear_widget(info->widget);
+    draw_chat(info->widget, message_struct, 0, 0);
 
-    gtk_widget_queue_resize(message_wrapper);
-    gtk_widget_show_all(message_wrapper);
+    gtk_widget_queue_resize(info->widget);
+    gtk_widget_show_all(info->widget);
+
+    GtkWidget *stretchable_box = info->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+
+    int height = gtk_widget_get_allocated_height(info->widget);
+    int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+
+    gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
 }
-
 
 void add_chat_message(t_messages_struct *message, int is_received) {
     GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(vendor.pages.main_page.chat.scrolled_window));
