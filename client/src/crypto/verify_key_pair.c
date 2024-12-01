@@ -7,13 +7,11 @@ int verify_key_pair(void) {
     BIO *public_bio = BIO_new_mem_buf((void*)vendor.crypto.public_key_str, -1);
 
     if (!private_bio || !public_bio) {
-        fprintf(stderr, "Error creating BIOs\n");
         return 0;
     }
 
     EVP_PKEY *private_key = PEM_read_bio_PrivateKey(private_bio, NULL, NULL, NULL);
     if (!private_key) {
-        fprintf(stderr, "Error reading private key\n");
         BIO_free(private_bio);
         BIO_free(public_bio);
         return 0;
@@ -21,7 +19,6 @@ int verify_key_pair(void) {
 
     EVP_PKEY *public_key = PEM_read_bio_PUBKEY(public_bio, NULL, NULL, NULL);
     if (!public_key) {
-        fprintf(stderr, "Error reading public key\n");
         EVP_PKEY_free(private_key);
         BIO_free(private_bio);
         BIO_free(public_bio);
