@@ -23,4 +23,3 @@ char *get_sender_from_token(const char *request) {
     cJSON_Delete(jwt_verify.payload);
     return login_name; // Remember to free this in the calling function
 }
-
