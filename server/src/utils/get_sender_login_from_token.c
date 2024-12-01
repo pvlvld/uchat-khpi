@@ -1,11 +1,8 @@
-#include <../../../../libraries/cJSON/cJSON.h>
-#include "../../../inc/utils.h"
+#include "../../inc/utils.h"
 
 char *get_sender_from_token(const char *request) {
     char *token = extract_bearer_token(request);
-    if (!token) {
-        return NULL;
-    }
+    if (!token) return NULL;
 
     // Verify and decode the JWT payload
     jwt_verification_result jwt_verify = vendor.jwt.verify_jwt_token(token);
