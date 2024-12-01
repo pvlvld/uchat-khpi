@@ -26,7 +26,7 @@ void send_message_rout(SSL *ssl, const char *request) {
     char *message_str = extract_message(json);
     char *sender_login_str = get_sender_from_token(request);
 
-    if (!is_valid_chat_id(chat_id)) {
+    if (!is_valid_chat_id(chat_id_str)) {
         cJSON_AddStringToObject(response_json, "message", "Invalid recipient login.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
 
