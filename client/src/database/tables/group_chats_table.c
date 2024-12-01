@@ -2,7 +2,7 @@
 
 static void create_table(void) {
     if (vendor.database.db == NULL) {
-        printf("[ERROR] База данных не инициализирована!\n");
+        printf("[ERROR] Database not initialized!\n\n");
         return;
     }
 
@@ -16,7 +16,6 @@ static void create_table(void) {
         ");";
 
     vendor.database.sql.execute_sql(sql);
-    printf("[INFO] Таблица group_info создана (или уже существует).\n");
 }
 
 t_group_chats_table init_group_chats_table(void) {

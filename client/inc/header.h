@@ -84,6 +84,7 @@ typedef struct {
     t_server server;
     t_server_requests server_requests;
     int total_messages;
+    int debug_mode;
 } t_vendor;
 
 extern t_vendor vendor;

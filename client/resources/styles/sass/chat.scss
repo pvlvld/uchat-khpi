@@ -23,6 +23,12 @@
 
   &__message {
 
+    &_sender {
+      &__text {
+        color: $emerald-500;
+      }
+    }
+
     &.hover * {
       &._received {
         background: $neutral-600;
@@ -41,6 +47,10 @@
       font-size: 16px;
       padding: 10px 10px 12px;
       transition: background-color .3s ease;
+
+      &._top {
+        padding-top: 32px;
+      }
 
       &._received {
         background: $neutral-700;

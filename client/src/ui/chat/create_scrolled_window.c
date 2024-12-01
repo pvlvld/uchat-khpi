@@ -1,26 +1,45 @@
 #include "../../../inc/header.h"
 
-static char *format_last_message(const char *sender_name, const char *message) {
-    const char *format = "%s\n%s";
-
-    int size = snprintf(NULL, 0, format, sender_name, message);
-    if (size < 0) {
-        return NULL;
-    }
-
-    char *buffer = (char *)malloc(size + 1);
-    if (!buffer) {
-        return NULL;
-    }
-
-    snprintf(buffer, size + 1, format, sender_name, message);
-    return buffer;
+static void on_sender_event_box_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    (void) widget;
+    (void) event;
+    t_users_struct *sender_struct = (t_users_struct *) user_data;
+    g_print("sender id = %d\n", sender_struct->user_id);
 }
 
-static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_struct, int is_received) {
+static GtkWidget *create_sender_event_box(t_messages_struct *message_struct, int *add_to_height, int *min_width, int width) {
+	GtkWidget *sender_name = gtk_label_new(message_struct->sender_struct->username);
+    gtk_label_set_lines(GTK_LABEL(sender_name), 1);
+    gtk_label_set_ellipsize(GTK_LABEL(sender_name), PANGO_ELLIPSIZE_END);
+    vendor.helpers.set_classname_and_id(sender_name, "chat__message_sender__text");
+
+    GtkWidget *sender_event_box = gtk_event_box_new();
+    vendor.helpers.add_hover(sender_event_box);
+    gtk_container_add(GTK_CONTAINER(sender_event_box), sender_name);
+    gtk_widget_set_margin_start(sender_event_box, 10);
+    gtk_widget_set_margin_top(sender_event_box, 12);
+    gtk_widget_set_halign(sender_event_box, GTK_ALIGN_START);
+    gtk_widget_set_valign(sender_event_box, GTK_ALIGN_START);
+    (*add_to_height) = 20;
+
+    PangoLayout *layout = gtk_widget_create_pango_layout(sender_name, message_struct->sender_struct->username);
+    pango_layout_set_text(layout, message_struct->sender_struct->username, -1);
+    pango_layout_get_size(layout, min_width, NULL);
+    (*min_width) /= PANGO_SCALE;
+
+	gtk_widget_set_size_request(sender_name, (*min_width) + 40 < width ? (*min_width) : width - 40, -1);
+    g_object_unref(layout);
+
+    g_signal_connect(sender_event_box, "button-press-event", G_CALLBACK(on_sender_event_box_click), message_struct->sender_struct);
+    return sender_event_box;
+}
+
+static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_struct, int is_received, int is_new) {
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
     int width = 500;
+    int min_width = 0;
+    int add_to_height = 0;
 
     GtkWidget *message = gtk_overlay_new();
     gtk_widget_set_hexpand(message, FALSE);
@@ -32,26 +51,42 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     gtk_container_add(GTK_CONTAINER(event_box), message);
 
     vendor.helpers.set_classname_and_id(event_box, "chat__message");
-    gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
-
     char *message_text_txt = message_struct->message_text;
     if (!g_utf8_validate(message_text_txt, -1, NULL)) {
         g_warning("Invalid UTF-8 detected!");
     }
-    ssize_t sender_length = 0;
+
+    PangoFontDescription *font_desc = pango_font_description_new();
+    pango_font_description_set_family(font_desc, "Ubuntu Sans");
+    pango_font_description_set_size(font_desc, 12.2 * PANGO_SCALE);
+
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
-        message_text_txt = format_last_message(vendor.active_chat.chat->sender_name, message_struct->message_text);
-        sender_length = strlen(vendor.active_chat.chat->sender_name);
+        GtkWidget *avatar_event = gtk_event_box_new();
+        GtkWidget *drawing_area = vendor.helpers.create_avatar("resources/images/avatars/logo_3.jpg", 40, 40);
+        gtk_container_add(GTK_CONTAINER(avatar_event), drawing_area);
+        gtk_box_pack_start(GTK_BOX(message_wrapper), avatar_event, FALSE, FALSE, 4);
+        vendor.helpers.add_hover(avatar_event);
+        g_signal_connect(avatar_event, "button-press-event", G_CALLBACK(on_sender_event_box_click), message_struct->sender_struct);
+
+        GtkWidget *sender_event_box = create_sender_event_box(message_struct, &add_to_height, &min_width, width);
+        gtk_overlay_add_overlay(GTK_OVERLAY(message), sender_event_box);
+        vendor.helpers.set_classname_and_id(sender_event_box, "chat__message_sender");
     }
 
-    GtkWidget *message_text = create_message_box(message_text_txt, sender_length);
+    gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
+
+    t_message_info_struct *message_info_struct = g_new(t_message_info_struct, 1);
+    message_info_struct->widget = message_wrapper;
+    message_info_struct->chat_id = message_struct->chat_struct->chat_id;
+    message_info_struct->message_id = message_struct->message_id;
+    message_info_struct->is_new = is_new;
+    message_info_struct->sender_id = message_struct->sender_struct->user_id;
+
+    GtkWidget *message_text = create_message_box(message_text_txt, message_info_struct);
 
     PangoLayout *layout = gtk_widget_create_pango_layout(message_text, message_struct->message_text);
     pango_layout_set_text(layout, message_text_txt, -1);
 
-    PangoFontDescription *font_desc = pango_font_description_new();
-    pango_font_description_set_family(font_desc, "Ubuntu Sans");
-    pango_font_description_set_size(font_desc, 16 * PANGO_SCALE);
     pango_layout_set_font_description(layout, font_desc);
     pango_font_description_free(font_desc);
 
@@ -63,25 +98,32 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     if (width_in_pixels < 40) {
         width_in_pixels = 40;
     }
+    if (min_width > width_in_pixels) {
+        width_in_pixels = min_width;
+    }
+
     if (width_in_pixels < width) {
         width = width_in_pixels + 40;
     }
 
-    pango_layout_set_width(layout, width * PANGO_SCALE * 1.8);
+    pango_layout_set_width(layout, width * PANGO_SCALE);
     int _height;
     pango_layout_get_size(layout, NULL, &_height);
+    g_object_unref(layout);
 
     int height_in_pixels = _height / PANGO_SCALE;
-    int height = height_in_pixels + 24;
-
-//    int line_count = pango_layout_get_line_count(layout);
+    int height = height_in_pixels + 32 + add_to_height;
 
     gtk_widget_set_size_request(message, width, height);
-    gtk_widget_set_size_request(message_text, width, height);
+    gtk_widget_set_size_request(message_text, width, height - add_to_height);
     gtk_widget_set_halign(message_text, GTK_ALIGN_START);
     gtk_style_context_add_class(gtk_widget_get_style_context(message_text), is_received ? "_received" : "_sended");
+    if (add_to_height != 0) {
+        gtk_style_context_add_class(gtk_widget_get_style_context(message_text), "_top");
+    }
 
     gtk_overlay_add_overlay(GTK_OVERLAY(message), message_text);
+	gtk_overlay_reorder_overlay(GTK_OVERLAY(message), message_text, 0);
 
     GtkWidget *time = gtk_label_new(format_timestamp(message_struct->timestamp));
 
@@ -96,16 +138,42 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     return height + 12;
 }
 
+static void clear_widget(GtkWidget *container) {
+    GList *children = gtk_container_get_children(GTK_CONTAINER(container));
+
+    for (GList *child = children; child != NULL; child = child->next) {
+        gtk_widget_destroy(GTK_WIDGET(child->data));
+    }
+
+    g_list_free(children);
+}
+
+
+void redraw_message_wrapper(t_message_info_struct *info, t_messages_struct *message_struct) {
+    clear_widget(info->widget);
+    draw_chat(info->widget, message_struct, 0, 0);
+
+    gtk_widget_queue_resize(info->widget);
+    gtk_widget_show_all(info->widget);
+
+    GtkWidget *stretchable_box = info->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+
+    int height = gtk_widget_get_allocated_height(info->widget);
+    int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+
+    gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
+}
+
 void add_chat_message(t_messages_struct *message, int is_received) {
     GtkAdjustment *adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(vendor.pages.main_page.chat.scrolled_window));
     double upper = gtk_adjustment_get_upper(adjustment);
     double current_value = gtk_adjustment_get_value(adjustment);
     double page_size = gtk_adjustment_get_page_size(adjustment);
 
-    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_new_messages), message_wrapper, FALSE, FALSE, 0);
 
-    draw_chat(message_wrapper, message, is_received);
+    draw_chat(message_wrapper, message, is_received, 1);
     gtk_widget_show_all(message_wrapper);
 
     if (!is_received) {
@@ -121,12 +189,12 @@ void add_chat_message(t_messages_struct *message, int is_received) {
 }
 
 static int add_old_chat_message(t_messages_struct *message, int is_received) {
-    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *message_wrapper = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_halign(message_wrapper, is_received == 0 ? GTK_ALIGN_END : GTK_ALIGN_START);
     vendor.helpers.set_classname_and_id(message_wrapper, "chat__message__wrapper");
     gtk_box_pack_end(GTK_BOX(vendor.pages.main_page.chat.stretchable_box_old_messages), message_wrapper, FALSE, FALSE, 0);
 
-    return draw_chat(message_wrapper, message, is_received);
+    return draw_chat(message_wrapper, message, is_received, 0);
 }
 
 static gboolean scroll_to_height(gpointer data) {
@@ -212,14 +280,14 @@ GtkWidget *chat_create_scrolled_window(void) {
     if (messages != NULL) {
         for (int i = 0; i < PER_PAGE; i++) {
             if ((i + 1) * vendor.pages.main_page.chat.page > vendor.pages.main_page.chat.total_messages) {
-		break;
+		        break;
             }
-	    int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
+	        int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
 
             height += add_old_chat_message(&messages[i], is_received);
             vendor.pages.main_page.chat.shown_messages++;
-	}
-	vendor.database.tables.messages_table.free_struct(messages);
+	    }
+	    vendor.database.tables.messages_table.free_struct(messages);
     }
 
     gtk_widget_set_size_request(stretchable_box_old_messages, -1, height);

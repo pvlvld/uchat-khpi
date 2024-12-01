@@ -152,7 +152,6 @@ void register_on_register_submit(GtkButton *button, gpointer user_data) {
     }
 
     if (!db_exists(username)) {
-        g_print("login: %s\nPassword: %s\n", username, password);
         vendor.current_user.username = vendor.helpers.strdup(username);
         vendor.current_user.password = vendor.helpers.strdup(password);
 

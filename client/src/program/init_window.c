@@ -13,6 +13,7 @@ static gboolean on_focus_in_event(GtkWidget *widget, GdkEventFocus *event) {
         vendor.hover_chat.chat_sidebar_widget = NULL;
     }
     vendor.popup.update();
+    vendor.modal.message_info.edit_modal.destroy();
     return FALSE;
 }
 

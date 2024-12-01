@@ -13,14 +13,22 @@ typedef struct {
 
 typedef struct {
     GtkWidget *window;
+    void (*show)(GtkWindow *parent, t_message_info_modal *message_info);
+    void (*destroy)(void);
+    int is_open;
+} t_modal_edit_modal;
+
+typedef struct {
+    GtkWidget *window;
     void (*show)(GtkWindow *parent);
     void (*destroy)(void);
 } t_modal_profile_settings;
 
 typedef struct {
     GtkWidget *window;
-    void (*show)(GtkWindow *parent, int x, int y, const char *text, gboolean is_full);
+    void (*show)(GtkWindow *parent, t_message_info_struct *message_info_struct, int x, int y, const char *text, gboolean is_full);
     void (*destroy)(void);
+    t_modal_edit_modal edit_modal;
 } t_modal_message_info;
 
 typedef struct {
@@ -31,6 +39,7 @@ typedef struct {
 
 t_modal_chat_info init_modal_chat_info(void);
 t_modal_profile_settings init_modal_profile_settings(void);
+t_modal_edit_modal init_edit_modal(void);
 t_modal_message_info init_modal_message_info(void);
 t_modal init_modal(void);
 
