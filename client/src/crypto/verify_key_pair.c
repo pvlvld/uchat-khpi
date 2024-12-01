@@ -29,10 +29,10 @@ int verify_key_pair(void) {
     }
 
     if (EVP_PKEY_eq(private_key, public_key) == 1) {
-        printf("Public and private keys match!\n");
+        if (vendor.debug_mode == 1) printf("[DEBUG] Public and private keys match!\n");
         result = 1;
     } else {
-        printf("Public and private keys do not match.\n");
+        if (vendor.debug_mode >= 1) printf("[INFO] Public and private keys do not match.\n");
         result = 0;
     }
 

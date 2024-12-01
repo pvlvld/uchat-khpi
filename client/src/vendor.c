@@ -10,6 +10,7 @@ void init_vendor(t_vendor *vendor) {
     vendor->helpers = init_helpers();
     vendor->pages = init_pages();
     vendor->window_content = NULL;
+    vendor->debug_mode = 1;
     t_user current_user = {
         .user_id = 1,
         .username = "admin",

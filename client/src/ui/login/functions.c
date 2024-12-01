@@ -131,7 +131,6 @@ void login_on_login_submit(GtkButton *button, gpointer user_data) {
     }
 
     if (db_exists(username)) {
-        g_print("Login: %s\nPassword: %s\n", username, password);
         vendor.current_user.username = vendor.helpers.strdup(username);
         vendor.current_user.password = vendor.helpers.strdup(password);
         vendor.pages.change_page(LOADING_PAGE);

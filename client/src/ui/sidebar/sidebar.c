@@ -100,16 +100,16 @@ GtkWidget *sidebar_init(void) {
 
     t_chat_info **chats_info = parse_chats_info();
     if (!chats_info) {
-        printf("[ERROR] Не удалось получить информацию о чатах.\n");
+        printf("[ERROR] Failed to retrieve chat information.\n");
         return sidebar;
     }
 
     size_t i = 0;
     while (chats_info[i] != NULL) {
-        printf("[DEBUG] Создание chatblock для чата с ID: %d\n", chats_info[i]->id);
+        if (vendor.debug_mode == 1) printf("[DEBUG] Creating a chatblock for chat with ID: %d\n", chats_info[i]->id);
         GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
         if (!chatblock) {
-            printf("[ERROR] Не удалось создать блок для чата с ID: %d\n", chats_info[i]->id);
+            printf("[ERROR] Failed to create a block for chat with ID: %d\n", chats_info[i]->id);
             continue;
         }
 

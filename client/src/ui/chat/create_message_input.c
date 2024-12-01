@@ -102,7 +102,6 @@ static void send_message(GtkTextView *text_view) {
     if (g_strcmp0(text, "") != 0) {
         char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
-            g_print("vendor.database.tables.messages_table.get_total_messages(): %d\n", vendor.database.tables.messages_table.get_total_messages());
             t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
 			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt);
             ++vendor.pages.main_page.chat.temp_message_counter;

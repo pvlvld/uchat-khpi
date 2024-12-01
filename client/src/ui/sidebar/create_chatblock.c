@@ -222,7 +222,6 @@ GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chat_name = create_chat_name(chat_info);
     g_object_set_data(G_OBJECT(chatblock), "chat_name", chat_name);
 
-    // Создаем метку с разметкой
     GtkWidget *chat_message = create_chat_message(chat_info);
     g_object_set_data(G_OBJECT(chatblock), "chat_message", chat_message);
 

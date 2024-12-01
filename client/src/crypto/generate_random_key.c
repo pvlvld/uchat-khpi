@@ -5,13 +5,13 @@ char *generate_random_key(void) {
     unsigned char raw_key[AES_KEY_LENGTH];
 
     if (!RAND_bytes(raw_key, AES_KEY_LENGTH)) {
-        fprintf(stderr, "Ошибка генерации случайного ключа\n");
+        fprintf(stderr, "[ERROR] Random key generation error\n");
         exit(EXIT_FAILURE);
     }
 
     key = malloc(AES_KEY_LENGTH * 2 + 1);
     if (key == NULL) {
-        fprintf(stderr, "Ошибка выделения памяти для ключа\n");
+        fprintf(stderr, "[ERROR] Error of memory allocation for the key\n");
         exit(EXIT_FAILURE);
     }
 

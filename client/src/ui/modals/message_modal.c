@@ -62,6 +62,11 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
         vendor.modal.message_info.destroy();
         vendor.database.tables.messages_table.delete_message(message_info_struct->message_id, message_info_struct->chat_id);
 
+        if (vendor.active_chat.chat->last_message->message_id == message_info_struct->message_id
+                && vendor.active_chat.chat->id == (unsigned int) message_info_struct->chat_id) {
+                	vendor.active_chat.chat->last_message = NULL;
+            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+        }
     }
 }
 

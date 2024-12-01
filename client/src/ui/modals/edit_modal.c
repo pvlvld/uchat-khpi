@@ -78,6 +78,12 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
         if (encrypt) {
             t_messages_struct *message_struct = vendor.database.tables.messages_table.edit_message_and_get(message_info->info->message_id, message_info->info->chat_id, encrypt);
             redraw_message_wrapper(message_info->info, message_struct);
+
+            if (vendor.active_chat.chat->last_message->message_id == message_struct->message_id
+                && vendor.active_chat.chat->id == (unsigned int) message_struct->chat_struct->chat_id) {
+                	vendor.active_chat.chat->last_message = message_struct;
+            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+                }
             free(encrypt);
         }
 
