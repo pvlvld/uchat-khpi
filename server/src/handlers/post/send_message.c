@@ -100,8 +100,8 @@ void send_message_rout(SSL *ssl, const char *request) {
         PQfinish(conn);
     }
 
-    const char *chat_type = get_chat_type(conn, chat_id);
-    if (strcmp(chat_type, "group") == 0) {
+    const char chat_type = get_chat_type(conn, chat_id);
+    if (strcmp(&chat_type, "group") == 0) {
         // For group chats, check user permissions
         const char *user_role = get_user_role_in_group(conn, chat_id, sender_id);
         if (!user_role || strcmp(user_role, "banned") == 0 || strcmp(user_role, "restricted") == 0) {
@@ -112,7 +112,7 @@ void send_message_rout(SSL *ssl, const char *request) {
 
         // TODO: Proceed with storing and sending group message logic here
 
-    } else if (strcmp(chat_type, "channel") == 0) {
+    } else if (strcmp(&chat_type, "channel") == 0) {
         // For channels, ensure the user is the owner
         const char *user_role = get_user_role_in_group(conn, chat_id, sender_id);
         if (!user_role || strcmp(user_role, "owner") != 0) {
@@ -123,7 +123,7 @@ void send_message_rout(SSL *ssl, const char *request) {
 
         // TODO: Proceed with storing and sending channel message logic here
 
-    } else if (strcmp(chat_type, "personal") == 0) {
+    } else if (strcmp(&chat_type, "personal") == 0) {
         // TODO: For personal chats, proceed without further permission checks
 
     } else {

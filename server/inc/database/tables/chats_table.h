@@ -7,8 +7,11 @@
 
 bool delete_chat(PGconn *conn, int chat_id);
 
+char get_chat_type(PGconn *conn, int chat_id);
+
 typedef struct {
     bool (*delete_chat)(PGconn *conn, int chat_id);
+    char (*get_chat_type)(PGconn *conn, int chat_id);
 } t_chats_table;
 
 #endif // CHATS_TABLE_H
