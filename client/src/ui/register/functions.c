@@ -109,6 +109,15 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
         vendor.current_user.jwt = vendor.helpers.strdup(token->valuestring);
         success = TRUE;
         db_exists(vendor.current_user.username);
+
+        cJSON *user = cJSON_GetObjectItem(response, "user");
+
+        if (user != NULL) {
+            cJSON *id = cJSON_GetObjectItem(user, "id");
+            if (id != NULL) {
+                vendor.current_user.user_id = id->valueint;
+            }
+        }
     }
 
     cJSON_Delete(response);
@@ -126,7 +135,7 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
 
     if (success) {
         t_active_users_struct active_users_struct = {
-            .user_id = 1,
+            .user_id = vendor.current_user.user_id,
             .username = vendor.current_user.username,
             .user_login = vendor.current_user.username,
             .about = NULL,
