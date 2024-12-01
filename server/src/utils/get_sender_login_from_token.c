@@ -1,5 +1,4 @@
 #include "../../inc/utils.h"
-#include <string.h>
 
 char *get_sender_from_token(const char *request) {
     char *token = extract_bearer_token(request);
