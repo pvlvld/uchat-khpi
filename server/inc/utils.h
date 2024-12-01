@@ -25,6 +25,7 @@ bool is_valid_message(const char *message);
 bool is_valid_chat_id(const char *chat_id_str);
 bool is_user_in_chat(PGconn *conn, int chat_id, int user_id);
 const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id);
+char *extract_chat_id(cJSON *json);
 
 
 #endif // UTILS_H
