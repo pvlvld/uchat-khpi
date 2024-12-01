@@ -1,11 +1,12 @@
+#include <libpq-fe.h>
+#include <stdlib.h>
 #include <string.h>
 
 char *mx_strdup(const char *s1) {
     int length = strlen(s1);
 
     char *new_str = (char *)malloc((length + 1) * sizeof(char));
-    if (!new_str)
-        return NULL;
+    if (!new_str) return NULL;
 
     memcpy(new_str, s1, length);
 
@@ -27,9 +28,7 @@ const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id) {
     PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
     const char *role = NULL;
 
-    if (PQntuples(res) > 0) {
-        role = mx_strdup(PQgetvalue(res, 0, 0));
-    }
+    if (PQntuples(res) > 0) { role = mx_strdup(PQgetvalue(res, 0, 0)); }
 
     PQclear(res);
     return role; // Caller is responsible for freeing this memory

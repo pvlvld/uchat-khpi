@@ -23,6 +23,8 @@ char *extract_recipient_login(cJSON *json);
 char *extract_message(cJSON *json);
 bool is_valid_message(const char *message);
 bool is_valid_chat_id(const char *chat_id_str);
+bool is_user_in_chat(PGconn *conn, int chat_id, int user_id);
+const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id);
 
 
 #endif // UTILS_H
