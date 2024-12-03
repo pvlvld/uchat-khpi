@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-const char *get_chat_type(PGconn *conn, int chat_id) {
+const char *get_chat_type_ptr(PGconn *conn, int chat_id) {
     const char *query = "SELECT chat_type FROM chats WHERE chat_id = $1";
     const char *params[1];
     char chat_id_str[12];
@@ -25,7 +25,7 @@ const char *get_chat_type(PGconn *conn, int chat_id) {
     }
 
     const char *chat_type = PQgetvalue(res, 0, 0);
-    char *chat_type_copy = mx_strdup(chat_type);
+    char *chat_type_copy = strdup(chat_type);
 
     PQclear(res);
     return chat_type_copy; // Caller is responsible for freeing this memory

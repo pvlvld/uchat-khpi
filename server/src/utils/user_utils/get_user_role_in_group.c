@@ -1,4 +1,4 @@
-#include "../../inc/utils.h"
+#include "../../../inc/utils.h"
 
 const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id) {
     const char *query = "SELECT role FROM group_chat_members WHERE chat_id = $1 AND user_id = $2";

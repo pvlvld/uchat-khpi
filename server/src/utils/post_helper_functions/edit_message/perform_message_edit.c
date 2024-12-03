@@ -30,7 +30,7 @@ void get_current_timestamp(char **timestamp_ptr) {
 
 
 void is_user_allowed_to_edit(PGconn *conn, int chat_id, int req_sender_id, int message_id, EditMessageResult_t *edit_message_result) {
-    const char *chat_type = get_chat_type(conn, chat_id);
+    const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (chat_type == NULL) {
         edit_message_result->Error = 1;
         edit_message_result->error_code = "UNKNOWN_CHAT_TYPE";

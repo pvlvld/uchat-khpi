@@ -48,7 +48,7 @@ deleteMessageResult_t check_if_message_already_deleted(PGconn *conn, int chat_id
 
 
 bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id) {
-    const char *chat_type = get_chat_type(conn, chat_id);
+    const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (strcmp(chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
         if (!is_user_online(recipient_id)) { return 0; }

@@ -80,7 +80,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
         PQfinish(conn);
         return;
     }
-    const char *chat_type = get_chat_type(conn, chat_id);
+    const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (strcmp(chat_type, "group") == 0) {
         const char *user_role = get_user_role_in_group(conn, chat_id, user_id);
         if (!user_role || strcmp(user_role, "banned") == 0 || strcmp(user_role, "restricted") == 0) {

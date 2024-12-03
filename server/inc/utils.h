@@ -1,8 +1,13 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+// compatibility with c99 and c11 (strdup)
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdbool.h>
 #include "header.h"
+#include <string.h>
+
 
 typedef struct {
     int Success;
@@ -23,11 +28,12 @@ typedef struct {
 
 #include "handlers/post_handlers/delete_message.h"
 
-
 bool is_user_online(int user_id);
 
 char *itoa(int value, char *buffer);
-char *mx_strdup(const char *s1);
+extern char *strdup (const char *__s)
+    __THROW __attribute_malloc__ __nonnull ((1));
+
 void get_current_timestamp(char **timestamp_ptr);
 
 char *hash_password(const char *password);
@@ -53,7 +59,7 @@ int get_dm_recipient_id(PGconn *conn, int chat_id, int sender_id);
 PGresult *get_group_recipients(PGconn *conn, int chat_id);
 
 char *extract_chat_id(cJSON *json);
-const char *get_chat_type(PGconn *conn, int chat_id);
+const char *get_chat_type_ptr(PGconn *conn, int chat_id);
 bool is_valid_chat_id(const char *chat_id_str);
 
 char *extract_message(cJSON *json);
@@ -73,5 +79,7 @@ MessageResult_t handle_group_or_channel_message(PGconn *conn, int chat_id, int s
 
 cJSON *create_message_json(int sender_id, const char *message_text);
 cJSON *create_delete_message_json(int sender_id, deleteMessageResult_t delete_result);
+
+
 
 #endif // UTILS_H
