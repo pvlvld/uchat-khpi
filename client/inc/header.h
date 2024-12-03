@@ -51,6 +51,7 @@ typedef struct {
     char *password;
     char *profile_picture;
     char *jwt;
+    t_ws_client ws_client;
 } t_user;
 
 typedef struct {
