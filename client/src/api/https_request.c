@@ -66,42 +66,63 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
     if (!ssl) {
         return NULL;
     }
+
     char request[BUFFER_SIZE];
     char buffer[BUFFER_SIZE];
     char response[BUFFER_SIZE * 10] = {0};
     int response_len = 0;
     int bytes;
     int headers_end = 0;
-    char *json_str = cJSON_PrintUnformatted(json_body);
+
+    // Подготовка заголовка Authorization (если JWT существует)
+    char auth_header[BUFFER_SIZE] = {0};
+    if (vendor.current_user.jwt) {
+        snprintf(auth_header, sizeof(auth_header), "Authorization: Bearer %s\r\n", vendor.current_user.jwt);
+    }
+
+    // Подготовка тела запроса (для POST)
+    char *json_str = NULL;
+    if (json_body) {
+        json_str = cJSON_PrintUnformatted(json_body);
+    }
+
     if (strcmp(method, "POST") == 0) {
         snprintf(request, sizeof(request),
                  "POST %s HTTP/1.1\r\n"
                  "Host: %s:%d\r\n"
                  "Content-Type: application/json\r\n"
                  "Content-Length: %zu\r\n"
+                 "%s" // Добавляем заголовок Authorization, если он есть
                  "\r\n"
-                 "%s",
-                 path, vendor.server.address, vendor.server.port, strlen(json_str), json_str);
+                 "%s", // Тело запроса
+                 path, vendor.server.address, vendor.server.port,
+                 json_str ? strlen(json_str) : 0,
+                 auth_header,
+                 json_str ? json_str : "");
     } else if (strcmp(method, "GET") == 0) {
         snprintf(request, sizeof(request),
                  "GET %s HTTP/1.1\r\n"
                  "Host: %s:%d\r\n"
+                 "%s" // Добавляем заголовок Authorization, если он есть
                  "\r\n",
-                 path, vendor.server.address, vendor.server.port);
+                 path, vendor.server.address, vendor.server.port,
+                 auth_header);
     } else {
         fprintf(stderr, "Unsupported HTTP method: %s\n", method);
-        free(json_str);
+        if (json_str) free(json_str);
         exit(1);
     }
 
+    // Отправка запроса
     if (SSL_write(ssl, request, strlen(request)) <= 0) {
         perror("SSL_write failed");
-        free(json_str);
+        if (json_str) free(json_str);
         exit(1);
     }
 
-    free(json_str);
+    if (json_str) free(json_str);
 
+    // Чтение ответа
     while ((bytes = SSL_read(ssl, buffer, sizeof(buffer) - 1)) > 0) {
         buffer[bytes] = '\0';
 
@@ -136,6 +157,7 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
 
     return json_response;
 }
+
 
 void disconnect_websocket(void) {
     pthread_mutex_lock(&vendor.current_user.ws_client.lock);
