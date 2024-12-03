@@ -30,6 +30,7 @@
 #include "pages.h"
 #include "database/server_requests.h"
 #include "database/edit_delete_layer.h"
+#include "server_connect.h"
 
 typedef struct {
     t_chat_info *chat;
@@ -49,6 +50,8 @@ typedef struct {
     char *about;
     char *password;
     char *profile_picture;
+    char *jwt;
+    t_ws_client ws_client;
 } t_user;
 
 typedef struct {
@@ -85,6 +88,7 @@ typedef struct {
     t_server_requests server_requests;
     int total_messages;
     int debug_mode;
+    t_ssl_struct ssl_struct;
 } t_vendor;
 
 extern t_vendor vendor;

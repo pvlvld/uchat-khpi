@@ -3,7 +3,6 @@
 char *decrypt_text(const char *encrypted, const char *secret) {
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
     if (!ctx) {
-        printf("Error creating EVP context\n");
         return NULL;
     }
 
@@ -16,7 +15,6 @@ char *decrypt_text(const char *encrypted, const char *secret) {
     int encrypted_len = strlen(encrypted) / 2;
     unsigned char* ciphertext = malloc(encrypted_len);
     if (!ciphertext) {
-        printf("Error allocating memory for ciphertext\n");
         EVP_CIPHER_CTX_free(ctx);
         return NULL;
     }
@@ -33,7 +31,6 @@ char *decrypt_text(const char *encrypted, const char *secret) {
     int ciphertext_len = encrypted_len - AES_BLOCK_SIZE;
     unsigned char* data = malloc(ciphertext_len);
     if (!data) {
-        printf("Error allocating memory for decrypted data\n");
         EVP_CIPHER_CTX_free(ctx);
         free(ciphertext);
         return NULL;
@@ -54,7 +51,6 @@ char *decrypt_text(const char *encrypted, const char *secret) {
     }
 
     if (EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, (unsigned char*)secret, iv) != 1) {
-        printf("Error initializing decryption\n");
         EVP_CIPHER_CTX_free(ctx);
         free(plaintext);
         free(data);
@@ -64,7 +60,6 @@ char *decrypt_text(const char *encrypted, const char *secret) {
 
     int out_len = 0;
     if (EVP_DecryptUpdate(ctx, plaintext, &out_len, data, ciphertext_len) != 1) {
-        printf("Error during decryption\n");
         EVP_CIPHER_CTX_free(ctx);
         free(plaintext);
         free(data);
@@ -74,7 +69,6 @@ char *decrypt_text(const char *encrypted, const char *secret) {
     plaintext_len = out_len;
 
     if (EVP_DecryptFinal_ex(ctx, plaintext + out_len, &out_len) != 1) {
-        printf("Error during final decryption\n");
         EVP_CIPHER_CTX_free(ctx);
         free(plaintext);
         free(data);

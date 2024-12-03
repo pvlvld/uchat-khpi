@@ -11,14 +11,6 @@ void init_vendor(t_vendor *vendor) {
     vendor->pages = init_pages();
     vendor->window_content = NULL;
     vendor->debug_mode = 1;
-    t_user current_user = {
-        .user_id = 1,
-        .username = "admin",
-        .user_login = "admin",
-        .profile_picture = "person_img.jpg"
-    };
-
-    vendor->database.create_database();
-    vendor->current_user = current_user;
     vendor->popup = init_popup();
+    vendor->ssl_struct = init_ssl_struct();
 }
