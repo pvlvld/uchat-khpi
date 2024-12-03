@@ -1,54 +1,26 @@
-#include "../../../inc/server/client.h"
 #include "../../../inc/header.h"
+#include "../../../inc/server/client.h"
 
-void _send_message_to_client(int user_id, cJSON *message) {
-    // Check if the necessary keys are present
+void _send_message_to_client(int user_id, cJSON *message) { // sender_id and message are mandatory fields in message object
+    // Validate that `message` is a valid JSON object
     if (!cJSON_IsObject(message)) {
         fprintf(stderr, "Message is not a valid JSON object\n");
         return;
     }
 
+    // Validate mandatory fields: `sender_id` and `message`
     cJSON *sender_id_item = cJSON_GetObjectItem(message, "sender_id");
     cJSON *message_item = cJSON_GetObjectItem(message, "message");
 
     if (!cJSON_IsNumber(sender_id_item) || !cJSON_IsString(message_item)) {
-        fprintf(stderr, "Missing or invalid keys in JSON message\n");
+        fprintf(stderr, "Missing or invalid mandatory fields in JSON message: sender_id or message\n");
         return;
     }
 
-    int sender_id = sender_id_item->valueint;
-    const char *message_text = message_item->valuestring;
-
-    // Create the main JSON object
-    cJSON *root = cJSON_CreateObject();
-    if (!root) {
-        fprintf(stderr, "Failed to create cJSON object\n");
-        return;
-    }
-
-    // Add a message
-    cJSON_AddStringToObject(root, "message", "New message");
-
-    // Create object details
-    cJSON *details = cJSON_CreateObject();
-    if (!details) {
-        fprintf(stderr, "Failed to create details cJSON object\n");
-        cJSON_Delete(root);
-        return;
-    }
-
-    // Add sender_id and message to details
-    cJSON_AddNumberToObject(details, "sender_id", sender_id);
-    cJSON_AddStringToObject(details, "message", message_text);
-
-    // Add details to the main object
-    cJSON_AddItemToObject(root, "details", details);
-
-    // Convert cJSON object to JSON string
-    char *json_str = cJSON_PrintUnformatted(root);
+    // Convert the entire message object to a JSON string
+    char *json_str = cJSON_PrintUnformatted(message);
     if (!json_str) {
         fprintf(stderr, "Failed to convert cJSON to string\n");
-        cJSON_Delete(root);
         return;
     }
 
@@ -69,11 +41,10 @@ void _send_message_to_client(int user_id, cJSON *message) {
     if (!frame) {
         perror("malloc");
         free(json_str);
-        cJSON_Delete(root);
         return;
     }
 
-    // Set frame bytes
+    // Set WebSocket frame bytes
     frame[0] = 0x81; // Final text frame
     if (json_len <= 125) {
         frame[1] = (unsigned char)json_len;
@@ -109,5 +80,4 @@ void _send_message_to_client(int user_id, cJSON *message) {
 
     free(frame);
     free(json_str);
-    cJSON_Delete(root);
 }

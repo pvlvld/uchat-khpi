@@ -13,6 +13,7 @@ typedef struct {
 
 EditMessageResult_t perform_message_edit(PGconn *conn, int chat_id, int req_sender_id, int message_id, char *new_message_text_str);
 void send_edit_message_response(SSL *ssl, EditMessageResult_t *edit_message_result, cJSON *response_json);
+bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id);
 
 void protected_edit_message_rout(SSL *ssl, const char *request);
 

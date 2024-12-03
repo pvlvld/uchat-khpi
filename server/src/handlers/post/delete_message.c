@@ -134,6 +134,13 @@ void delete_message_rout(SSL *ssl, const char *request) {
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+
+        } else if (result.Success == -5) {
+            cJSON_AddBoolToObject(response_json, "error", true);
+            cJSON_AddStringToObject(response_json, "code", "WS_MESSAGE_FAILED");
+            cJSON_AddStringToObject(response_json, "message", "Deletion WS message failed.");
+            vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+
         } else if (result.Success == 2) {
             cJSON_AddBoolToObject(response_json, "error", false);
             cJSON_AddStringToObject(response_json, "code", "OK");
@@ -204,6 +211,12 @@ void delete_message_rout(SSL *ssl, const char *request) {
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+        } else if (result.Success == -5) {
+            cJSON_AddBoolToObject(response_json, "error", true);
+            cJSON_AddStringToObject(response_json, "code", "WS_MESSAGE_FAILED");
+            cJSON_AddStringToObject(response_json, "message", "Deletion WS message failed.");
+            vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");
@@ -238,6 +251,12 @@ void delete_message_rout(SSL *ssl, const char *request) {
             cJSON_AddNumberToObject(response_json, "message_id", result.message_id);
             cJSON_AddStringToObject(response_json, "timestamp", result.timestamp);
             vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+        } else if (result.Success == -5) {
+            cJSON_AddBoolToObject(response_json, "error", true);
+            cJSON_AddStringToObject(response_json, "code", "WS_MESSAGE_FAILED");
+            cJSON_AddStringToObject(response_json, "message", "Deletion WS message failed.");
+            vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+
         } else {
             cJSON_AddBoolToObject(response_json, "error", true);
             cJSON_AddStringToObject(response_json, "code", "MESSAGE_DELETION_FAILED");

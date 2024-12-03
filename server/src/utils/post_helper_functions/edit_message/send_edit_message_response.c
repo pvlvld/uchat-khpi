@@ -1,5 +1,47 @@
 #include "../../../../inc/handlers/post_handlers/edit_message.h"
+bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id) {
+    const char *chat_type = get_chat_type(conn, chat_id);
+    if (strcmp(chat_type, "personal") == 0) {
+        int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
+        if (!is_user_online(recipient_id)) { return 0; }
+        cJSON *json_message = create_message_json(sender_id, "Edit message");
+        _send_message_to_client(recipient_id, json_message);
+        cJSON_Delete(json_message);
+        return 1;
+    } else if (strcmp(chat_type, "group") == 0) {
+        PGresult *recipients = get_group_recipients(conn, chat_id);
+        if (!recipients || PQresultStatus(recipients) != PGRES_TUPLES_OK) {
+            return 0;
+        }
+        for (int i = 0; i < PQntuples(recipients); i++) {
+            int recipient_id = atoi(PQgetvalue(recipients, i, 0));
+            if (!is_user_online(recipient_id)) { continue; }
+            cJSON *json_message = create_message_json(sender_id, "Edit message");
+            _send_message_to_client(recipient_id, json_message);
+            cJSON_Delete(json_message);
+        }
+        PQclear(recipients);
+        return 1;
+    } else if (strcmp(chat_type, "channel") == 0) {
+        PGresult *recipients = get_group_recipients(conn, chat_id);
+        if (!recipients || PQresultStatus(recipients) != PGRES_TUPLES_OK) {
+            return 0;
+        }
+        for (int i = 0; i < PQntuples(recipients); i++) {
+            int recipient_id = atoi(PQgetvalue(recipients, i, 0));
+            if (!is_user_online(recipient_id)) { continue; }
+            cJSON *json_message = create_message_json(sender_id, "Edit message");
+            _send_message_to_client(recipient_id, json_message);
+            cJSON_Delete(json_message);
+        }
+        PQclear(recipients);
+        return 1;
 
+    } else {
+        return 0;
+    }
+
+}
 void send_edit_message_response(SSL *ssl, EditMessageResult_t *edit_message_result, cJSON *response_json) {
 
     if (edit_message_result->Error == 1) {
@@ -29,6 +71,10 @@ void send_edit_message_response(SSL *ssl, EditMessageResult_t *edit_message_resu
         } else if (strcmp(edit_message_result->error_code, "TIMESTAMP_QUERY_ERROR") == 0) {
             cJSON_AddStringToObject(response_json, "code", "TIMESTAMP_ERROR");
             cJSON_AddStringToObject(response_json, "message", "An error occurred while retrieving the timestamp.");
+            vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        } else if (strcmp(edit_message_result->error_code, "WS_ERROR") == 0) {
+            cJSON_AddStringToObject(response_json, "code", "WEBSOCKET_ERROR");
+            cJSON_AddStringToObject(response_json, "message", "An error occurred while sending WebSocket message/s.");
             vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         } else {
             cJSON_AddStringToObject(response_json, "code", "UNKNOWN_ERROR");

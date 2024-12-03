@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include "header.h"
 
-#include "handlers/post_handlers/delete_message.h"
-
 typedef struct {
     int Success;
     int message_id;
@@ -16,6 +14,14 @@ typedef struct {
     int Success;  // Indicates whether the operation succeeded (1 for success, 0 for failure)
     int sender_id;
 } MessageSenderResult_t;
+
+typedef struct {
+    int Success;       // Indicates result (-1: not sender, 0: deletion failed, 1: success)
+    int message_id;    // ID of the deleted message
+    char timestamp[20]; // Timestamp of the successful deletion (format: "YYYY-MM-DD HH:MM:SS")
+} deleteMessageResult_t;
+
+#include "handlers/post_handlers/delete_message.h"
 
 
 bool is_user_online(int user_id);
@@ -42,7 +48,9 @@ char *username_validation(const char *username, const char *user_login, PGconn *
 bool is_user_in_chat(PGconn *conn, int chat_id, int user_id);
 const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id);
 char *extract_recipient_login(cJSON *json);
+
 int get_dm_recipient_id(PGconn *conn, int chat_id, int sender_id);
+PGresult *get_group_recipients(PGconn *conn, int chat_id);
 
 char *extract_chat_id(cJSON *json);
 const char *get_chat_type(PGconn *conn, int chat_id);
@@ -62,7 +70,8 @@ MessageResult_t handle_personal_chat_message(PGconn *conn, int chat_id, int send
                                   int media_id, int reply_to_chat, int reply_to_message, int forwarded_from_chat, int forwarded_from_message);
 MessageResult_t handle_group_or_channel_message(PGconn *conn, int chat_id, int sender_id, const char *message_text,
                                     int media_id, int reply_to_chat, int reply_to_message, int forwarded_from_chat, int forwarded_from_message);
-cJSON *create_message_json(int sender_id, const char *message_text);
 
+cJSON *create_message_json(int sender_id, const char *message_text);
+cJSON *create_delete_message_json(int sender_id, deleteMessageResult_t delete_result);
 
 #endif // UTILS_H

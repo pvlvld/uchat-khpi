@@ -27,7 +27,17 @@ MessageResult_t handle_personal_chat_message(PGconn *conn, int chat_id, int send
     }
 
     // Step 3: If the recipient is online, send the message via WebSocket
-    cJSON *json_message = create_message_json(sender_id, message_text);
+    cJSON *json_message = create_message_json(sender_id, "Send message");
+    if (json_message == NULL) {
+        result.Success = -2;
+        cJSON_Delete(json_message);
+        return result;
+    }
+    cJSON_AddStringToObject(json_message, "message_text", message_text);
+    cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+    cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+    cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
+
     _send_message_to_client(recipient_id, json_message);
     cJSON_Delete(json_message);
     return result;

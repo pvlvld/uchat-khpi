@@ -95,7 +95,13 @@ MessageResult_t handle_group_or_channel_message(PGconn *conn, int chat_id, int s
         }
 
         if (is_user_online(recipient_id)) {
-            cJSON *json_message = create_message_json(sender_id, message_text);
+            printf("Sending message to the online user with id: %d\n", recipient_id);
+            cJSON *json_message = create_message_json(sender_id, "Send message");
+            cJSON_AddStringToObject(json_message, "message_text", message_text);
+            cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+            cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
+
             deliver_message_to_online_user(recipient_id, json_message);
             cJSON_Delete(json_message);
         } else {

@@ -6,7 +6,9 @@ void login_rout(SSL *ssl, const char *request) {
     cJSON *response_json = cJSON_CreateObject();
 
     if (!body) {
-        cJSON_AddStringToObject(response_json, "message", "No message body");
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "NO_MESSAGE_BODY");
+        cJSON_AddStringToObject(response_json, "message", "No message body found in the request.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
@@ -16,7 +18,9 @@ void login_rout(SSL *ssl, const char *request) {
     cJSON *json = cJSON_Parse(body);
 
     if (!json) {
-        cJSON_AddStringToObject(response_json, "message", "Invalid JSON");
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_JSON");
+        cJSON_AddStringToObject(response_json, "message", "The provided JSON is invalid.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
@@ -26,7 +30,9 @@ void login_rout(SSL *ssl, const char *request) {
     cJSON *password_item = cJSON_GetObjectItem(json, "password");
 
     if (!cJSON_IsString(login_item) || !cJSON_IsString(password_item)) {
-        cJSON_AddStringToObject(response_json, "message", "Login and password are required");
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "MISSING_CREDENTIALS");
+        cJSON_AddStringToObject(response_json, "message", "Login and password are required.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
@@ -37,30 +43,32 @@ void login_rout(SSL *ssl, const char *request) {
     char *user_login = login_item->valuestring;
     char *password = password_item->valuestring;
 
-    // Validate input (minimum length for login and password)
     if (strlen(user_login) < 5 || strlen(password) < 5) {
-        cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
-        vendor.server.https.send_https_response(ssl, "401 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_CREDENTIALS");
+        cJSON_AddStringToObject(response_json, "message", "Login or password is too short.");
+        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
     }
 
-    // Connect to the database
     PGconn *conn = vendor.database.pool.acquire_connection();
     if (PQstatus(conn) != CONNECTION_OK) {
         fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
-        PQfinish(conn);
-        cJSON_AddStringToObject(response_json, "message", "Database connection failed");
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "DB_CONNECTION_ERROR");
+        cJSON_AddStringToObject(response_json, "message", "Failed to connect to the database.");
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
     }
 
-    // Get user by login
     PGresult *res = get_user_by_login(conn, user_login);
     if (res == NULL || PQntuples(res) == 0) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "USER_NOT_FOUND");
         cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
         vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
         if (res) PQclear(res);
@@ -70,10 +78,11 @@ void login_rout(SSL *ssl, const char *request) {
         return;
     }
 
-    // Verify password
     char *stored_password_hash = PQgetvalue(res, 0, 3);
     char *password_hash = hash_password(password);
     if (strcmp(stored_password_hash, password_hash) != 0) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_PASSWORD");
         cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
         vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
         PQclear(res);
@@ -84,8 +93,9 @@ void login_rout(SSL *ssl, const char *request) {
         return;
     }
 
-    // Create response JSON with user details
-    cJSON_AddStringToObject(response_json, "status", "success");
+    // Success response
+    cJSON_AddBoolToObject(response_json, "error", false);
+    cJSON_AddStringToObject(response_json, "code", "SUCCESS");
     cJSON_AddStringToObject(response_json, "message", "User logged in successfully.");
 
     cJSON *user_json = cJSON_CreateObject();
@@ -104,10 +114,10 @@ void login_rout(SSL *ssl, const char *request) {
 
     vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
 
-    free(token);
-    PQclear(res);
-    cJSON_Delete(json);
-    cJSON_Delete(response_json);
-    free(password_hash);
+    if (token) free(token);
+    if (res) PQclear(res);
+    if (json) cJSON_Delete(json);
+    if (response_json) cJSON_Delete(response_json);
+    if (password_hash) free(password_hash);
     vendor.database.pool.release_connection(conn);
 }
