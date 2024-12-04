@@ -92,7 +92,7 @@ void edit_message_rout(SSL *ssl, const char *request) {
     EditMessageResult_t edit_message_result = perform_message_edit(conn, chat_id, user_id, message_id, new_message_text_str);
 
     bool ws_edit_message_res = true;
-    if (edit_message_result.Error != 1) ws_edit_message_res = send_ws_edit_message(conn, chat_id, user_id);
+    if (edit_message_result.Error != 1) ws_edit_message_res = send_ws_edit_message(conn, chat_id, user_id, edit_message_result);
     if (ws_edit_message_res == false) {
             edit_message_result.error_code = "WS_ERROR";
             edit_message_result.Error = 1;

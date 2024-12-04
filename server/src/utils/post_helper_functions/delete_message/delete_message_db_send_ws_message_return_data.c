@@ -47,12 +47,15 @@ deleteMessageResult_t check_if_message_already_deleted(PGconn *conn, int chat_id
 }
 
 
-bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id) {
+bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id, deleteMessageResult_t result) {
     const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (strcmp(chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
         if (!is_user_online(recipient_id)) { return 0; }
         cJSON *json_message = create_message_json(sender_id, "Delete message");
+        cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+        cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+        cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
         _send_message_to_client(recipient_id, json_message);
         cJSON_Delete(json_message);
         return 1;
@@ -65,6 +68,9 @@ bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id) {
             int recipient_id = atoi(PQgetvalue(recipients, i, 0));
             if (!is_user_online(recipient_id)) { continue; }
             cJSON *json_message = create_message_json(sender_id, "Delete message");
+            cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+            cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
         }
@@ -79,6 +85,9 @@ bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id) {
             int recipient_id = atoi(PQgetvalue(recipients, i, 0));
             if (!is_user_online(recipient_id)) { continue; }
             cJSON *json_message = create_message_json(sender_id, "Delete message");
+            cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+            cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
         }
@@ -133,7 +142,7 @@ deleteMessageResult_t delete_message_db_and_return_data(PGconn *conn, int chat_i
     // delete message succeed
     printf("Result: %d, Deleted message with ID: %d\n", result.Success, message_id);
     if (result.Success == 1) {
-        bool send_ws_message_res = send_ws_delete_message(conn, chat_id, sender_id);
+        bool send_ws_message_res = send_ws_delete_message(conn, chat_id, sender_id, result);
         if (!send_ws_message_res) {
                 result.Success = -5;
         }

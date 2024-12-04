@@ -1,10 +1,13 @@
 #include "../../../../inc/handlers/post_handlers/edit_message.h"
-bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id) {
+bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id, EditMessageResult_t result) {
     const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (strcmp(chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
         if (!is_user_online(recipient_id)) { return 0; }
         cJSON *json_message = create_message_json(sender_id, "Edit message");
+        cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+        cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+        cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
         _send_message_to_client(recipient_id, json_message);
         cJSON_Delete(json_message);
         return 1;
@@ -15,6 +18,9 @@ bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id) {
             int recipient_id = atoi(PQgetvalue(recipients, i, 0));
             if (!is_user_online(recipient_id)) { continue; }
             cJSON *json_message = create_message_json(sender_id, "Edit message");
+            cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+            cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
         }
@@ -27,6 +33,9 @@ bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id) {
             int recipient_id = atoi(PQgetvalue(recipients, i, 0));
             if (!is_user_online(recipient_id)) { continue; }
             cJSON *json_message = create_message_json(sender_id, "Edit message");
+            cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
+            cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
         }
