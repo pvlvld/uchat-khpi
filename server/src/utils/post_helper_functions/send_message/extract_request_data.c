@@ -57,3 +57,13 @@ char *extract_message_id(cJSON *json) {
     return strdup(message_id_item->valuestring);
 }
 
+char *extract_user_id(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *user_id_item = cJSON_GetObjectItem(json, "user_id");
+    if (!cJSON_IsString(user_id_item)) { return NULL; }
+
+    // Duplicate the recipient login string to return (remember to free it later)
+    return strdup(user_id_item->valuestring);
+}
+

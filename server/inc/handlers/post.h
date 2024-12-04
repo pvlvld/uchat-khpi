@@ -9,6 +9,7 @@ void register_rout(SSL *ssl, const char *request);
 void protected_send_message_rout(SSL *ssl, const char *request);
 void protected_delete_message_rout(SSL *ssl, const char *request);
 void protected_edit_message_rout(SSL *ssl, const char *request);
+void protected_friend_request_rout(SSL *ssl, const char *request);
 
 typedef struct {
     void (*post)(SSL *ssl, const char *request); // No underscores because this will be middleware.
@@ -17,6 +18,7 @@ typedef struct {
     void (*_send_message)(SSL *ssl, const char *request);
     void (*_delete_message)(SSL *ssl, const char *request);
     void (*_edit_message)(SSL *ssl, const char *request);
+    void (*_friend_request)(SSL *ssl, const char *request);
     t_middleware middleware;
 } t_post_handler;
 

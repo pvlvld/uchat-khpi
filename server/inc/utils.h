@@ -54,6 +54,7 @@ char *username_validation(const char *username, const char *user_login, PGconn *
 bool is_user_in_chat(PGconn *conn, int chat_id, int user_id);
 const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id);
 char *extract_recipient_login(cJSON *json);
+char *extract_user_id(cJSON *json);
 
 int get_dm_recipient_id(PGconn *conn, int chat_id, int sender_id);
 PGresult *get_group_recipients(PGconn *conn, int chat_id);
