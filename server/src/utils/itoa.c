@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 
 char *itoa(int value, char *buffer) {
