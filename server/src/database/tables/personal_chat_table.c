@@ -3,7 +3,7 @@
 int create_personal_chat(PGconn *conn, int user1_id, int user2_id) {
     const char *query = "WITH new_chat AS (INSERT INTO chats (chat_type) VALUES ('personal') RETURNING chat_id) "
                         "INSERT INTO personal_chats (chat_id, user1_id, user2_id) "
-                        "SELECT chat_id, $2, $3 FROM new_chat "
+                        "SELECT chat_id, $1, $2 FROM new_chat "
                         "RETURNING chat_id";
 
     char user1_id_str[12], user2_id_str[12];
