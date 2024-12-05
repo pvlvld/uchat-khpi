@@ -45,13 +45,6 @@ CREATE TABLE chats (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE group_info (
-    group_id INT REFERENCES chats(chat_id) ON DELETE CASCADE,
-    group_name VARCHAR(120),
-    group_picture INT REFERENCES media(media_id) DEFAULT NULL,
-    UNIQUE (group_id)
-);
-
 CREATE TABLE personal_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     user1_id INT REFERENCES users(user_id) ON DELETE CASCADE,
