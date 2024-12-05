@@ -113,6 +113,14 @@ bool update_user_about(PGconn *conn, int user_id, const char *about);
  */
 bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_id);
 
+/**
+ * Deletes user profile picture.
+ * @param conn The connection to the PostgreSQL database.
+ * @param user_id The ID of the user to restore.
+ * @return true if restored successfully, false otherwise.
+ */
+bool delete_user_profile_picture(PGconn *conn, int user_id);
+
 typedef struct {
     int (*create_user)(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
                        const char *public_key, const char *locale);
@@ -125,6 +133,7 @@ typedef struct {
     bool (*update_user_password)(PGconn *conn, int user_id, const char *password_hash);
     bool (*update_user_about)(PGconn *conn, int user_id, const char *about);
     bool (*update_user_profile_picture)(PGconn *conn, int user_id, int profile_picture_id);
+    bool (*delete_user_profile_picture)(PGconn *conn, int user_id);
 } t_users_table;
 
 #endif // USERS_TABLE_H
