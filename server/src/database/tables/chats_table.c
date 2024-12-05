@@ -50,19 +50,3 @@ PGresult *get_user_chats_private(PGconn *conn, int user_id) {
 
     return res; // Caller is responsible for freeing with PQclear.
 }
-
-PGresult *get_user_chats_group(PGconn *conn, int user_id) {
-    const char *query = "SELECT chat_id FROM group_chat_members WHERE user_id = $1";
-    char user_id_str[12];
-    const char *params[1] = {itoa(user_id, user_id_str)};
-
-    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
-
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        fprintf(stderr, "Get user chats failed: %s\n", PQerrorMessage(conn));
-        PQclear(res);
-        return NULL;
-    }
-
-    return res; // Caller is responsible for freeing with PQclear.
-}
