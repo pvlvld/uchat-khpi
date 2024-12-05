@@ -13,6 +13,7 @@ t_handlers init_handlers(void) {
         ._delete_message = protected_delete_message_rout,
         ._edit_message = protected_edit_message_rout,
         ._friend_request = protected_friend_request_rout,
+        ._delete_friend = protected_delete_friend_rout,
         .middleware = middleware,
     };
 

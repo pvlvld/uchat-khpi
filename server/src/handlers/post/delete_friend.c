@@ -1,4 +1,6 @@
 #include "../../../inc/handlers/post_handlers/delete_friend.h"
+
+
 void delete_friend_rout(SSL *ssl, const char *request) {
 
     char *body = strstr(request, "\r\n\r\n");
@@ -93,7 +95,7 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         PQfinish(conn);
         return;
     }
-    PQclear(existing_chat);
+    int chat_id = atoi(PQgetvalue(existing_chat, 0, 0));
 
     // Delete the personal chat
     if (!delete_personal_chat(conn, sender_id, recipient_id)) {
@@ -107,6 +109,18 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         return;
     }
 
+    if (is_user_online(recipient_id)) {
+        cJSON *ws_message = cJSON_CreateObject();
+        cJSON_AddNumberToObject(ws_message, "sender_id", sender_id);
+        cJSON_AddStringToObject(ws_message, "message", "Delete friend");
+        cJSON_AddNumberToObject(ws_message, "chat_id", chat_id);
+        char *timestamp = NULL;
+        get_current_timestamp(&timestamp);
+        cJSON_AddStringToObject(ws_message, "timestamp", timestamp);
+        _send_message_to_client(recipient_id, ws_message);
+        if (ws_message) cJSON_Delete(ws_message);
+    }
+
     // Respond with success
     cJSON_AddBoolToObject(response_json, "error", false);
     cJSON_AddStringToObject(response_json, "message", "Personal chat deleted successfully");
@@ -116,6 +130,7 @@ void delete_friend_rout(SSL *ssl, const char *request) {
     if (json) cJSON_Delete(json);
     if (response_json) cJSON_Delete(response_json);
     if (conn) PQfinish(conn);
+    if (existing_chat) PQclear(existing_chat);
     return;
 }
 

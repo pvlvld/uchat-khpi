@@ -46,8 +46,10 @@ char *get_sender_id_from_token(const char *request) {
         return NULL; // `user_id` field not found or invalid
     }
 
+    printf("User ID: %d\n", user_id_item->valueint);
     char *user_id_str = malloc(10 * sizeof(char));
     itoa(user_id_item->valueint, user_id_str);
     cJSON_Delete(jwt_verify.payload);
+    printf("User ID string: %s\n", user_id_str);
     return user_id_str; // Remember to free this in the calling function
 }

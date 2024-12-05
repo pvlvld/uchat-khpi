@@ -3,7 +3,7 @@
 int create_personal_chat(PGconn *conn, int user1_id, int user2_id) {
     const char *query = "WITH new_chat AS (INSERT INTO chats (chat_type) VALUES ('personal') RETURNING chat_id) "
                         "INSERT INTO personal_chats (chat_id, user1_id, user2_id) "
-                        "SELECT chat_id, $2, $3 FROM new_chat "
+                        "SELECT chat_id, $1, $2 FROM new_chat "
                         "RETURNING chat_id";
 
     char user1_id_str[12], user2_id_str[12];
@@ -24,8 +24,8 @@ int create_personal_chat(PGconn *conn, int user1_id, int user2_id) {
 
 PGresult *get_personal_chat(PGconn *conn, int user1_id, int user2_id) {
     const char *query = "SELECT * FROM personal_chats "
-                        "WHERE user1_id = LEAST($1::int, $2::int) "
-                        "AND user2_id = GREATEST($1::int, $2::int)";
+                        "WHERE (user1_id = $1 AND user2_id = $2) "
+                        "OR (user1_id = $2 AND user2_id = $1)";
 
     char user1_id_str[12], user2_id_str[12];
     const char *params[2] = {itoa(user1_id, user1_id_str), itoa(user2_id, user2_id_str)};

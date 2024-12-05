@@ -31,7 +31,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     char *recipient_id_str = extract_user_id(json);
     char *sender_id_str = get_sender_id_from_token(request); // Extracted from JWT
 
-    if (!recipient_id_str) printf("1\n");
+    printf("Sender ID: %s\n", sender_id_str);
     if (!recipient_id_str || !sender_id_str) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "MISSING_USER_IDS");
@@ -62,6 +62,8 @@ void friend_request_rout(SSL *ssl, const char *request) {
     int sender_id = atoi(sender_id_str);
     int recipient_id = atoi(recipient_id_str);
 
+    printf("Sender ID: %d\n", sender_id);
+    printf("Recipient ID: %d\n", recipient_id);
     // Connect to database
     PGconn *conn = vendor.database.pool.acquire_connection();
     if (PQstatus(conn) != CONNECTION_OK) {
@@ -90,7 +92,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
 
     // Check if a personal chat already exists
     PGresult *existing_chat = get_personal_chat(conn, sender_id, recipient_id);
-    if (existing_chat == NULL || PQntuples(existing_chat) == 0) {
+    if (existing_chat == NULL || PQntuples(existing_chat) != 0) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "CHAT_ALREADY_EXISTS");
         cJSON_AddStringToObject(response_json, "message", "Personal chat already exists");

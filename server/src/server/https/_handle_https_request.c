@@ -45,6 +45,10 @@ void _handle_https_request(SSL *ssl, const char *request) {
         return;
     }
 
+    if (strstr(request, "POST /delete_friend") == request) {
+        vendor.handlers.post._delete_friend(ssl, request);
+        return;
+    }
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "message", "Not found");
     vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
