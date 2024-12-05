@@ -34,19 +34,3 @@ char get_chat_type(PGconn *conn, int chat_id) {
     PQclear(res);
     return chat_type;
 }
-
-PGresult *get_user_chats_private(PGconn *conn, int user_id) {
-    const char *query = "SELECT chat_id FROM personal_chats WHERE user1_id = $1 OR user2_id = $1";
-    char user_id_str[12];
-    const char *params[1] = {itoa(user_id, user_id_str)};
-
-    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
-
-    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
-        fprintf(stderr, "Get user chats failed: %s\n", PQerrorMessage(conn));
-        PQclear(res);
-        return NULL;
-    }
-
-    return res; // Caller is responsible for freeing with PQclear.
-}
