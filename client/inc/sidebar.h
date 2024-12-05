@@ -18,6 +18,7 @@ void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info);
 typedef struct {
     GtkWidget *(*init)(void);
     GtkWidget *widget;
+    GtkWidget *stretchable_box;
     GtkWidget *(*create_chatblock)(t_chat_info *chat_info);
     GtkWidget *(*create_avatar)(t_chat_info *chat_info);
     GtkWidget *(*create_bottom)(void);

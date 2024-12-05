@@ -16,7 +16,14 @@ static void on_settings_click(GtkWidget *widget, GdkEventButton *event, gpointer
     (void) widget;
     (void) event;
     (void) user_data;
-	vendor.modal.profile_settings.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+    // vendor.modal.profile_settings.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+}
+
+static void on_create_group_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    (void) widget;
+    (void) event;
+    (void) user_data;
+    vendor.modal.create_group.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 }
 
 static GtkWidget *create_profile_text_block(void) {
@@ -82,6 +89,7 @@ GtkWidget *sidebar_create_bottom(void) {
     gtk_box_pack_start(GTK_BOX(button_block), button_group, FALSE, FALSE, 0);
     vendor.helpers.set_classname_and_id(button_group, "sidebar__bottom_button-block__group");
     vendor.helpers.add_hover(button_group);
+    g_signal_connect(button_group, "button-press-event", G_CALLBACK(on_create_group_click), NULL);
 
     GtkWidget *profile_block = gtk_overlay_new();
     gtk_widget_set_size_request(profile_block, 236, 48);
@@ -109,9 +117,6 @@ GtkWidget *sidebar_create_bottom(void) {
     gtk_overlay_add_overlay(GTK_OVERLAY(profile_block), profile_settings_button);
     vendor.helpers.add_hover(profile_settings_button);
     g_signal_connect(profile_settings_button, "button-press-event", G_CALLBACK(on_settings_click), NULL);
-
-    // Не нужно больше добавлять button_block в box с gtk_box_pack_start, потому что box - это GtkFixed
-    // gtk_box_pack_start(GTK_BOX(box), button_block, FALSE, FALSE, 0); // Уберите эту строку
 
     return box;
 }

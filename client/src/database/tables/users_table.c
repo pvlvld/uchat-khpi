@@ -48,6 +48,39 @@ static t_users_struct *get_user_by_id(int user_id) {
     return user;
 }
 
+static int add_user(t_users_struct *user) {
+    if (user == NULL) {
+        printf("[ERROR] User structure is NULL.\n");
+        return -1;
+    }
+
+    const char *sql =
+        "INSERT INTO users (user_id, username, user_login, about, is_online, public_key) "
+        "VALUES (?, ?, ?, ?, 0, ?);";
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return -1;
+    }
+
+    sqlite3_bind_int(stmt, 1, user->user_id);
+    sqlite3_bind_text(stmt, 2, user->username, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, user->user_login, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, user->about ? user->about : NULL, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 5, user->public_key, -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("[ERROR] Failed to insert user: %s\n", sqlite3_errmsg(vendor.database.db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
 static void free_struct(t_users_struct *user) {
     if (user != NULL) {
         if (user->username != NULL) {
@@ -71,6 +104,7 @@ t_users_table init_users_table(void) {
         .create_table = create_users_table,
         .get_user_by_id = get_user_by_id,
         .free_struct = free_struct,
+        .add_user = add_user,
     };
 
     return table;

@@ -10,6 +10,7 @@ typedef struct {
 
 typedef struct {
     void (*create_table)(void);
+    int (*create_group)(int group_id, const char *group_name);
 } t_group_chats_table;
 t_group_chats_table init_group_chats_table(void);
 

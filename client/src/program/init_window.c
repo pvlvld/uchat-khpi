@@ -6,6 +6,7 @@ static gboolean on_focus_in_event(GtkWidget *widget, GdkEventFocus *event) {
     (void)widget;
     (void)event;
     vendor.modal.chat_info.destroy();
+    vendor.modal.create_group.destroy();
     vendor.modal.message_info.destroy();
     vendor.modal.profile_settings.destroy();
     if (vendor.hover_chat.chat_sidebar_widget != NULL) {

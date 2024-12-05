@@ -91,6 +91,7 @@ GtkWidget *sidebar_init(void) {
 
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
+    vendor.sidebar.stretchable_box = stretchable_box;
 
     gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 

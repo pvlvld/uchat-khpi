@@ -75,5 +75,13 @@
     background: $emerald-900;
     padding: 8px;
     font-size: 20px;
+    transition: background-color .3s ease;
+    &.hover {
+      background: $emerald-800;
+    }
   }
+}
+
+.modal__create-group_input {
+  border: 1px solid $emerald-900;
 }

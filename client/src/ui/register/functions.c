@@ -142,7 +142,17 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
             .public_key = vendor.crypto.public_key_str,
             .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
         };
+
+        t_users_struct users_struct = {
+            .user_id = vendor.current_user.user_id,
+            .username = vendor.current_user.username,
+            .user_login = vendor.current_user.username,
+            .about = NULL,
+            .public_key = vendor.crypto.public_key_str,
+        };
+
         vendor.database.tables.active_users_table.add_user(&active_users_struct);
+        vendor.database.tables.users_table.add_user(&users_struct);
         vendor.pages.change_page(MAIN_PAGE);
 
     } else {

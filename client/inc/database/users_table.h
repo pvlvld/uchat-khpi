@@ -17,6 +17,7 @@ typedef struct {
     void (*create_table)(void);
     t_users_struct *(*get_user_by_id)(int user_id);
     void (*free_struct)(t_users_struct *user);
+    int (*add_user)(t_users_struct *user);
 } t_users_table;
 t_users_table init_users_table(void);
 
