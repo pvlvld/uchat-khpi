@@ -56,6 +56,7 @@ CREATE TABLE personal_chats (
 CREATE TABLE group_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     group_name VARCHAR(120),
+    about VARCHAR(1024) DEFAULT NULL,
     group_picture INT REFERENCES media(media_id) DEFAULT NULL,
     backgroung INT REFERENCES media(media_id) DEFAULT NULL
 );
