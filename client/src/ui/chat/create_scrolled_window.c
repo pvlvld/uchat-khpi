@@ -8,7 +8,7 @@ static void on_sender_event_box_click(GtkWidget *widget, GdkEventButton *event, 
 }
 
 static GtkWidget *create_sender_event_box(t_messages_struct *message_struct, int *add_to_height, int *min_width, int width) {
-	GtkWidget *sender_name = gtk_label_new(message_struct->sender_struct->username);
+    GtkWidget *sender_name = gtk_label_new(message_struct->sender_struct->username);
     gtk_label_set_lines(GTK_LABEL(sender_name), 1);
     gtk_label_set_ellipsize(GTK_LABEL(sender_name), PANGO_ELLIPSIZE_END);
     vendor.helpers.set_classname_and_id(sender_name, "chat__message_sender__text");
@@ -27,7 +27,7 @@ static GtkWidget *create_sender_event_box(t_messages_struct *message_struct, int
     pango_layout_get_size(layout, min_width, NULL);
     (*min_width) /= PANGO_SCALE;
 
-	gtk_widget_set_size_request(sender_name, (*min_width) + 40 < width ? (*min_width) : width - 40, -1);
+    gtk_widget_set_size_request(sender_name, (*min_width) + 40 < width ? (*min_width) : width - 40, -1);
     g_object_unref(layout);
 
     g_signal_connect(sender_event_box, "button-press-event", G_CALLBACK(on_sender_event_box_click), message_struct->sender_struct);
@@ -62,7 +62,7 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
 
     if (is_received == 1 && vendor.active_chat.chat->type != 0) {
         GtkWidget *avatar_event = gtk_event_box_new();
-        GtkWidget *drawing_area = vendor.helpers.create_avatar("resources/images/avatars/logo_3.jpg", 40, 40);
+        GtkWidget *drawing_area = vendor.helpers.create_avatar(message_struct->sender_struct->username, 50, 50);
         gtk_container_add(GTK_CONTAINER(avatar_event), drawing_area);
         gtk_box_pack_start(GTK_BOX(message_wrapper), avatar_event, FALSE, FALSE, 4);
         vendor.helpers.add_hover(avatar_event);

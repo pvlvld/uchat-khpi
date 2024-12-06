@@ -8,6 +8,7 @@ static gboolean on_focus_in_event(GtkWidget *widget, GdkEventFocus *event) {
     vendor.modal.chat_info.destroy();
     vendor.modal.create_group.destroy();
     vendor.modal.message_info.destroy();
+    vendor.modal.add_users_to_group.destroy();
     vendor.modal.profile_settings.destroy();
     if (vendor.hover_chat.chat_sidebar_widget != NULL) {
         gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.hover_chat.chat_sidebar_widget), "hover");

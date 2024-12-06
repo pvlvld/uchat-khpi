@@ -150,6 +150,13 @@ static gboolean chat_input_on_key_press(GtkWidget *text_view, GdkEventKey *event
     return FALSE;
 }
 
+static gboolean button_send_message_clicked(GtkWidget *widget, GtkWidget *text_view) {
+    (void) widget;
+    send_message(GTK_TEXT_VIEW(text_view));
+
+    return FALSE;
+}
+
 // Tracking changes in the buffer for altitude updates
 static void on_text_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
     (void) buffer;
@@ -157,7 +164,7 @@ static void on_text_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
     update_text_view_height(text_view);
 }
 
-GtkWidget *create_message_input(void) {
+GtkWidget *create_message_input(GtkWidget *message_send ) {
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     vendor.helpers.set_classname_and_id(scrolled_window, "chat__value_scroll");
@@ -202,6 +209,8 @@ GtkWidget *create_message_input(void) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(value_entry));
     g_signal_connect(buffer, "changed", G_CALLBACK(on_text_buffer_changed), value_entry);
     g_signal_connect(value_entry, "key-press-event", G_CALLBACK(chat_input_on_key_press), NULL);
+
+    g_signal_connect(message_send, "clicked", G_CALLBACK(button_send_message_clicked), value_entry);
 
     gtk_widget_show(value_placeholder);
     return scrolled_window;

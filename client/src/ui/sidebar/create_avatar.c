@@ -6,19 +6,9 @@ GtkWidget *sidebar_create_avatar(t_chat_info *chat_info) {
     gtk_widget_set_size_request(fixed_container, 55, 48);
     vendor.helpers.set_classname_and_id(fixed_container, "chatblock__avatar");
 
-    GtkWidget *avatar = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *avatar = vendor.helpers.create_avatar(chat_info->path_to_logo, 48, 48);
+    // chat_info->path_to_logo
     vendor.helpers.set_classname_and_id(avatar, "chatblock__avatar_image");
-
-    gchar avatar_class_str[64];
-    g_snprintf(avatar_class_str, sizeof(avatar_class_str), "chatblock__avatar_class-%d", chat_info->id);
-    gtk_style_context_add_class(gtk_widget_get_style_context(avatar), avatar_class_str);
-    gtk_widget_set_size_request(avatar, 48, 48);
-
-    char cwd[1024];
-    getcwd(cwd, sizeof(cwd));
-
-    gchar css[512];
-    g_snprintf(css, sizeof(css), ".%s { background-image: url('file://%s/resources/images/avatars/%s'); border-radius: 50%%; }", avatar_class_str, cwd, chat_info->path_to_logo);
 
     gtk_fixed_put(GTK_FIXED(fixed_container), avatar, 0, 0);
 
@@ -36,13 +26,6 @@ GtkWidget *sidebar_create_avatar(t_chat_info *chat_info) {
         gtk_widget_set_size_request(number_of_messages, 30, 16);
         gtk_fixed_put(GTK_FIXED(fixed_container), number_of_messages, 25, 32);
     }
-    GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider, css, -1, NULL);
-    gtk_style_context_add_provider_for_screen(
-        gdk_screen_get_default(),
-        GTK_STYLE_PROVIDER(provider),
-        GTK_STYLE_PROVIDER_PRIORITY_USER
-    );
 
     return fixed_container;
 }

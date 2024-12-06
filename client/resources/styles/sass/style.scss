@@ -85,3 +85,11 @@
 .modal__create-group_input {
   border: 1px solid $emerald-900;
 }
+
+.modal__add_to_group {
+  background: $emerald-900;
+  transition: background-color .3s ease;
+  &.hover {
+    background: $emerald-800;
+  }
+}

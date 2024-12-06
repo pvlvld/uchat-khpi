@@ -41,10 +41,12 @@ t_chat_info *parse_chat_info_by_id(int chat_id) {
         chat_info->unreaded_messages = 0;
 
         if (chat_info->type == PERSONAL) {
+
             if (vendor.debug_mode == 1) printf("[DEBUG] It's a personalized chat room\n");
 
             int other_user_id = get_other_user_id(chat_info->id);
             chat_info->name = get_user_name(other_user_id);
+            chat_info->path_to_logo = vendor.helpers.strdup(chat_info->name);
             chat_info->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chat_info->id, 1, 1, NULL);
 
         } else if (chat_info->type == GROUP) {
@@ -130,6 +132,7 @@ t_chat_info **parse_chats_info(void) {
             if (vendor.debug_mode == 1) printf("[DEBUG] It's a personalized chat room\n");
             int other_user_id = get_other_user_id(chats_info[i]->id);
             chats_info[i]->name = get_user_name(other_user_id);
+            chats_info[i]->path_to_logo = vendor.helpers.strdup(chats_info[i]->name);
 
             chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
 
