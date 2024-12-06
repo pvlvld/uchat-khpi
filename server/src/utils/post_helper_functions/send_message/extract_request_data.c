@@ -20,6 +20,16 @@ char *extract_recipient_login(cJSON *json) {
     return strdup(recipient_login_item->valuestring);
 }
 
+char *extract_recipient_username(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *recipient_username_item = cJSON_GetObjectItem(json, "username");
+    if (!cJSON_IsString(recipient_username_item)) { return NULL; }
+
+    // Duplicate the recipient login string to return (remember to free it later)
+    return strdup(recipient_username_item->valuestring);
+}
+
 char *extract_message(cJSON *json) {
     if (!json) { return NULL; }
 

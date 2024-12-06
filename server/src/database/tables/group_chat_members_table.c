@@ -50,3 +50,10 @@ bool remove_chat_member(PGconn *conn, int chat_id, int user_id) {
     PQclear(res);
     return true;
 }
+
+
+
+
+
+
+

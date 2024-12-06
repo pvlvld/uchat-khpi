@@ -202,3 +202,18 @@ bool delete_user_profile_picture(PGconn *conn, int user_id) {
     PQclear(res);
     return false;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

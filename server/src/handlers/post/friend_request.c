@@ -28,14 +28,14 @@ void friend_request_rout(SSL *ssl, const char *request) {
     }
 
     // Extract sender and recipient information
-    char *recipient_id_str = extract_user_id(json);
+    char *recipient_username_str = extract_recipient_username(json);
     char *sender_id_str = get_sender_id_from_token(request); // Extracted from JWT
 
     printf("Sender ID: %s\n", sender_id_str);
-    if (!recipient_id_str || !sender_id_str) {
+    if (!recipient_username_str || !sender_id_str) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "MISSING_USER_IDS");
-        cJSON_AddStringToObject(response_json, "message", "Sender or recipient ID is missing");
+        cJSON_AddStringToObject(response_json, "message", "Sender ID or recipient username is missing");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
@@ -50,20 +50,17 @@ void friend_request_rout(SSL *ssl, const char *request) {
         return;
     }
 
-    if (!is_valid_user_id(recipient_id_str)) {
+    if (!is_valid_username(recipient_username_str)) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "INVALID_USER_ID");
-        cJSON_AddStringToObject(response_json, "message", "Invalid user ID");
+        cJSON_AddStringToObject(response_json, "message", "Invalid username");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
     }
 
     int sender_id = atoi(sender_id_str);
-    int recipient_id = atoi(recipient_id_str);
 
-    printf("Sender ID: %d\n", sender_id);
-    printf("Recipient ID: %d\n", recipient_id);
     // Connect to database
     PGconn *conn = vendor.database.pool.acquire_connection();
     if (PQstatus(conn) != CONNECTION_OK) {
@@ -77,6 +74,48 @@ void friend_request_rout(SSL *ssl, const char *request) {
         PQfinish(conn);
         return;
     }
+
+    PGresult *recipient_db_res = get_user_by_username(conn, recipient_username_str);
+    if (!recipient_db_res || PQntuples(recipient_db_res) == 0) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "USER_NOT_FOUND");
+        cJSON_AddStringToObject(response_json, "message", "Recipient username not found");
+        vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        return;
+    }
+
+    // Extract the recipient ID
+    char *recipient_id_str = PQgetvalue(recipient_db_res, 0, 0);
+    if (!is_valid_user_id(recipient_id_str)) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_USER_ID");
+        cJSON_AddStringToObject(response_json, "message", "Invalid user ID");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        PQclear(recipient_db_res);
+        return;
+    }
+
+    int recipient_id = atoi(recipient_id_str);
+    char *recipient_login = PQgetvalue(recipient_db_res, 0, 2);    // user_login
+    char *recipient_about = PQgetvalue(recipient_db_res, 0, 3);    // about
+    char *recipient_public_key = PQgetvalue(recipient_db_res, 0, 7); // public_key
+    if (!recipient_login || !recipient_about || !recipient_public_key) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "GET_USER_INFO_FAILED");
+        cJSON_AddStringToObject(response_json, "message", "Failed to get user data from database");
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        PQfinish(conn);
+        return;
+    }
+    PQclear(recipient_db_res);
+
+    printf("Sender ID: %d\n", sender_id);
+    printf("Recipient ID: %d\n", recipient_id);
 
     // Check if sender and recipient are the same
     if (sender_id == recipient_id) {
@@ -126,6 +165,9 @@ void friend_request_rout(SSL *ssl, const char *request) {
         char *timestamp = NULL;
         get_current_timestamp(&timestamp);
         cJSON_AddStringToObject(ws_message, "timestamp", timestamp);
+        if (recipient_login) cJSON_AddStringToObject(ws_message, "recipient_login", recipient_login);
+        if (recipient_about) cJSON_AddStringToObject(ws_message, "recipient_about", recipient_about);
+        if (recipient_public_key) cJSON_AddStringToObject(ws_message, "recipient_public_key", recipient_public_key);
         _send_message_to_client(recipient_id, ws_message);
         if (ws_message) cJSON_Delete(ws_message);
     }
