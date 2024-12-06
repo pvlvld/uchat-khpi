@@ -80,7 +80,7 @@ bool update_background_personal_chat(PGconn *conn, int user1_id, int user2_id, i
     return false;
 }
 
-PGresult *list_user_personal_chats(PGconn *conn, int user_id) {
+PGresult *get_user_chats_personal(PGconn *conn, int user_id) {
     const char *query = "SELECT * FROM personal_chats WHERE user1_id = $1 OR user2_id = $1";
 
     char user_id_str[12];
