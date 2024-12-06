@@ -186,3 +186,19 @@ bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_
     PQclear(res);
     return false;
 }
+
+bool delete_user_profile_picture(PGconn *conn, int user_id) {
+    const char *query = "UPDATE users SET profile_picture = NULL, updated_at = NOW() WHERE user_id = $1";
+    char user_id_str[12];
+    const char *params[1] = {itoa(user_id, user_id_str)};
+    PGresult *res = PQexecParams(conn, query, 1, NULL, params, NULL, NULL, 0);
+
+    if (PQresultStatus(res) == PGRES_COMMAND_OK) {
+        PQclear(res);
+        return true;
+    }
+
+    fprintf(stderr, "Delete user profile picture failed: %s", PQerrorMessage(conn));
+    PQclear(res);
+    return false;
+}

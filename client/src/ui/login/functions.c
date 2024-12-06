@@ -59,10 +59,25 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
     (void)task_data;
     (void)cancellable;
 
-    g_usleep(300000); // 0.3s
+    cJSON *json_body = cJSON_CreateObject();
+    cJSON_AddStringToObject(json_body, "login", vendor.helpers.strdup(vendor.current_user.username));
+    cJSON_AddStringToObject(json_body, "password", vendor.helpers.strdup(vendor.current_user.password));
 
-    g_task_return_boolean(task, TRUE);
+    cJSON *response = vendor.ssl_struct.send_request("POST", "/login", json_body);
+    cJSON *token = cJSON_GetObjectItem(response, "token");
+
+    gboolean success = FALSE;
+    if (token != NULL) {
+        vendor.current_user.jwt = vendor.helpers.strdup(token->valuestring);
+        success = TRUE;
+    }
+
+    cJSON_Delete(response);
+    cJSON_Delete(json_body);
+
+    g_task_return_boolean(task, success);
 }
+
 
 static void on_request_complete(GObject *source_object, GAsyncResult *res, gpointer user_data) {
     (void)source_object;
@@ -87,15 +102,6 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
         vendor.current_user.user_login = active_users_struct->user_login;
         vendor.current_user.about = active_users_struct->about;
 
-//        char *encrypt = vendor.crypto.encrypt(active_users_struct->public_key, "Test message");
-//        if (encrypt) {
-//            char *decrypt = vendor.crypto.decrypt(encrypt);
-//            if (decrypt) {
-//                printf("%s\n", decrypt);
-//                free(decrypt);
-//            }
-//            free(encrypt);
-//        }
         vendor.pages.change_page(MAIN_PAGE);
     } else {
         vendor.pages.change_page(LOGIN_PAGE);

@@ -78,26 +78,52 @@ static gboolean validate_input(const gchar *username, const gchar *password, con
     return is_valid;
 }
 
+static int db_exists(const char *name) {
+    char path[512];
+    snprintf(path, sizeof(path), "db/%s.db", name);
+    int result = access(path, F_OK) == 0;
+    if (!result) {
+        vendor.database.db_name = vendor.helpers.strdup(path);
+        vendor.database.create_database();
+    }
+
+    return result;
+}
 
 static void perform_request_async(GTask *task, gpointer source_object, gpointer task_data, GCancellable *cancellable) {
     (void)source_object;
     (void)task_data;
     (void)cancellable;
+    (void) db_exists;
 
-    g_usleep(300000);
+    cJSON *json_body = cJSON_CreateObject();
+    cJSON_AddStringToObject(json_body, "login", vendor.helpers.strdup(vendor.current_user.username));
+    cJSON_AddStringToObject(json_body, "password", vendor.helpers.strdup(vendor.current_user.password));
+    cJSON_AddStringToObject(json_body, "public_key", vendor.helpers.strdup(vendor.crypto.public_key_str));
 
-//    t_active_users_struct active_users_struct = {
-//        .user_id = 1,
-//        .username = vendor.current_user.username,
-//        .user_login = vendor.current_user.username,
-//        .about = NULL,
-//        .public_key = vendor.crypto.public_key_str,
-//        .private_key = vendor.crypto.encrypt_text(vendor.crypto.private_key_str, vendor.current_user.password),
-//    };
-//    vendor.database.tables.active_users_table.add_user(&active_users_struct);
-//    printf("User id: %d\n", active_users_struct.user_id);
+    cJSON *response = vendor.ssl_struct.send_request("POST", "/register", json_body);
+    cJSON *token = cJSON_GetObjectItem(response, "token");
 
-    g_task_return_boolean(task, TRUE);
+    gboolean success = FALSE;
+    if (token != NULL) {
+        vendor.current_user.jwt = vendor.helpers.strdup(token->valuestring);
+        success = TRUE;
+        db_exists(vendor.current_user.username);
+
+        cJSON *user = cJSON_GetObjectItem(response, "user");
+
+        if (user != NULL) {
+            cJSON *id = cJSON_GetObjectItem(user, "id");
+            if (id != NULL) {
+                vendor.current_user.user_id = id->valueint;
+            }
+        }
+    }
+
+    cJSON_Delete(response);
+    cJSON_Delete(json_body);
+
+    g_task_return_boolean(task, success);
 }
 
 static void on_request_complete(GObject *source_object, GAsyncResult *res, gpointer user_data) {
@@ -109,7 +135,7 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
 
     if (success) {
         t_active_users_struct active_users_struct = {
-            .user_id = 1,
+            .user_id = vendor.current_user.user_id,
             .username = vendor.current_user.username,
             .user_login = vendor.current_user.username,
             .about = NULL,
@@ -120,20 +146,11 @@ static void on_request_complete(GObject *source_object, GAsyncResult *res, gpoin
         vendor.pages.change_page(MAIN_PAGE);
 
     } else {
-        g_print("Request failed.\n");
+        vendor.pages.change_page(REGISTER_PAGE);
+        create_error(vendor.pages.register_page.password_confirm_wrapper, "A user with this name already exists");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.password_wrapper), "_form_error");
+        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
     }
-}
-
-static int db_exists(const char *name) {
-    char path[512];
-    snprintf(path, sizeof(path), "db/%s.db", name);
-    int result = access(path, F_OK) == 0;
-    if (!result) {
-        vendor.database.db_name = vendor.helpers.strdup(path);
-        vendor.database.create_database();
-    }
-
-    return result;
 }
 
 void register_on_register_submit(GtkButton *button, gpointer user_data) {
@@ -151,21 +168,16 @@ void register_on_register_submit(GtkButton *button, gpointer user_data) {
         return;
     }
 
-    if (!db_exists(username)) {
-        vendor.current_user.username = vendor.helpers.strdup(username);
-        vendor.current_user.password = vendor.helpers.strdup(password);
+    vendor.current_user.username = vendor.helpers.strdup(username);
+    vendor.current_user.user_login = vendor.helpers.strdup(username);
+    vendor.current_user.password = vendor.helpers.strdup(password);
 
-        vendor.pages.change_page(LOADING_PAGE);
-        vendor.crypto.keygen();
+    vendor.pages.change_page(LOADING_PAGE);
+    vendor.crypto.keygen();
 
-        GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
-        g_task_run_in_thread(task, perform_request_async);
-        g_object_unref(task);
-    } else {
-        create_error(vendor.pages.register_page.password_confirm_wrapper, "Unexpected error");
-        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.password_wrapper), "_form_error");
-        gtk_style_context_add_class(gtk_widget_get_style_context(vendor.pages.register_page.username_wrapper), "_form_error");
-    }
+    GTask *task = g_task_new(NULL, NULL, on_request_complete, NULL);
+    g_task_run_in_thread(task, perform_request_async);
+    g_object_unref(task);
 }
 
 gboolean register_input_on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {

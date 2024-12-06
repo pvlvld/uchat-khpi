@@ -1,4 +1,7 @@
 #include "../../inc/header.h"
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdio.h>
 
 static void create_database_impl(void) {
     int rc = sqlite3_open(vendor.database.db_name, &vendor.database.db);
@@ -39,9 +42,21 @@ static t_database_tables init_database_tables(void) {
     return tables;
 }
 
+static void ensure_db_directory_exists(void) {
+    const char *db_dir = "db";
+
+    if (access(db_dir, F_OK) == -1) {
+        if (mkdir(db_dir, 0755) != 0) {
+            perror("Failed to create directory 'db'");
+            return;
+        }
+    }
+}
+
 t_database init_database(void) {
+    ensure_db_directory_exists();
+
     t_database database = {
-        .db_name = "db/admin.db",
         .create_database = create_database_impl,
         .close_database = close_database,
         .db = NULL,

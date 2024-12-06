@@ -39,6 +39,8 @@ int main(int argc, char **argv) {
     if (init_server(argc, argv) != 1) return -1;
     srand(time(NULL));
     init_vendor(&vendor);
+    vendor.ssl_struct.init_openssl();
+
     GtkApplication *app;
     int status;
     app = gtk_application_new("org.example.GtkApplication", 0);

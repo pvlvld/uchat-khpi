@@ -62,8 +62,6 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
         vendor.helpers.show_notification("New notification", "New message");
 		vendor.popup.add_message("New message");
-//        int is_received = rand() % 2;
-//        add_chat_message("New message", is_received);
 
         return TRUE;
     }
@@ -100,23 +98,22 @@ GtkWidget *sidebar_init(void) {
 
     t_chat_info **chats_info = parse_chats_info();
     if (!chats_info) {
-        printf("[ERROR] Failed to retrieve chat information.\n");
-        return sidebar;
-    }
+        if (vendor.debug_mode >= 1) printf("[INFO] Failed to retrieve chat information.\n");
+    } else {
+        size_t i = 0;
+        while (chats_info[i] != NULL) {
+            if (vendor.debug_mode == 1) printf("[DEBUG] Creating a chatblock for chat with ID: %d\n", chats_info[i]->id);
+            GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
+            if (!chatblock) {
+                printf("[ERROR] Failed to create a block for chat with ID: %d\n", chats_info[i]->id);
+                continue;
+            }
 
-    size_t i = 0;
-    while (chats_info[i] != NULL) {
-        if (vendor.debug_mode == 1) printf("[DEBUG] Creating a chatblock for chat with ID: %d\n", chats_info[i]->id);
-        GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chats_info[i]);
-        if (!chatblock) {
-            printf("[ERROR] Failed to create a block for chat with ID: %d\n", chats_info[i]->id);
-            continue;
+            g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
+            gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
+            gtk_widget_show(chatblock);
+            i++;
         }
-
-        g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
-        gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
-        gtk_widget_show(chatblock);
-        i++;
     }
 
     g_object_set_data(G_OBJECT(sidebar), "stretchable_box", stretchable_box);
