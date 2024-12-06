@@ -13,7 +13,7 @@ int create_group_chat(PGconn *conn, const char *group_name, int group_picture, i
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "Create group chat failed: %s\n", PQerrorMessage(conn));
         PQclear(res);
-        return NULL;
+        return -1;
     }
 
     int chat_id = atoi(PQgetvalue(res, 0, 0));

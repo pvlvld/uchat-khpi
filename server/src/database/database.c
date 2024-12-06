@@ -17,7 +17,7 @@ t_database *init_database(void) {
     database.personal_chat_table.get_personal_chat = get_personal_chat;
     database.personal_chat_table.delete_personal_chat = delete_personal_chat;
     database.personal_chat_table.update_background_personal_chat = update_background_personal_chat;
-    database.personal_chat_table.list_user_personal_chats = list_user_personal_chats;
+    database.personal_chat_table.get_user_chats_personal = get_user_chats_personal;
 
     database.users_table.create_user = create_user;
     database.users_table.get_user_by_login = get_user_by_login;
