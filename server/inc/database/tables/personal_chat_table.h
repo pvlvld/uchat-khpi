@@ -50,14 +50,14 @@ bool update_background_personal_chat(PGconn *conn, int user1_id, int user2_id, i
  * @return A PGresult containing the chat data, or NULL if the query failed.
  *         Caller is responsible for freeing the result with PQclear.
  */
-PGresult *list_user_personal_chats(PGconn *conn, int user_id);
+PGresult *get_user_chats_personal(PGconn *conn, int user_id);
 
 typedef struct {
     int (*create_personal_chat)(PGconn *conn, int user1_id, int user2_id);
     PGresult *(*get_personal_chat)(PGconn *conn, int user1_id, int user2_id);
     bool (*delete_personal_chat)(PGconn *conn, int user1_id, int user2_id);
     bool (*update_background_personal_chat)(PGconn *conn, int user1_id, int user2_id, int media_id);
-    PGresult *(*list_user_personal_chats)(PGconn *conn, int user_id);
+    PGresult *(*get_user_chats_personal)(PGconn *conn, int user_id);
 } t_personal_chat_table;
 
 #endif // PERSONAL_CHATS_TABLE_H
