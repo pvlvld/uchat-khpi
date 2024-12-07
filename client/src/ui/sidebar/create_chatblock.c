@@ -41,8 +41,9 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
     } else if (event->button == GDK_BUTTON_SECONDARY) {
         int x = event->x_root;
         int y = event->y_root;
+        t_chat_info *chat_info = g_object_get_data(G_OBJECT(widget), "chat_info");
+
         if (vendor.active_chat.chat_sidebar_widget != widget) {
-            t_chat_info *chat_info = g_object_get_data(G_OBJECT(widget), "chat_info");
 
             if (chat_info != NULL) {
                 vendor.hover_chat.chat = chat_info;
@@ -54,7 +55,7 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
             gtk_style_context_add_class(gtk_widget_get_style_context(vendor.hover_chat.chat_sidebar_widget), "hover");
         }
 
-        vendor.modal.chat_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y);
+        vendor.modal.chat_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y, chat_info);
     }
 
     return TRUE;
@@ -179,7 +180,6 @@ static void update_chat_time(GtkWidget *chatblock, const char *new_time) {
 }
 
 static void update_avatar(GtkWidget *chatblock, t_chat_info *new_chat_info) {
-    g_print("unreaded_messages: %d\n", new_chat_info->unreaded_messages);
     GtkWidget *current_avatar_wrapper = g_object_get_data(G_OBJECT(chatblock), "avatar_wrapper");
 
     if (current_avatar_wrapper != NULL) {

@@ -106,8 +106,8 @@ static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_st
 
  //    gtk_widget_set_margin_top(add_reaction_event, 8);
 
- gtk_widget_set_margin_bottom(delete_event, 8);
-	t_message_info_modal *message_info = malloc(sizeof(t_message_info_modal *));
+    gtk_widget_set_margin_bottom(delete_event, 8);
+    t_message_info_modal *message_info = malloc(sizeof(t_message_info_modal *));
 
     g_signal_connect(copy_event, "button-press-event", G_CALLBACK(on_copy_clicked), (gpointer)text);
     g_signal_connect(delete_event, "button-press-event", G_CALLBACK(on_delete_clicked), message_info_struct);

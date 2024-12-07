@@ -20,6 +20,7 @@ typedef struct {
     void (*add_chat)(int chat_id, const char *chat_type);
     t_chats_struct *(*get_chat_by_id)(int chat_id);
     void (*free_struct)(t_chats_struct *chat);
+    void (*delete_chat_and_related_data)(int chat_id, t_chats_types group_type);
 } t_chats_table;
 t_chats_table init_chats_table(void);
 

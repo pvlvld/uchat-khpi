@@ -62,9 +62,8 @@ void on_header_title_clicked(GtkWidget *widget, GdkEventButton *event, gpointer 
     if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
         int user_count = 0;
         t_users_struct **users = vendor.database.tables.personal_chats_table.get_users(&user_count, vendor.active_chat.chat->id);
-        (void) users;
 
-        vendor.modal.add_users_to_group.show(GTK_WINDOW(vendor.window), user_count, users);
+        vendor.modal.add_users_to_group.show(GTK_WINDOW(vendor.window), user_count, users, vendor.active_chat.chat->id);
     }
 }
 

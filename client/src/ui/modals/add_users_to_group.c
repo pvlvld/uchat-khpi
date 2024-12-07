@@ -4,11 +4,11 @@
 void on_add_to_group_clicked(GtkButton *button, t_user_block_data *data) {
     (void) button;
     gtk_widget_destroy(data->userblock);
-    vendor.database.tables.group_chat_members_table.add_member(vendor.active_chat.chat->id, data->user_id, "member");
+    vendor.database.tables.group_chat_members_table.add_member(data->chat_id, data->user_id, "member");
     g_free(data);
 }
 
-static void show_modal(GtkWindow *parent, int user_count, t_users_struct **users) {
+static void show_modal(GtkWindow *parent, int user_count, t_users_struct **users, int chat_id) {
     const int WIDTH = 500;
     const int HEIGHT = 400;
     GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -60,6 +60,7 @@ static void show_modal(GtkWindow *parent, int user_count, t_users_struct **users
         t_user_block_data *data = g_new(t_user_block_data, 1);
         data->userblock = userblock;
         data->user_id = users[i]->user_id;
+        data->chat_id = chat_id;
 
         g_signal_connect(button, "clicked", G_CALLBACK(on_add_to_group_clicked), data);
 

@@ -67,12 +67,40 @@ static void free_struct(t_chats_struct *chat) {
     }
 }
 
+static void delete_chat_and_related_data(int chat_id, t_chats_types group_type) {
+    char sql[1024];
+    snprintf(sql, sizeof(sql),
+             "DELETE FROM messages WHERE chat_id = %d;", chat_id);
+    vendor.database.sql.execute_sql(sql);
+
+    if (group_type == GROUP) {
+        snprintf(sql, sizeof(sql),
+                 "DELETE FROM group_info WHERE group_id = %d;", chat_id);
+        vendor.database.sql.execute_sql(sql);
+
+        snprintf(sql, sizeof(sql),
+                 "DELETE FROM group_chat_members WHERE chat_id = %d;", chat_id);
+        vendor.database.sql.execute_sql(sql);
+    } else if (group_type == PERSONAL) {
+        snprintf(sql, sizeof(sql),
+                 "DELETE FROM personal_chats WHERE chat_id = %d;", chat_id);
+        vendor.database.sql.execute_sql(sql);
+    }
+
+    snprintf(sql, sizeof(sql),
+             "DELETE FROM chats WHERE chat_id = %d;", chat_id);
+    vendor.database.sql.execute_sql(sql);
+
+    printf("Chat and related data with chat_id %d has been deleted.\n", chat_id);
+}
+
 t_chats_table init_chats_table(void) {
     t_chats_table table = {
         .create_table = create_table,
         .add_chat = add_chat,
         .get_chat_by_id = get_chat_by_id,
         .free_struct = free_struct,
+        .delete_chat_and_related_data = delete_chat_and_related_data,
     };
 
     return table;

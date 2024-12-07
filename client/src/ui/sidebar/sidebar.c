@@ -52,6 +52,39 @@ void message_receipt(GtkWidget *widget, ssize_t index, char *encrypt) {
     }
 }
 
+void delete_chat_sidebar(GtkWidget *widget, ssize_t index) {
+    GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
+
+    if (children != NULL) {
+        for (ssize_t i = 0; i < g_list_length(children); i++) {
+            GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
+            t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
+            if (chat_info->id != index) continue;
+
+            if (vendor.active_chat.chat_sidebar_widget == target_child) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(target_child), "active");
+                vendor.active_chat.chat_sidebar_widget = NULL;
+                vendor.pages.main_page.chat.change_chat();
+                vendor.active_chat.chat = NULL;
+            }
+
+            if (vendor.hover_chat.chat_sidebar_widget == target_child) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(target_child), "hover");
+                vendor.hover_chat.chat_sidebar_widget = NULL;
+                vendor.hover_chat.chat = NULL;
+            }
+
+            gtk_widget_destroy(GTK_WIDGET(target_child));
+
+            gtk_widget_show_all(stretchable_box);
+            break;
+        }
+        g_list_free(children);
+    }
+}
+
 static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
     (void) widget;
     (void) user_data;

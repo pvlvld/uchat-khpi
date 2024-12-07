@@ -7,7 +7,7 @@
 
 typedef struct {
     GtkWidget *window;
-    void (*show)(GtkWindow *parent, int x, int y);
+    void (*show)(GtkWindow *parent, int x, int y, t_chat_info *chat_info);
     void (*destroy)(void);
 } t_modal_chat_info;
 
@@ -27,11 +27,12 @@ typedef struct {
 typedef struct {
     GtkWidget *userblock;
     int user_id;
+    int chat_id;
 } t_user_block_data;
 
 typedef struct {
     GtkWidget *window;
-    void (*show)(GtkWindow *parent, int user_count, t_users_struct **users);
+    void (*show)(GtkWindow *parent, int user_count, t_users_struct **users, int chat_id);
     void (*destroy)(void);
 } t_modal_add_users_to_group;
 
