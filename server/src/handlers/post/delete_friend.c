@@ -33,13 +33,13 @@ void delete_friend_rout(SSL *ssl, const char *request) {
     }
 
     // Extract sender and recipient information
-    char *recipient_id_str = extract_user_id(json);
+    char *recipient_username_str = extract_recipient_username(json);
     char *sender_id_str = get_sender_id_from_token(request); // Extracted from JWT
 
-    if (!recipient_id_str || !sender_id_str) {
+    if (!recipient_username_str || !sender_id_str) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "MISSING_USER_IDS");
-        cJSON_AddStringToObject(response_json, "message", "Sender or recipient ID is missing");
+        cJSON_AddStringToObject(response_json, "message", "Sender ID or recipient username is missing");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
@@ -56,18 +56,16 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         return;
     }
 
-    if (!is_valid_user_id(recipient_id_str)) {
+    if (!is_valid_username(recipient_username_str)) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "INVALID_USER_ID");
-        cJSON_AddStringToObject(response_json, "message", "Invalid user ID");
+        cJSON_AddStringToObject(response_json, "message", "Invalid username");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
-        cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
     }
 
     int sender_id = atoi(sender_id_str);
-    int recipient_id = atoi(recipient_id_str);
 
     // Connect to database
     conn = vendor.database.pool.acquire_connection();
@@ -81,6 +79,31 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         cJSON_Delete(response_json);
         return;
     }
+
+    PGresult *recipient_db_res = get_user_by_username(conn, recipient_username_str);
+    if (!recipient_db_res || PQntuples(recipient_db_res) == 0) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "USER_NOT_FOUND");
+        cJSON_AddStringToObject(response_json, "message", "Recipient username not found");
+        vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        return;
+    }
+
+    char *recipient_id_str = PQgetvalue(recipient_db_res, 0, 0);
+    if (!is_valid_user_id(recipient_id_str)) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_USER_ID");
+        cJSON_AddStringToObject(response_json, "message", "Invalid user ID");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        PQclear(recipient_db_res);
+        return;
+    }
+
+    int recipient_id = atoi(recipient_id_str);
+    PQclear(recipient_db_res);
 
     // Check if a personal chat exists
     existing_chat = get_personal_chat(conn, sender_id, recipient_id);

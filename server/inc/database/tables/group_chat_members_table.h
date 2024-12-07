@@ -7,6 +7,7 @@
 
 
 PGresult *get_user_chats_group(PGconn *conn, int user_id);
+PGresult *get_group_members(PGconn *conn, int chat_id);
 bool add_chat_member(PGconn *conn, int chat_id, int user_id);
 bool remove_chat_member(PGconn *conn, int chat_id, int user_id);
 

@@ -102,6 +102,9 @@ void friend_request_rout(SSL *ssl, const char *request) {
     char *recipient_login = PQgetvalue(recipient_db_res, 0, 2);    // user_login
     char *recipient_about = PQgetvalue(recipient_db_res, 0, 3);    // about
     char *recipient_public_key = PQgetvalue(recipient_db_res, 0, 7); // public_key
+    printf("Recipient login: %s\n", recipient_login);
+    printf("Recipient about: %s\n", recipient_about);
+    printf("Recipient public key: %s\n", recipient_public_key);
     if (!recipient_login || !recipient_about || !recipient_public_key) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "GET_USER_INFO_FAILED");
@@ -112,7 +115,6 @@ void friend_request_rout(SSL *ssl, const char *request) {
         PQfinish(conn);
         return;
     }
-    PQclear(recipient_db_res);
 
     printf("Sender ID: %d\n", sender_id);
     printf("Recipient ID: %d\n", recipient_id);
@@ -169,6 +171,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         if (recipient_about) cJSON_AddStringToObject(ws_message, "recipient_about", recipient_about);
         if (recipient_public_key) cJSON_AddStringToObject(ws_message, "recipient_public_key", recipient_public_key);
         _send_message_to_client(recipient_id, ws_message);
+        if (timestamp) free(timestamp);
         if (ws_message) cJSON_Delete(ws_message);
     }
 
@@ -176,12 +179,19 @@ void friend_request_rout(SSL *ssl, const char *request) {
     cJSON_AddBoolToObject(response_json, "error", false);
     cJSON_AddStringToObject(response_json, "message", "Personal chat created successfully");
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
+    char *timestamp = NULL;
+    get_current_timestamp(&timestamp);
+    cJSON_AddStringToObject(response_json, "timestamp", timestamp);
+    if (recipient_login) cJSON_AddStringToObject(response_json, "recipient_login", recipient_login);
+    if (recipient_about) cJSON_AddStringToObject(response_json, "recipient_about", recipient_about);
+    if (recipient_public_key) cJSON_AddStringToObject(response_json, "recipient_public_key", recipient_public_key);
     vendor.server.https.send_https_response(ssl, "201 Created", "application/json", cJSON_Print(response_json));
 
     // Cleanup
     if (json) cJSON_Delete(json);
     if (response_json) cJSON_Delete(response_json);
     if (conn) PQfinish(conn);
+    if (recipient_db_res) PQclear(recipient_db_res);
     //if (existing_chat) PQclear(existing_chat);
     return;
 }

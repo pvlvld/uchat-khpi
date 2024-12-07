@@ -57,6 +57,8 @@ char *extract_recipient_login(cJSON *json);
 char *extract_recipient_username(cJSON *json);
 char *extract_user_id(cJSON *json);
 
+char *extract_query_param(const char *request, const char *param_name);
+
 int get_dm_recipient_id(PGconn *conn, int chat_id, int sender_id);
 PGresult *get_group_recipients(PGconn *conn, int chat_id);
 
@@ -82,6 +84,6 @@ MessageResult_t handle_group_or_channel_message(PGconn *conn, int chat_id, int s
 cJSON *create_message_json(int sender_id, const char *message_text);
 cJSON *create_delete_message_json(int sender_id, deleteMessageResult_t delete_result);
 
-
+cJSON *get_all_updates(const char *request);
 
 #endif // UTILS_H

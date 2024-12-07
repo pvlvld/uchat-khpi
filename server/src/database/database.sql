@@ -58,15 +58,11 @@ CREATE TABLE group_chats (
     group_name VARCHAR(120),
     about VARCHAR(1024) DEFAULT NULL,
     group_picture INT REFERENCES media(media_id) DEFAULT NULL,
-    backgroung INT REFERENCES media(media_id) DEFAULT NULL
+    backgroung INT REFERENCES media(media_id) DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE group_chat_members (
-    chat_id INT REFERENCES group_chats(chat_id) ON DELETE CASCADE,
-    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    role e_chat_member_type DEFAULT 'member',
-    PRIMARY KEY (chat_id, user_id)
-);
+
 
 CREATE TABLE messages (
     -- id SERIAL PRIMARY KEY, -- do we need it?

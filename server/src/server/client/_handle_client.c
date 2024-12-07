@@ -1,4 +1,5 @@
 #include "../../../inc/header.h"
+#include "../../../inc/utils.h"
 #include "../../../inc/server/client.h"
 #include "../../../inc/websocket.h"
 
@@ -59,7 +60,7 @@ void *_handle_client(void *client_socket) {
 
         // Extract JWT token from Authorization header
         char *jwt_token = extract_token_from_query(buffer);
-
+        char *timestamp = extract_query_param(buffer, "timestamp");
         // If this is a WebSocket request
         if (strstr(buffer, "Upgrade: websocket") != NULL) {
             char *key_start = strstr(buffer, "Sec-WebSocket-Key: ");
@@ -95,7 +96,6 @@ void *_handle_client(void *client_socket) {
                             cJSON_Delete(response_json);
                             return NULL;
                         }
-                        free(jwt_token);
                     } else {
                         cJSON_AddStringToObject(response_json, "message", "WebSocket connection without jwt");
                         cJSON_AddStringToObject(response_json, "status", "ERROR");
@@ -127,9 +127,35 @@ void *_handle_client(void *client_socket) {
                         printf("WebSocket handshake with user_id: %ld\n", user_id); // Debug message
                     vendor.server.client_settings.update_client_user_id(ssl, user_id);
 
-                    cJSON_AddStringToObject(response_json, "message", "Connected succsess!");
-                    cJSON_AddStringToObject(response_json, "status", "OK");
+                    if (!timestamp) {
+                        cJSON_AddStringToObject(response_json, "message", "Connected success!");
+                        cJSON_AddStringToObject(response_json, "status", "OK");
+                        cJSON_AddBoolToObject(response_json, "error", true);
+                        cJSON_AddStringToObject(response_json, "error_code",
+                                                "Timestamp not found. Cannot get updates.");
+                    }
+                    else {
+                        char updates_request[512];
+                        snprintf(updates_request, sizeof(updates_request),
+                                 "GET /get_all_updates?token=%s&user_id=%lu&timestamp=%s HTTP/1.1\r\n\r\n", jwt_token,
+                                 user_id, timestamp);
 
+                        printf("Updates request: %s\n", updates_request);
+                        cJSON *updates = get_all_updates(updates_request);
+
+                        if (!updates) {
+                            cJSON_AddStringToObject(response_json, "message", "Connected succsess!");
+                            cJSON_AddStringToObject(response_json, "status", "OK");
+                            cJSON_AddBoolToObject(response_json, "error", true);
+                            cJSON_AddStringToObject(response_json, "error_code", "Failed to fetch updates.");
+                        } else {
+                            cJSON_AddStringToObject(response_json, "message", "Connected succsess!");
+                            cJSON_AddStringToObject(response_json, "status", "OK");
+                            cJSON_AddBoolToObject(response_json, "error", false);
+                            cJSON_AddItemToObject(response_json, "updates", updates);
+                        }
+                    }
+                    if (jwt_token) free(jwt_token);
                     vendor.websocket.send_websocket_message(ssl, cJSON_Print(response_json));
 
                     cJSON_Delete(response_json);
