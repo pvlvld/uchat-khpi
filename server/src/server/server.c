@@ -2,7 +2,46 @@
 #include "../../inc/header.h"
 #include "../../inc/ssl.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/syslog.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 void start_server(void) {
+
+    pid_t pid, sid;
+
+    pid = fork();
+    if (pid < 0) {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid > 0) {
+        printf("Daemon PID: %d\n", pid);
+        exit(EXIT_SUCCESS);
+    }
+
+    sid = setsid();
+    if (sid < 0) {
+        perror("setsid failed");
+        exit(EXIT_FAILURE);
+    }
+
+    if (chdir("/") < 0) {
+        perror("chdir failed");
+        exit(EXIT_FAILURE);
+    }
+
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    open("/dev/null", O_RDONLY); // STDIN
+    open("/dev/null", O_WRONLY); // STDOUT
+    open("/dev/null", O_WRONLY); // STDERR
+
     int server_fd, client_socket;
     struct sockaddr_in address;
     int opt = 1;
@@ -36,7 +75,7 @@ void start_server(void) {
         exit(EXIT_FAILURE);
     }
 
-    if (vendor.env.dev_mode) printf("Server listening on port %d\n", vendor.server.port);
+    syslog(LOG_INFO, "Server listening on port %d", 8080);
 
     while (1) {
         // Accept incoming connection
