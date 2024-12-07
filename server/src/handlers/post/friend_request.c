@@ -101,7 +101,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     int recipient_id = atoi(recipient_id_str);
     char *recipient_login = PQgetvalue(recipient_db_res, 0, 2);    // user_login
     char *recipient_about = PQgetvalue(recipient_db_res, 0, 3);    // about
-    char *recipient_public_key = PQgetvalue(recipient_db_res, 0, 7); // public_key
+    char *recipient_public_key = PQgetvalue(recipient_db_res, 0, 8); // public_key
     printf("Recipient login: %s\n", recipient_login);
     printf("Recipient about: %s\n", recipient_about);
     printf("Recipient public key: %s\n", recipient_public_key);
@@ -179,6 +179,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     cJSON_AddBoolToObject(response_json, "error", false);
     cJSON_AddStringToObject(response_json, "message", "Personal chat created successfully");
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
+    cJSON_AddNumberToObject(response_json, "friend_id", recipient_id);
     char *timestamp = NULL;
     get_current_timestamp(&timestamp);
     cJSON_AddStringToObject(response_json, "timestamp", timestamp);
