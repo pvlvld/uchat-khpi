@@ -38,10 +38,10 @@ static t_users_struct **get_users_from_personal_chats(int *user_count, int chat_
         return NULL;
     }
 
-    sqlite3_bind_int(stmt, 1, vendor.current_user.user_id);  // Привязываем текущий user_id
-    sqlite3_bind_int(stmt, 2, vendor.current_user.user_id);  // Привязываем текущий user_id для условий
-    sqlite3_bind_int(stmt, 3, vendor.current_user.user_id);  // Привязываем текущий user_id для условий
-    sqlite3_bind_int(stmt, 4, chat_id);  // Привязываем chat_id для проверки в группе
+    sqlite3_bind_int(stmt, 1, vendor.current_user.user_id);
+    sqlite3_bind_int(stmt, 2, vendor.current_user.user_id);
+    sqlite3_bind_int(stmt, 3, vendor.current_user.user_id);
+    sqlite3_bind_int(stmt, 4, chat_id);
 
     t_users_struct **users = NULL;
     int count = 0;
@@ -91,10 +91,43 @@ static t_users_struct **get_users_from_personal_chats(int *user_count, int chat_
     return users;
 }
 
+static int create_personal_chat(int chat_id, int user2_id) {
+    if (vendor.current_user.user_id == 0) {
+        printf("[ERROR] Current user ID is not set.\n");
+        return -1;
+    }
+
+    const char *sql =
+        "INSERT INTO personal_chats (chat_id, user1_id, user2_id) "
+        "VALUES (?, ?, ?);";
+
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return -1;
+    }
+
+    sqlite3_bind_int(stmt, 1, chat_id);
+    sqlite3_bind_int(stmt, 2, vendor.current_user.user_id);
+    sqlite3_bind_int(stmt, 3, user2_id);
+
+    int result = sqlite3_step(stmt);
+    if (result != SQLITE_DONE) {
+        printf("[ERROR] Failed to execute SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
+
 t_personal_chats_table init_personal_chats_table(void) {
     t_personal_chats_table table = {
         .create_table = create_table,
         .get_users = get_users_from_personal_chats,
+        .create_personal_chat = create_personal_chat,
     };
 
     return table;

@@ -91,6 +91,7 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
         vendor.modal.message_info.edit_modal.destroy();
     } else {
         g_print("Empty message, not sending.\n");
+
     }
 
     g_free(text);

@@ -26,6 +26,13 @@ static void on_create_group_click(GtkWidget *widget, GdkEventButton *event, gpoi
     vendor.modal.create_group.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 }
 
+static void on_add_friend_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+    (void) widget;
+    (void) event;
+    (void) user_data;
+    vendor.modal.add_friend.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+}
+
 static GtkWidget *create_profile_text_block(void) {
     GtkWidget *profile_text_block = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_size_request(profile_text_block, 152, 42);
@@ -83,6 +90,8 @@ GtkWidget *sidebar_create_bottom(void) {
     gtk_box_pack_start(GTK_BOX(button_block), button_friend, FALSE, FALSE, 0);
     vendor.helpers.set_classname_and_id(button_friend, "sidebar__bottom_button-block__friend");
     vendor.helpers.add_hover(button_friend);
+    g_signal_connect(button_friend, "button-press-event", G_CALLBACK(on_add_friend_click), NULL);
+
 
     GtkWidget *button_group = gtk_button_new_with_label("Create group");
     gtk_widget_set_size_request(button_group, 115, -1);

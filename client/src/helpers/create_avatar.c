@@ -31,10 +31,9 @@ GtkWidget *create_avatar(const char *path, int width, int height) {
         snprintf(full_path, sizeof(full_path), "resources/images/avatars/%s", path);
     }
 
-    // Проверяем, существует ли файл
     if (!g_file_test(full_path, G_FILE_TEST_EXISTS)) {
-        g_warning("File not found: %s", full_path);
-        return gtk_image_new_from_icon_name("image-missing", GTK_ICON_SIZE_DIALOG);
+        // g_warning("File not found: %s", full_path);
+        snprintf(full_path, sizeof(full_path), "resources/images/avatars/logo_%d.jpg", rand() % 4 + 1);
     }
 
     // Загружаем изображение, если файл существует
