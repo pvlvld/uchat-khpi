@@ -21,7 +21,7 @@ services:
             POSTGRES_PASSWORD: uchat
         volumes:
             - postgres-volume:/data/db
-            - ./server/src/database/database.sql:/docker-entrypoint-initdb.d/database.sql:ro
+            - ./src/database/database.sql:/docker-entrypoint-initdb.d/database.sql:ro
 
 volumes:
     postgres-volume:
