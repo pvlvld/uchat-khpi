@@ -179,7 +179,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     cJSON_AddBoolToObject(response_json, "error", false);
     cJSON_AddStringToObject(response_json, "message", "Personal chat created successfully");
     cJSON_AddNumberToObject(response_json, "chat_id", chat_id);
-    cJSON_AddNumberToObject(response_json, "friend_id", recipient_id);
+    cJSON_AddNumberToObject(response_json, "recipient_id", recipient_id);
     char *timestamp = NULL;
     get_current_timestamp(&timestamp);
     cJSON_AddStringToObject(response_json, "timestamp", timestamp);
