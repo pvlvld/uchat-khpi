@@ -20,6 +20,7 @@ typedef struct {
     char *path_to_logo;
     int unreaded_messages;
     time_t timestamp;
+    char *another_user_public_key;
 } t_chat_info;
 
 typedef struct {

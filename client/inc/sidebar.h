@@ -12,8 +12,8 @@ GtkWidget *sidebar_init(void);
 GtkWidget *sidebar_create_avatar(t_chat_info *chat_info);
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info);
 GtkWidget *sidebar_create_bottom(void);
-void swap_sidebar(GtkWidget *widget, ssize_t index);
-void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info);
+// void message_receipt(GtkWidget *widget, ssize_t index, t_messages_struct *message_struct);
+void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info, int is_new);
 
 typedef struct {
     GtkWidget *(*init)(void);

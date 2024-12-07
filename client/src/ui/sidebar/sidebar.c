@@ -22,7 +22,7 @@ static GtkWidget *init_search(void) {
     return entry_wrapper;
 }
 
-void swap_sidebar(GtkWidget *widget, ssize_t index) {
+void message_receipt(GtkWidget *widget, ssize_t index, char *encrypt) {
     GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
 
     GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
@@ -33,6 +33,19 @@ void swap_sidebar(GtkWidget *widget, ssize_t index) {
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
             gtk_box_reorder_child(GTK_BOX(stretchable_box), target_child, 0);
+
+            t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
+                        chat_info->id, 3, encrypt);
+
+            chat_info->last_message = message_struct;
+            chat_info->unreaded_messages++;
+
+            update_chatblock(target_child, chat_info, 1);
+
+            if (vendor.active_chat.chat_sidebar_widget != NULL && vendor.active_chat.chat->id == chat_info->id) {
+                add_chat_message(message_struct, 1);
+            }
+
             break;
         }
         g_list_free(children);
@@ -56,10 +69,12 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
 
     if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
 
-        ssize_t index = rand() % 3 + 1;
+        ssize_t index = 234;
         g_print("Element with id %zd updated!\n", index);
 
-        swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
+        char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, "New message from friend");
+
+        message_receipt(vendor.pages.main_page.sidebar.widget, index, encrypt);
         vendor.helpers.show_notification("New notification", "New message");
 		vendor.popup.add_message("New message");
 

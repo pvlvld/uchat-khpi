@@ -189,6 +189,7 @@ void *websocket_thread(void *arg) {
 			if (json_start) {
 				cJSON *json_message = cJSON_Parse(json_start);
     			if (json_message) {
+                                g_print("json_message:\n%s\n", cJSON_Print(json_message));
         			cJSON_Delete(json_message);
     			} else {
         			fprintf(stderr, "Failed to parse JSON: %s\n", cJSON_GetErrorPtr());

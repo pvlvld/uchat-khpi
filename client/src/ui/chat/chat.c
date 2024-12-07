@@ -25,7 +25,6 @@ void change_chat(void) {
     vendor.pages.main_page.chat.shown_messages = 0;
     vendor.pages.main_page.chat.temp_message_counter = 0;
 
-
     if (vendor.pages.main_page.chat.chat_box != NULL) {
         gtk_widget_destroy(vendor.pages.main_page.chat.chat_box);
     }
@@ -92,6 +91,10 @@ GtkWidget *chat_init(void) {
     GtkWidget *header_title_event_box = gtk_event_box_new();
     gtk_container_add(GTK_CONTAINER(header_title_event_box), header_title);
     gtk_box_pack_start(GTK_BOX(chat_header), header_title_event_box, TRUE, TRUE, 0);
+
+    if (vendor.active_chat.chat->type == PERSONAL) {
+        vendor.active_chat.chat->another_user_public_key = vendor.database.tables.users_table.get_peer_public_key(vendor.active_chat.chat->id);
+    }
 
     if (vendor.active_chat.chat->type == GROUP) {
         vendor.helpers.add_hover(header_title_event_box);

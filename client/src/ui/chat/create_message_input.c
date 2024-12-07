@@ -109,7 +109,7 @@ static void send_message(GtkTextView *text_view) {
 
             vendor.active_chat.chat->last_message = message_struct;
 
-            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 1);
             free(encrypt);
         }
 

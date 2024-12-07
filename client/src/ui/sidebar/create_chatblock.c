@@ -35,6 +35,8 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
         }
         vendor.active_chat.chat_sidebar_widget = widget;
         vendor.pages.main_page.chat.change_chat();
+        vendor.active_chat.chat->unreaded_messages = 0;
+        update_chatblock(widget, vendor.active_chat.chat, 0);
         gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
     } else if (event->button == GDK_BUTTON_SECONDARY) {
         int x = event->x_root;
@@ -177,6 +179,7 @@ static void update_chat_time(GtkWidget *chatblock, const char *new_time) {
 }
 
 static void update_avatar(GtkWidget *chatblock, t_chat_info *new_chat_info) {
+    g_print("unreaded_messages: %d\n", new_chat_info->unreaded_messages);
     GtkWidget *current_avatar_wrapper = g_object_get_data(G_OBJECT(chatblock), "avatar_wrapper");
 
     if (current_avatar_wrapper != NULL) {
@@ -193,18 +196,18 @@ static void update_avatar(GtkWidget *chatblock, t_chat_info *new_chat_info) {
     gtk_widget_show_all(chatblock);
 }
 
-
-void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info) {
+void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info, int is_new) {
     GtkWidget *chatblock = g_object_get_data(G_OBJECT(event_box), "chatblock");
 
     update_chat_message(chatblock, create_formatted_last_message(chat_info));
     update_chat_time(chatblock, create_chat_time_string(chat_info));
     update_avatar(chatblock, chat_info);
 
-    GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(vendor.pages.main_page.sidebar.widget), "stretchable_box");
-    gtk_box_reorder_child(GTK_BOX(stretchable_box), event_box, 0);
+    if (is_new) {
+        GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(vendor.pages.main_page.sidebar.widget), "stretchable_box");
+        gtk_box_reorder_child(GTK_BOX(stretchable_box), event_box, 0);
+    }
 }
-
 
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

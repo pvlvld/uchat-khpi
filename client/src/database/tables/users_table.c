@@ -99,12 +99,45 @@ static void free_struct(t_users_struct *user) {
     }
 }
 
+static char *get_peer_public_key(int chat_id) {
+    const char *sql =
+        "SELECT u.public_key "
+        "FROM users u "
+        "JOIN personal_chats pc ON (u.user_id = pc.user1_id OR u.user_id = pc.user2_id) "
+        "WHERE pc.chat_id = ? AND u.user_id != ?;";
+
+    sqlite3_stmt *stmt;
+    char *public_key = NULL;
+
+    int current_user_id = vendor.current_user.user_id;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, chat_id);
+    sqlite3_bind_int(stmt, 2, current_user_id);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        public_key = (char *)sqlite3_column_text(stmt, 0);
+    } else {
+        fprintf(stderr, "No peer found for chat_id: %d\n", chat_id);
+    }
+
+    sqlite3_finalize(stmt);
+
+    return public_key;
+}
+
+
 t_users_table init_users_table(void) {
     t_users_table table = {
         .create_table = create_users_table,
         .get_user_by_id = get_user_by_id,
         .free_struct = free_struct,
         .add_user = add_user,
+        .get_peer_public_key = get_peer_public_key,
     };
 
     return table;

@@ -225,7 +225,7 @@ void on_scroll_value_changed(GtkAdjustment *adjustment, gpointer user_data) {
         int dif = vendor.pages.main_page.chat.total_messages - vendor.pages.main_page.chat.page * PER_PAGE;
 		int messages_count = dif >= PER_PAGE ? PER_PAGE : dif;
 		if (messages_count <= 0) return;
-    	t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(1, PER_PAGE,
+    	t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(vendor.active_chat.chat->id, PER_PAGE,
 			++vendor.pages.main_page.chat.page, &vendor.pages.main_page.chat.total_messages);
 
     	if (messages != NULL) {
@@ -280,14 +280,14 @@ GtkWidget *chat_create_scrolled_window(void) {
     if (messages != NULL) {
         for (int i = 0; i < PER_PAGE; i++) {
             if ((i + 1) * vendor.pages.main_page.chat.page > vendor.pages.main_page.chat.total_messages) {
-		        break;
+                break;
             }
-	        int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
+            int is_received = messages[i].sender_struct->user_id != vendor.current_user.user_id;
 
             height += add_old_chat_message(&messages[i], is_received);
             vendor.pages.main_page.chat.shown_messages++;
-	    }
-	    vendor.database.tables.messages_table.free_struct(messages);
+        }
+	vendor.database.tables.messages_table.free_struct(messages);
     }
 
     gtk_widget_set_size_request(stretchable_box_old_messages, -1, height);

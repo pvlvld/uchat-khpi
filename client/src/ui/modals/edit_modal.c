@@ -82,7 +82,7 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
             if (vendor.active_chat.chat->last_message->message_id == message_struct->message_id
                 && vendor.active_chat.chat->id == (unsigned int) message_struct->chat_struct->chat_id) {
                 	vendor.active_chat.chat->last_message = message_struct;
-            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
                 }
             free(encrypt);
         }
