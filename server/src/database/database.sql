@@ -59,6 +59,7 @@ CREATE TABLE group_chats (
     about VARCHAR(1024) DEFAULT NULL,
     group_picture INT REFERENCES media(media_id) DEFAULT NULL,
     backgroung INT REFERENCES media(media_id) DEFAULT NULL
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE group_chat_members (

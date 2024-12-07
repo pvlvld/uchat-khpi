@@ -39,7 +39,7 @@ bool delete_group_chat(PGconn *conn, int chat_id) {
 }
 
 bool update_group_chat_name(PGconn *conn, int chat_id, const char *group_name) {
-    const char *query = "UPDATE group_chats SET group_name = $1 WHERE chat_id = $2";
+    const char *query = "UPDATE group_chats SET group_name = $1, updated_ad = NOW() WHERE chat_id = $2";
     char chat_id_str[12];
     const char *params[2] = {group_name, itoa(chat_id, chat_id_str)};
 
@@ -56,7 +56,7 @@ bool update_group_chat_name(PGconn *conn, int chat_id, const char *group_name) {
 }
 
 bool delete_group_chat_picture(PGconn *conn, int chat_id) {
-    const char *query = "UPDATE group_chats SET group_picture = NULL WHERE chat_id = $1";
+    const char *query = "UPDATE group_chats SET group_picture = NULL, updated_ad = NOW() WHERE chat_id = $1";
     char chat_id_str[12];
     const char *params[1] = {itoa(chat_id, chat_id_str)};
 
@@ -73,7 +73,7 @@ bool delete_group_chat_picture(PGconn *conn, int chat_id) {
 }
 
 bool update_group_chat_picture(PGconn *conn, int chat_id, int media_id) {
-    const char *query = "UPDATE group_chats SET group_picture = $1 WHERE chat_id = $2";
+    const char *query = "UPDATE group_chats SET group_picture = $1, updated_ad = NOW() WHERE chat_id = $2";
     char chat_id_str[12], media_id_str[12];
     const char *params[2] = {itoa(media_id, media_id_str), itoa(chat_id, chat_id_str)};
 
@@ -90,7 +90,7 @@ bool update_group_chat_picture(PGconn *conn, int chat_id, int media_id) {
 }
 
 bool update_group_chat_about(PGconn *conn, int chat_id, const char *about) {
-    const char *query = "UPDATE group_chats SET about = $1 WHERE chat_id = $2";
+    const char *query = "UPDATE group_chats SET about = $1, updated_ad = NOW() WHERE chat_id = $2";
     char chat_id_str[12];
     const char *params[2] = {about, itoa(chat_id, chat_id_str)};
 
