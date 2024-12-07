@@ -59,15 +59,19 @@ void get_updates_personal_chats(PGconn *conn, PGresult *chat_list, cJSON *person
                 // Extract relevant fields from the result
                 int message_id = atoi(PQgetvalue(messages, k, 0));        // message_id (Column 0)
                 char *content = PQgetvalue(messages, k, 3);               // message_text (Column 3)
-                char *timestamp = PQgetvalue(messages, k, 12);            // timestamp (Column 12)
-                char *edited_at = PQgetvalue(messages, k, 6);             // edited_at (Column 6)
-                char *deleted_at = PQgetvalue(messages, k, 7);            // deleted_at (Column 7)
+                char *edited_at = PQgetvalue(messages, k, 5);             // edited_at (Column 6)
+                char *deleted_at = PQgetvalue(messages, k, 6);            // deleted_at (Column 7)
+                char *timestamp = PQgetvalue(messages, k, 11);            // timestamp (Column 12)
 
+                printf("[DEBUG] message_id %d\n", message_id);
+
+                if (edited_at) printf("[DEBUG] edited_at %s\n", edited_at);
+                if (deleted_at) printf("[DEBUG] deleted_at %s\n", deleted_at);
                 // Add the extracted fields to the JSON object
                 cJSON_AddNumberToObject(message, "message_id", message_id);
                 cJSON_AddStringToObject(message, "content", content ? content : "");
                 cJSON_AddStringToObject(message, "timestamp", timestamp ? timestamp : "");
-                cJSON_AddStringToObject(message, "edited_at", edited_at && strlen(edited_at) > 0 ? edited_at : NULL);
+                if (edited_at) cJSON_AddStringToObject(message, "edited_at", strlen(edited_at) > 0 ? edited_at : "");
                 cJSON_AddBoolToObject(message, "deleted", deleted_at && strlen(deleted_at) > 0);
 
                 // Add the JSON object to the array
