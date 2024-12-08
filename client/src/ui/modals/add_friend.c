@@ -1,6 +1,9 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
+GtkWidget *wrapper = NULL;
+GtkWidget *message_from_server = NULL;
+
 static void on_add_friend_button_clicked(GtkButton *button, gpointer user_data) {
     (void) button;
     GtkWidget *entry = GTK_WIDGET(user_data);
@@ -17,7 +20,6 @@ static void on_add_friend_button_clicked(GtkButton *button, gpointer user_data) 
         friend_struct->username = cJSON_GetObjectItem(response, "recipient_login")->valuestring;
         friend_struct->user_login = cJSON_GetObjectItem(response, "recipient_login")->valuestring;
         friend_struct->about = cJSON_GetObjectItem(response, "recipient_about")->valuestring;
-        friend_struct->public_key = cJSON_GetObjectItem(response, "recipient_public_key")->valuestring;
         friend_struct->public_key = cJSON_GetObjectItem(response, "recipient_public_key")->valuestring;
 
         int chat_id = cJSON_GetObjectItem(response, "chat_id")->valueint;
@@ -56,11 +58,20 @@ static void on_add_friend_button_clicked(GtkButton *button, gpointer user_data) 
         gtk_box_pack_start(GTK_BOX(vendor.sidebar.stretchable_box), chatblock, FALSE, FALSE, 0);
         gtk_box_reorder_child(GTK_BOX(vendor.sidebar.stretchable_box), chatblock, 0);
         gtk_widget_show_all(vendor.sidebar.stretchable_box);
+        vendor.modal.add_friend.destroy();
     } else {
-        g_print("[ERROR]\n");
-        g_print("%s\n", cJSON_Print(response));
+        gtk_label_set_text(GTK_LABEL(message_from_server), cJSON_GetObjectItem(response, "message")->valuestring);
     }
 }
+
+static gboolean on_message_input_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+    if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
+        on_add_friend_button_clicked(GTK_BUTTON(user_data), widget);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 
 static void show_modal(GtkWindow *parent) {
     const int WIDTH = 500;
@@ -82,7 +93,7 @@ static void show_modal(GtkWindow *parent) {
 
     gtk_window_set_position(GTK_WINDOW(dialog), GTK_WIN_POS_CENTER_ON_PARENT);
 
-    GtkWidget *wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_size_request(wrapper, WIDTH, HEIGHT);
     gtk_container_add(GTK_CONTAINER(dialog), wrapper);
     vendor.helpers.set_classname_and_id(wrapper, "modal__edit_wrapper");
@@ -97,11 +108,17 @@ static void show_modal(GtkWindow *parent) {
     gtk_box_pack_start(GTK_BOX(wrapper), message_input, TRUE, TRUE, 20);
     vendor.helpers.set_classname_and_id(message_input, "modal__create-group_input");
 
+
+    message_from_server = gtk_label_new(" ");
+    gtk_box_pack_start(GTK_BOX(wrapper), message_from_server, TRUE, TRUE, 0);
+
     GtkWidget *button = gtk_button_new_with_label("Find friend");
     vendor.helpers.add_hover(button);
     vendor.helpers.set_classname_and_id(button, "modal__edit_button");
-    gtk_box_pack_start(GTK_BOX(wrapper), button, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(wrapper), button, FALSE, FALSE, 20);
     g_signal_connect(button, "clicked", G_CALLBACK(on_add_friend_button_clicked), message_input);
+
+    g_signal_connect(message_input, "key-press-event", G_CALLBACK(on_message_input_key_press), button);
 
     gtk_widget_show_all(dialog);
     g_signal_connect(dialog, "destroy", G_CALLBACK(gtk_widget_destroy), NULL);

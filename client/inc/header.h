@@ -31,6 +31,7 @@
 #include "database/server_requests.h"
 #include "database/edit_delete_layer.h"
 #include "server_connect.h"
+#include "api.h"
 
 typedef struct {
     t_chat_info *chat;

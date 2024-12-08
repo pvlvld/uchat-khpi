@@ -187,18 +187,19 @@ void *websocket_thread(void *arg) {
 
             char *json_start = strchr(buffer, '{');  // Locate the first JSON character
 
-            g_print("buffer:\n%s\n", buffer);
-            g_print("json_start:\n%s\n", json_start);
             if (json_start) {
                 cJSON *json_message = cJSON_Parse(json_start);
     		if (json_message) {
-                    g_print("json_message:\n%s\n", cJSON_Print(json_message));
+                    char *message = cJSON_GetObjectItem(json_message, "message")->valuestring;
+
+                    if (strcmp(message, "Friend request") == 0 ) {
+                        friend_request_handler(json_message);
+                    }
+
         	    cJSON_Delete(json_message);
     		} else {
-        	    fprintf(stderr, "Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
+        	    fprintf(stderr, "[ERROR] Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
     		}
-	    } else {
-    	        fprintf(stderr, "No JSON detected in message: %s\n", buffer);
 	    }
         } else if (bytes == 0) {
             printf("Server closed connection.\n");

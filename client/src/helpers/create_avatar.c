@@ -33,7 +33,7 @@ GtkWidget *create_avatar(const char *path, int width, int height) {
 
     if (!g_file_test(full_path, G_FILE_TEST_EXISTS)) {
         // g_warning("File not found: %s", full_path);
-        snprintf(full_path, sizeof(full_path), "resources/images/avatars/logo_%d.jpg", rand() % 4 + 1);
+        snprintf(full_path, sizeof(full_path), "resources/images/avatars/logo_%lu.jpg", strlen(path) % 4 + 1);
     }
 
     // Загружаем изображение, если файл существует
