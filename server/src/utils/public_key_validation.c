@@ -51,5 +51,3 @@ int is_valid_public_key(const char *public_key_str) {
 
     return result;
 }
-
-

@@ -17,7 +17,3 @@ bool is_valid_login(const char *login) {
 
     return true;
 }
-
-
-
-

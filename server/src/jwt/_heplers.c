@@ -1,5 +1,4 @@
 #include "../../inc/json_web_token.h"
-#include "../../inc/header.h"
 
 // Function for encoding in base64url
 char *_base64url_encode(const unsigned char *data, size_t length) {
@@ -26,9 +25,12 @@ char *_base64url_encode(const unsigned char *data, size_t length) {
 
     // Replacing '+' with '-' and '/' with '_' for base64url
     for (char *p = buff; *p; p++) {
-        if (*p == '+') *p = '-';
-        else if (*p == '/') *p = '_';
-        else if (*p == '=') *p = '\0';
+        if (*p == '+')
+            *p = '-';
+        else if (*p == '/')
+            *p = '_';
+        else if (*p == '=')
+            *p = '\0';
     }
 
     BIO_free_all(b64);
@@ -37,7 +39,7 @@ char *_base64url_encode(const unsigned char *data, size_t length) {
 
 // Function for creating HMAC SHA256 signature
 unsigned char *_sign_hmac_sha256(const char *key, const char *data, unsigned int *len) {
-    return HMAC(EVP_sha256(), key, strlen(key), (unsigned char*)data, strlen(data), NULL, len);
+    return HMAC(EVP_sha256(), key, strlen(key), (unsigned char *)data, strlen(data), NULL, len);
 }
 
 // Function for base64url decoding
@@ -50,9 +52,7 @@ unsigned char *_base64url_decode(const char *input, size_t *length) {
     if (!buffer) return NULL;
 
     strcpy(buffer, input);
-    for (size_t i = 0; i < padding; i++) {
-        buffer[len + i] = '=';
-    }
+    for (size_t i = 0; i < padding; i++) buffer[len + i] = '=';
     buffer[new_len] = '\0';
 
     BIO *b64, *bio;
