@@ -3,10 +3,19 @@
 
 int create_group_chat(PGconn *conn, const char *group_name, int group_picture, int background) {
     const char *query = "WITH new_chat AS (INSERT INTO chats (chat_type) VALUES ('group') RETURNING chat_id) "
-                        "INSERT INTO group_chats (chat_id, group_name, group_picture, backgroung) "
+                        "INSERT INTO group_chats (chat_id, group_name, group_picture, background) "
                         "SELECT chat_id, $1, $2, $3 FROM new_chat "
                         "RETURNING chat_id";
-    const char *params[3] = {group_name, itoa(group_picture, NULL), itoa(background, NULL)};
+
+    // Buffers for integer-to-string conversion
+    char group_picture_str[12];
+    char background_str[12];
+
+    // Convert integers to strings
+    snprintf(group_picture_str, sizeof(group_picture_str), "%d", group_picture);
+    snprintf(background_str, sizeof(background_str), "%d", background);
+
+    const char *params[3] = {group_name, group_picture_str, background_str};
 
     PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
 
@@ -20,6 +29,7 @@ int create_group_chat(PGconn *conn, const char *group_name, int group_picture, i
     PQclear(res);
     return chat_id;
 }
+
 
 bool delete_group_chat(PGconn *conn, int chat_id) {
     const char *query = "DELETE FROM chats WHERE chat_id = $1";

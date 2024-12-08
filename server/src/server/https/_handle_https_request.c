@@ -13,7 +13,7 @@ void _handle_https_request(SSL *ssl, const char *request) {
     }
 
     if (strstr(request, "GET /get_all_updates") == request) {
-        vendor.handlers.get.middleware._jwt(ssl, request, vendor.handlers.get._get_all_updates);
+        vendor.handlers.get._get_all_updates(ssl, request);
         return;
     }
 
@@ -54,6 +54,12 @@ void _handle_https_request(SSL *ssl, const char *request) {
         vendor.handlers.post._delete_friend(ssl, request);
         return;
     }
+
+    if (strstr(request, "POST /create_group_chat") == request) {
+        vendor.handlers.post._create_group_chat(ssl, request);
+        return;
+    }
+
     cJSON *response_json = cJSON_CreateObject();
     cJSON_AddStringToObject(response_json, "message", "Not found");
     vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
