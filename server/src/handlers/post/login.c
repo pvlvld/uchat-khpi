@@ -74,7 +74,7 @@ void login_rout(SSL *ssl, const char *request) {
         if (res) PQclear(res);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -89,7 +89,7 @@ void login_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         free(password_hash);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 

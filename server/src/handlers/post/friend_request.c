@@ -71,7 +71,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -138,7 +138,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         if (recipient_db_res) PQclear(recipient_db_res);
         if (sender_db_res) PQclear(sender_db_res);
         return;
@@ -155,7 +155,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         if (recipient_db_res) PQclear(recipient_db_res);
         if (sender_db_res) PQclear(sender_db_res);
         return;
@@ -171,7 +171,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         PQclear(existing_chat);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         if (recipient_db_res) PQclear(recipient_db_res);
         if (sender_db_res) PQclear(sender_db_res);
         return;
@@ -187,7 +187,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         if (recipient_db_res) PQclear(recipient_db_res);
         if (sender_db_res) PQclear(sender_db_res);
         return;
@@ -226,7 +226,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     // Cleanup
     if (json) cJSON_Delete(json);
     if (response_json) cJSON_Delete(response_json);
-    if (conn) PQfinish(conn);
+    if (conn) vendor.database.pool.release_connection(conn);
     if (recipient_db_res) PQclear(recipient_db_res);
     if (sender_db_res) PQclear(sender_db_res);
     //if (existing_chat) PQclear(existing_chat);

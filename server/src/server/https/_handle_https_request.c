@@ -12,6 +12,11 @@ void _handle_https_request(SSL *ssl, const char *request) {
         return;
     }
 
+    if (strstr(request, "GET /get_all_updates") == request) {
+        vendor.handlers.get.middleware._jwt(ssl, request, vendor.handlers.get._get_all_updates);
+        return;
+    }
+
     if (strstr(request, "POST /post") == request) {
         vendor.handlers.post.middleware._jwt(ssl, request, vendor.handlers.post.post);
         return;

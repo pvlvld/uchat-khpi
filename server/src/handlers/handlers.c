@@ -20,6 +20,7 @@ t_handlers init_handlers(void) {
     t_get_handler get_handlers = {
         .secret = secret_rout,
         ._hello = hello_rout,
+        ._get_all_updates = protected_get_all_updates_rout,
         .middleware = middleware,
     };
 

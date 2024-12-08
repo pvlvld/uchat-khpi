@@ -67,7 +67,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
     if (!is_user_in_chat(conn, chat_id, user_id)) {
@@ -77,7 +77,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "409 Conflict", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
     const char *chat_type = get_chat_type_ptr(conn, chat_id);
@@ -93,7 +93,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
             free(user_id_str);
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
 
         }
@@ -114,7 +114,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
             free(user_id_str);
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
         }
         if (result.Success == -1) {
@@ -166,7 +166,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
             free(user_id_str);
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
 
         }
@@ -184,7 +184,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
             free(user_id_str);
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
         }
         if (result.Success == -1) {
@@ -274,7 +274,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
         free(user_id_str);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -287,7 +287,7 @@ void delete_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
     }
-    PQfinish(conn);
+    vendor.database.pool.release_connection(conn);
     return;
 
 }

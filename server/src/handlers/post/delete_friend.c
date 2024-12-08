@@ -115,7 +115,7 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         if (existing_chat) PQclear(existing_chat);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
     int chat_id = atoi(PQgetvalue(existing_chat, 0, 0));
@@ -128,7 +128,7 @@ void delete_friend_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -152,7 +152,7 @@ void delete_friend_rout(SSL *ssl, const char *request) {
     // Cleanup
     if (json) cJSON_Delete(json);
     if (response_json) cJSON_Delete(response_json);
-    if (conn) PQfinish(conn);
+    if (conn) vendor.database.pool.release_connection(conn);
     if (existing_chat) PQclear(existing_chat);
     return;
 }

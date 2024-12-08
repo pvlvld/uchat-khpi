@@ -85,5 +85,6 @@ cJSON *create_message_json(int sender_id, const char *message_text);
 cJSON *create_delete_message_json(int sender_id, deleteMessageResult_t delete_result);
 
 cJSON *get_all_updates(const char *request);
+char *extract_timestamp(cJSON *json);
 
 #endif // UTILS_H

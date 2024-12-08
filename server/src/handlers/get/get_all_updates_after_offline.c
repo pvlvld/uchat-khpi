@@ -91,7 +91,7 @@ cJSON *get_all_updates(const char *request) { //jwt_token=<jwt_token>&user_id=<u
     if (PQstatus(conn) != CONNECTION_OK) {
         cJSON_AddBoolToObject(updates, "error", true);
         cJSON_AddStringToObject(updates, "error_code", "Database connection failed");
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return updates;
     }
 
@@ -99,12 +99,94 @@ cJSON *get_all_updates(const char *request) { //jwt_token=<jwt_token>&user_id=<u
     if (!fetch_updates_from_database(conn, user_id, timestamp, updates)) {
         cJSON_AddBoolToObject(updates, "error", true);
         cJSON_AddStringToObject(updates, "error_code", "Failed to fetch updates");
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return updates;
     }
 
-    PQfinish(conn);
+    vendor.database.pool.release_connection(conn);
 
     cJSON_AddBoolToObject(updates, "error", false);
     return updates;
 }
+
+void get_all_updates_rout(SSL *ssl, const char *request) {
+    cJSON *response_json = cJSON_CreateObject();
+
+    // Extract the body from the HTTP request
+    char *body = strstr(request, "\r\n\r\n");
+    if (!body) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "NO_MESSAGE_BODY");
+        cJSON_AddStringToObject(response_json, "message", "No message body found in the request.");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    body += 4; // Skip the "\r\n\r\n" part
+    cJSON *json = cJSON_Parse(body);
+    if (!json) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_JSON");
+        cJSON_AddStringToObject(response_json, "message", "The provided JSON is invalid.");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        return;
+    }
+
+    // Extract the user ID, timestamp, and token
+    char *user_id_str = extract_user_id(json);
+    char *timestamp = extract_timestamp(json);
+    char *jwt_token = get_sender_id_from_token(request);
+
+    if (!user_id_str || !timestamp || !jwt_token) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "MISSING_PARAMETERS");
+        cJSON_AddStringToObject(response_json, "message", "Missing user_id, timestamp, or token in the request.");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+
+        free(user_id_str);
+        free(timestamp);
+        free(jwt_token);
+        return;
+    }
+
+    // Create a simulated GET request for get_all_updates
+    char updates_request[512];
+    snprintf(updates_request, sizeof(updates_request),
+             "GET /get_all_updates?token=%s&user_id=%s&timestamp=%s HTTP/1.1\r\n\r\n",
+             jwt_token, user_id_str, timestamp);
+
+    // Call get_all_updates and handle the result
+    cJSON *updates = get_all_updates(updates_request);
+    if (!updates) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "FAILED_UPDATES_FETCH");
+        cJSON_AddStringToObject(response_json, "message", "Failed to fetch updates.");
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+
+        free(user_id_str);
+        free(timestamp);
+        free(jwt_token);
+        return;
+    }
+
+    // Add updates to the response JSON
+    cJSON_AddBoolToObject(response_json, "error", false);
+    cJSON_AddStringToObject(response_json, "code", "SUCCESS");
+    cJSON_AddStringToObject(response_json, "message", "Updates fetched successfully.");
+    cJSON_AddItemToObject(response_json, "updates", updates);
+
+    // Send the final response
+    vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
+
+    // Cleanup
+    cJSON_Delete(response_json);
+    free(user_id_str);
+    free(timestamp);
+    free(jwt_token);
+}
+
+void protected_get_all_updates_rout(SSL *ssl, const char *request) { jwt_middleware(ssl, request, get_all_updates_rout); }

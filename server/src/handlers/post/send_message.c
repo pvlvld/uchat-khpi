@@ -83,7 +83,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -95,7 +95,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "409 Conflict", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -110,7 +110,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "409 Conflict", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -126,7 +126,7 @@ void send_message_rout(SSL *ssl, const char *request) {
             vendor.server.https.send_https_response(ssl, "403 Forbidden", "application/json", cJSON_Print(response_json));
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
         }
 
@@ -158,7 +158,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         }
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
 
     } else if (strcmp(chat_type, "channel") == 0) {
         // For channels, ensure the user is the owner
@@ -170,7 +170,7 @@ void send_message_rout(SSL *ssl, const char *request) {
             vendor.server.https.send_https_response(ssl, "403 Forbidden", "application/json", cJSON_Print(response_json));
             cJSON_Delete(json);
             cJSON_Delete(response_json);
-            PQfinish(conn);
+            vendor.database.pool.release_connection(conn);
             return;
         }
 
@@ -202,7 +202,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         }
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
 
     } else if (strcmp(chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
@@ -236,7 +236,7 @@ void send_message_rout(SSL *ssl, const char *request) {
         }
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
     } else {
         // TODO: Handle the response where the chat type is unknown
         printf("Error: Unknown chat type\n");

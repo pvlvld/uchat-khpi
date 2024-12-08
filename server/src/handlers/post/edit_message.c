@@ -73,7 +73,7 @@ void edit_message_rout(SSL *ssl, const char *request) {
                                                 cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -85,7 +85,7 @@ void edit_message_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "409 Conflict", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -108,7 +108,7 @@ void edit_message_rout(SSL *ssl, const char *request) {
         free(edit_message_result.timestamp);
     }
 
-    PQfinish(conn);
+    vendor.database.pool.release_connection(conn);
     return;
 }
 

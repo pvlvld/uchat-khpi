@@ -77,3 +77,13 @@ char *extract_user_id(cJSON *json) {
     return strdup(user_id_item->valuestring);
 }
 
+char *extract_timestamp(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *timestamp_item = cJSON_GetObjectItem(json, "timestamp");
+    if (!cJSON_IsString(timestamp_item)) { return NULL; }
+
+    // Duplicate the timestamp string to return (remember to free it later)
+    return strdup(timestamp_item->valuestring);
+}
+

@@ -104,7 +104,7 @@ void group_add_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "403 Forbidden", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -118,7 +118,7 @@ void group_add_rout(SSL *ssl, const char *request) {
         PQclear(member_check);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
     PQclear(member_check);
@@ -131,7 +131,7 @@ void group_add_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
-        PQfinish(conn);
+        vendor.database.pool.release_connection(conn);
         return;
     }
 
@@ -153,7 +153,7 @@ void group_add_rout(SSL *ssl, const char *request) {
     // Cleanup
     cJSON_Delete(json);
     cJSON_Delete(response_json);
-    PQfinish(conn);
+    vendor.database.pool.release_connection(conn);
 
     return;
 }
