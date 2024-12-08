@@ -22,6 +22,14 @@ static void on_create_group_button_clicked(GtkButton *button, gpointer user_data
     gtk_widget_show_all(vendor.sidebar.stretchable_box);
 }
 
+static gboolean on_message_input_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
+    if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter) {
+        on_create_group_button_clicked(GTK_BUTTON(user_data), widget);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void show_modal(GtkWindow *parent) {
     const int WIDTH = 500;
     const int HEIGHT = 200;
@@ -62,6 +70,7 @@ static void show_modal(GtkWindow *parent) {
     vendor.helpers.set_classname_and_id(button, "modal__edit_button");
     gtk_box_pack_start(GTK_BOX(wrapper), button, FALSE, FALSE, 0);
     g_signal_connect(button, "clicked", G_CALLBACK(on_create_group_button_clicked), message_input);
+    g_signal_connect(message_input, "key-press-event", G_CALLBACK(on_message_input_key_press), button);
 
     gtk_widget_show_all(dialog);
     g_signal_connect(dialog, "destroy", G_CALLBACK(gtk_widget_destroy), NULL);

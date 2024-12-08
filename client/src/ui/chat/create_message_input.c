@@ -100,16 +100,31 @@ static void send_message(GtkTextView *text_view) {
     gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
     if (g_strcmp0(text, "") != 0) {
+        // local encrypting
         char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
             t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
-			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt);
+			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, 0);
             ++vendor.pages.main_page.chat.temp_message_counter;
             add_chat_message(message_struct, 0);
 
             vendor.active_chat.chat->last_message = message_struct;
 
             update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 1);
+            free(encrypt);
+        }
+
+        encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
+        if (encrypt) {
+            char buffer[50];
+            sprintf(buffer, "%d", vendor.active_chat.chat->id);
+
+            cJSON *json_body = cJSON_CreateObject();
+            cJSON_AddStringToObject(json_body, "chat_id", buffer);
+            cJSON_AddStringToObject(json_body, "message", encrypt);
+
+            vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
             free(encrypt);
         }
 

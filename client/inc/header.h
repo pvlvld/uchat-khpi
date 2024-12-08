@@ -17,6 +17,7 @@
 #include "../../libraries/sqlite/inc/sqlite3.h"
 #include "../../libraries/cJSON/cJSON.h"
 
+#include "api.h"
 #include "program.h"
 #include "database/database.h"
 #include "crypto.h"
@@ -31,7 +32,7 @@
 #include "database/server_requests.h"
 #include "database/edit_delete_layer.h"
 #include "server_connect.h"
-#include "api.h"
+
 
 typedef struct {
     t_chat_info *chat;

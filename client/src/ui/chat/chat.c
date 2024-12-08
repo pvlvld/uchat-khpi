@@ -92,7 +92,7 @@ GtkWidget *chat_init(void) {
     gtk_box_pack_start(GTK_BOX(chat_header), header_title_event_box, TRUE, TRUE, 0);
 
     if (vendor.active_chat.chat->type == PERSONAL) {
-        vendor.active_chat.chat->another_user_public_key = vendor.database.tables.users_table.get_peer_public_key(vendor.active_chat.chat->id);
+        vendor.active_chat.recipient_public_key = vendor.database.tables.users_table.get_peer_public_key(vendor.active_chat.chat->id);
     }
 
     if (vendor.active_chat.chat->type == GROUP) {

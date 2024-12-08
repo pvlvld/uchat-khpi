@@ -179,12 +179,11 @@ void *websocket_thread(void *arg) {
             pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
             break;
         }
-        pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
 
+        pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
         bytes = SSL_read(vendor.current_user.ws_client.ssl, buffer, sizeof(buffer) - 1);
         if (bytes > 0) {
             buffer[bytes] = '\0';
-
             char *json_start = strchr(buffer, '{');  // Locate the first JSON character
 
             if (json_start) {
@@ -194,6 +193,9 @@ void *websocket_thread(void *arg) {
 
                     if (strcmp(message, "Friend request") == 0 ) {
                         friend_request_handler(json_message);
+                    } else if (strcmp(message, "New message") == 0 ) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)new_message_handler, (gpointer) json_message_copy);
                     }
 
         	    cJSON_Delete(json_message);

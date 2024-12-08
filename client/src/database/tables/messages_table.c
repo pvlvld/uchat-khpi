@@ -18,10 +18,33 @@ static void create_table(void) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static t_messages_struct *add_message(int message_id, int chat_id, int sender_id, const char *message_text) {
+static t_messages_struct *add_message(int message_id, int chat_id, int sender_id, const char *message_text, time_t timestamp) {
+    if (timestamp == 0) {
+        timestamp = time(NULL);
+    }
+
+    size_t check_sql_size = snprintf(NULL, 0,
+             "SELECT 1 FROM messages WHERE message_id = %d AND chat_id = %d;", message_id, chat_id) + 1;
+
+    char *check_sql = malloc(check_sql_size);
+    if (check_sql == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+
+    snprintf(check_sql, check_sql_size,
+             "SELECT 1 FROM messages WHERE message_id = %d AND chat_id = %d;", message_id, chat_id);
+
+    if (vendor.database.sql.record_exists(check_sql)) {
+        free(check_sql);
+        return NULL;
+    }
+
+    free(check_sql);
+
     size_t sql_size = snprintf(NULL, 0,
-             "INSERT OR REPLACE INTO messages (message_id, chat_id, sender_id, message_text) "
-             "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text) + 1; // +1 для null-терминатора
+             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, timestamp) "
+             "VALUES (%d, %d, %d, '%s', %ld);", message_id, chat_id, sender_id, message_text, timestamp) + 1;
 
     char *sql = malloc(sql_size);
     if (sql == NULL) {
@@ -30,8 +53,8 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     }
 
     snprintf(sql, sql_size,
-             "INSERT OR REPLACE INTO messages (message_id, chat_id, sender_id, message_text) "
-             "VALUES (%d, %d, %d, '%s');", message_id, chat_id, sender_id, message_text);
+             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, timestamp) "
+             "VALUES (%d, %d, %d, '%s', %ld);", message_id, chat_id, sender_id, message_text, timestamp);
 
     vendor.database.sql.execute_sql(sql);
 
@@ -43,16 +66,15 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     }
 
     message->message_id = message_id;
-    message->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id); // Получаем данные о чате
-    message->sender_struct = vendor.database.tables.users_table.get_user_by_id(sender_id); // Получаем данные об отправителе
+    message->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
+    message->sender_struct = vendor.database.tables.users_table.get_user_by_id(sender_id);
     char *decrypt = vendor.crypto.decrypt_data_from_db(message_text);
     if (decrypt) {
         message->message_text = vendor.helpers.strdup(decrypt);
         free(decrypt);
     }
 
-    time_t current_time = time(NULL);
-    localtime_r(&current_time, &message->timestamp);
+    localtime_r(&timestamp, &message->timestamp);
 
     memset(&message->read_at, 0, sizeof(message->read_at));
     memset(&message->edited_at, 0, sizeof(message->edited_at));
