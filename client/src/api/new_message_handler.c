@@ -12,7 +12,7 @@ static time_t parse_timestamp(const char *timestamp_str) {
 
     tm.tm_year -= 1900;
     tm.tm_mon -= 1;
-    tm.tm_hour += 2;иг
+    tm.tm_hour += 2;
 
     time_t timestamp = mktime(&tm);
 
