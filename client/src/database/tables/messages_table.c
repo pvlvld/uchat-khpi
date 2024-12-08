@@ -7,6 +7,7 @@ static void create_table(void) {
         "chat_id INTEGER NOT NULL, "
         "sender_id INTEGER NOT NULL, "
         "message_text TEXT NOT NULL, "
+        "path_to_image TEXT, "
         "timestamp TIMESTAMP DEFAULT (strftime('%s', 'now')), "
         "edited_at TIMESTAMP DEFAULT NULL, "
         "read_at TIMESTAMP DEFAULT NULL, "
@@ -18,7 +19,7 @@ static void create_table(void) {
     vendor.database.sql.execute_sql(sql);
 }
 
-static t_messages_struct *add_message(int message_id, int chat_id, int sender_id, const char *message_text, time_t timestamp) {
+static t_messages_struct *add_message(int message_id, int chat_id, int sender_id, const char *message_text, const char *path_to_image, time_t timestamp) {
     if (timestamp == 0) {
         timestamp = time(NULL);
     }
@@ -43,8 +44,9 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     free(check_sql);
 
     size_t sql_size = snprintf(NULL, 0,
-             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, timestamp) "
-             "VALUES (%d, %d, %d, '%s', %ld);", message_id, chat_id, sender_id, message_text, timestamp) + 1;
+             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
+             "VALUES (%d, %d, %d, '%s', '%s', %ld);", message_id, chat_id, sender_id, message_text,
+             path_to_image ? path_to_image : "", timestamp) + 1;
 
     char *sql = malloc(sql_size);
     if (sql == NULL) {
@@ -53,8 +55,9 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     }
 
     snprintf(sql, sql_size,
-             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, timestamp) "
-             "VALUES (%d, %d, %d, '%s', %ld);", message_id, chat_id, sender_id, message_text, timestamp);
+             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
+             "VALUES (%d, %d, %d, '%s', '%s', %ld);", message_id, chat_id, sender_id, message_text,
+             path_to_image ? path_to_image : "", timestamp);
 
     vendor.database.sql.execute_sql(sql);
 
@@ -74,6 +77,8 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
         free(decrypt);
     }
 
+    message->path_to_image = path_to_image ? vendor.helpers.strdup(path_to_image) : NULL;
+
     localtime_r(&timestamp, &message->timestamp);
 
     memset(&message->read_at, 0, sizeof(message->read_at));
@@ -82,7 +87,6 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     free(sql);
     return message;
 }
-
 
 static void edit_message(int message_id, const char *new_message_text) {
     char sql[1024];
@@ -96,7 +100,7 @@ static void edit_message(int message_id, const char *new_message_text) {
 static t_messages_struct *get_message_by_chat_id_and_message_id(int chat_id, int message_id) {
     char sql[1024];
     snprintf(sql, sizeof(sql),
-             "SELECT message_id, chat_id, sender_id, message_text, timestamp, read_at, edited_at "
+             "SELECT message_id, chat_id, sender_id, message_text, path_to_image, timestamp, read_at, edited_at "
              "FROM messages WHERE chat_id = %d AND message_id = %d;", chat_id, message_id);
 
     char **results = NULL;
@@ -124,31 +128,34 @@ static t_messages_struct *get_message_by_chat_id_and_message_id(int chat_id, int
         free(decrypt);
     }
 
-    time_t timestamp = (time_t)(atoll(results[cols * 1 + 4]));
+    message->path_to_image = results[cols * 1 + 4] ? vendor.helpers.strdup(results[cols * 1 + 4]) : NULL;
+
+    time_t timestamp = (time_t)(atoll(results[cols * 1 + 5]));
     localtime_r(&timestamp, &message->timestamp);
 
-    if (results[cols * 1 + 5] != NULL) {
-        time_t read_at_timestamp = (time_t)(atoll(results[cols * 1 + 5]));
+    if (results[cols * 1 + 6] != NULL) {
+        time_t read_at_timestamp = (time_t)(atoll(results[cols * 1 + 6]));
         localtime_r(&read_at_timestamp, &message->read_at);
     } else {
         memset(&message->read_at, 0, sizeof(message->read_at));
     }
 
-    if (results[cols * 1 + 6] != NULL) {
-        time_t edited_at_timestamp = (time_t)(atoll(results[cols * 1 + 6]));
+    if (results[cols * 1 + 7] != NULL) {
+        time_t edited_at_timestamp = (time_t)(atoll(results[cols * 1 + 7]));
         localtime_r(&edited_at_timestamp, &message->edited_at);
     }
 
+    g_print("Here\n");
+
     return message;
 }
-
 
 static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_elements, int page, int *total_messages) {
     int offset = (page - 1) * number_of_elements;
 
     char sql[1024];
     snprintf(sql, sizeof(sql),
-             "SELECT message_id, chat_id, sender_id, message_text, timestamp, read_at, edited_at "
+             "SELECT message_id, chat_id, sender_id, message_text, path_to_image, timestamp, read_at, edited_at "
              "FROM messages WHERE chat_id = %d "
              "ORDER BY timestamp DESC "
              "LIMIT %d OFFSET %d;", chat_id, number_of_elements, offset);
@@ -189,23 +196,41 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_ele
         msg->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
         msg->sender_struct = vendor.database.tables.users_table.get_user_by_id(atoi(results[i * cols + 2])); // sender struct
 
-        char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);
-        if (decrypt) {
-            msg->message_text = vendor.helpers.strdup(decrypt);
-            free(decrypt);
+        msg->path_to_image = results[i * cols + 4] ? vendor.helpers.strdup(results[i * cols + 4]) : NULL;
+
+        if (!msg->path_to_image) {
+            char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);
+            if (decrypt) {
+                msg->message_text = vendor.helpers.strdup(decrypt);
+                free(decrypt);
+            }
+        } else {
+            msg->message_text = "Some image 21";
         }
 
-        time_t timestamp = (time_t)(atoll(results[i * cols + 4]));
+        // char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);
+        // if (decrypt) {
+        //     msg->message_text = vendor.helpers.strdup(decrypt);
+        //     free(decrypt);
+        // }
+
+        time_t timestamp = (time_t)(atoll(results[i * cols + 5]));
         localtime_r(&timestamp, &msg->timestamp);
 
-        if (results[i * cols + 5] != NULL) {
-            time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 5]));
+        if (results[i * cols + 6] != NULL) {
+            time_t read_at_timestamp = (time_t)(atoll(results[i * cols + 6]));
             localtime_r(&read_at_timestamp, &msg->read_at);
+        }
+
+        if (results[i * cols + 7] != NULL) {
+            time_t edited_at_timestamp = (time_t)(atoll(results[i * cols + 7]));
+            localtime_r(&edited_at_timestamp, &msg->edited_at);
         }
     }
 
     return messages;
 }
+
 
 static void free_struct(t_messages_struct *message) {
     if (message != NULL) {
@@ -216,8 +241,12 @@ static void free_struct(t_messages_struct *message) {
             vendor.database.tables.users_table.free_struct(message->sender_struct);
         }
 
-        if (message->message_text != NULL) {
+        if (message->message_text != NULL && message->path_to_image == NULL) {
             free(message->message_text);
+        }
+
+        if (message->path_to_image != NULL) {
+            free(message->path_to_image);
         }
 
         free(message);

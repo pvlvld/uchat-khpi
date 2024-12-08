@@ -104,7 +104,7 @@ static void send_message(GtkTextView *text_view) {
         char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
         if (encrypt) {
             t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
-			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, 0);
+			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, NULL, 0);
             ++vendor.pages.main_page.chat.temp_message_counter;
             add_chat_message(message_struct, 0);
 
@@ -179,7 +179,7 @@ static void on_text_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
     update_text_view_height(text_view);
 }
 
-GtkWidget *create_message_input(GtkWidget *message_send ) {
+GtkWidget *create_message_input(GtkWidget *message_send) {
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     vendor.helpers.set_classname_and_id(scrolled_window, "chat__value_scroll");

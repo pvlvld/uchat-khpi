@@ -7,6 +7,7 @@ t_helpers init_helpers(void) {
       .add_hover = add_hover,
       .strdup = mx_strdup,
       .create_avatar = create_avatar,
+      .create_image = create_image,
   };
 
   return helpers;

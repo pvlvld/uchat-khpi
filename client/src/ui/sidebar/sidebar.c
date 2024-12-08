@@ -35,7 +35,7 @@ void message_receipt(GtkWidget *widget, t_api_message_struct *message) {
             gtk_box_reorder_child(GTK_BOX(stretchable_box), target_child, 0);
 
             t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(message->message_id,
-                        message->chat_id, message->sender_id, message->message_encrypted, message->timestamp);
+                        message->chat_id, message->sender_id, message->message_encrypted, NULL, message->timestamp);
 
             chat_info->last_message = message_struct;
             chat_info->unreaded_messages++;

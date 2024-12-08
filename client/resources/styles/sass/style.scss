@@ -93,3 +93,12 @@
     background: $emerald-800;
   }
 }
+
+.message__image {
+  margin-top: 10px;
+  &__wrapper {
+    background: $emerald-950;
+    border-radius: 16px;
+    padding-top: 12px;
+  }
+}
