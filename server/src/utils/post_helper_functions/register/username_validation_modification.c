@@ -1,5 +1,4 @@
 #include "../../../../inc/utils.h"
-#include "../../../../inc/header.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,9 +7,7 @@
 char *duplicate_string(const char *str) {
     size_t len = strlen(str) + 1;
     char *copy = malloc(len);
-    if (copy) {
-        memcpy(copy, str, len);
-    }
+    if (copy) { memcpy(copy, str, len); }
     return copy;
 }
 
@@ -69,7 +66,3 @@ char *username_validation(const char *username, const char *user_login, PGconn *
     return new_username; // Return the new suggestion, or NULL if no free username was found
     // Caller should free this
 }
-
-
-
-

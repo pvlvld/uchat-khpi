@@ -1,6 +1,6 @@
-#include <string.h>
 #include <regex.h>
 #include <stdbool.h>
+#include <string.h>
 
 bool is_valid_username(const char *username) {
     // Check if the username is at least 3 characters long

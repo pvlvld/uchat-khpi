@@ -1,5 +1,5 @@
-#include <stdbool.h>
 #include <libpq-fe.h>
+#include <stdbool.h>
 
 // Check if user is in the specified chat (for both personal and group chats)
 bool is_user_in_chat(PGconn *conn, int chat_id, int user_id) {

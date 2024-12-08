@@ -1,8 +1,7 @@
-#include <../../libraries/openssl/evp.h>
-//#include <../../libraries/openssl/sha.h>
-#include <string.h>
+#include "../../../libraries/openssl/evp.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 char *hash_password(const char *password) {
     EVP_MD_CTX *mdctx;
@@ -46,9 +45,7 @@ char *hash_password(const char *password) {
     }
 
     // Convert the hash to a hexadecimal string
-    for (unsigned int i = 0; i < hash_length; i++) {
-        sprintf(hashed_output + (i * 2), "%02x", hash[i]);
-    }
+    for (unsigned int i = 0; i < hash_length; i++) { sprintf(hashed_output + (i * 2), "%02x", hash[i]); }
     hashed_output[hash_length * 2] = '\0';
 
     // Clean up
@@ -56,4 +53,3 @@ char *hash_password(const char *password) {
 
     return hashed_output;
 }
-

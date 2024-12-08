@@ -1,7 +1,6 @@
-#include <string.h>
 #include <regex.h>
 #include <stdbool.h>
-#include <../../../libraries/cJSON/cJSON.h>
+#include <string.h>
 
 bool is_valid_password(const char *password) {
     if (strlen(password) < 8 || strlen(password) > 100) return false;
@@ -35,9 +34,5 @@ bool is_valid_password(const char *password) {
     }
     regfree(&regex_special);
 
-
-
     return true;
 }
-
-

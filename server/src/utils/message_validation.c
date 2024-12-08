@@ -1,6 +1,6 @@
-#include <string.h>
 #include <regex.h>
 #include <stdbool.h>
+#include <string.h>
 
 bool is_valid_message(const char *message) {
     if (strlen(message) < 1 || strlen(message) > 5000) return false;
@@ -9,7 +9,8 @@ bool is_valid_message(const char *message) {
 
     if (regcomp(&regex_letters, "[A-Za-z]", REG_EXTENDED) != 0) return false;
     if (regcomp(&regex_numbers, "[0-9]", REG_EXTENDED) != 0) return false;
-    if (regcomp(&regex_special_chars, "[ .,!?@#$%^&*()_+\\-=\\[\\]{};:'\"|\\\\<>?/`~]", REG_EXTENDED) != 0) return false;
+    if (regcomp(&regex_special_chars, "[ .,!?@#$%^&*()_+\\-=\\[\\]{};:'\"|\\\\<>?/`~]", REG_EXTENDED) != 0)
+        return false;
 
     // Execute each regex to check for letters, numbers, and special characters
     bool has_letters = (regexec(&regex_letters, message, 0, NULL, 0) == 0);

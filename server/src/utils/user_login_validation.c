@@ -1,7 +1,6 @@
-#include <string.h>
 #include <regex.h>
 #include <stdbool.h>
-#include <../../../libraries/cJSON/cJSON.h>
+#include <string.h>
 
 bool is_valid_login(const char *login) {
     // Check if the login is at least 5 characters long
