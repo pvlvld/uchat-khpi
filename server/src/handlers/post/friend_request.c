@@ -75,6 +75,26 @@ void friend_request_rout(SSL *ssl, const char *request) {
         return;
     }
 
+    PGresult *sender_db_res = get_user_by_id(conn, sender_id);
+    if (!sender_db_res || PQntuples(sender_db_res) == 0) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "USER_NOT_FOUND");
+        cJSON_AddStringToObject(response_json, "message", "Sender ID not found");
+        vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        if (sender_db_res) PQclear(sender_db_res);
+        return;
+    }
+    char *sender_username_str = PQgetvalue(sender_db_res, 0, 1);
+    if (!is_valid_username(sender_username_str)) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "INVALID_USER_ID");
+        cJSON_AddStringToObject(response_json, "message", "Invalid sender username");
+        vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(response_json);
+        return;
+    }
+
     PGresult *recipient_db_res = get_user_by_username(conn, recipient_username_str);
     if (!recipient_db_res || PQntuples(recipient_db_res) == 0) {
         cJSON_AddBoolToObject(response_json, "error", true);
@@ -162,6 +182,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     if (is_user_online(recipient_id)) {
         cJSON *ws_message = cJSON_CreateObject();
         cJSON_AddNumberToObject(ws_message, "sender_id", sender_id);
+        cJSON_AddStringToObject(ws_message, "sender_username", sender_username_str);
         cJSON_AddStringToObject(ws_message, "message", "Friend request");
         cJSON_AddNumberToObject(ws_message, "chat_id", chat_id);
         char *timestamp = NULL;
@@ -193,6 +214,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
     if (response_json) cJSON_Delete(response_json);
     if (conn) PQfinish(conn);
     if (recipient_db_res) PQclear(recipient_db_res);
+    if (sender_db_res) PQclear(sender_db_res);
     //if (existing_chat) PQclear(existing_chat);
     return;
 }
