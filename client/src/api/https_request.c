@@ -61,7 +61,7 @@ SSL *create_ssl_connection(int sock) {
     return ssl;
 }
 
-cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
+cJSON *send_request(const char *method, const char *path, cJSON *json_body) {
     SSL *ssl = create_ssl_connection(create_socket());
     if (!ssl) {
         return NULL;

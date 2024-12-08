@@ -223,8 +223,8 @@ void on_scroll_value_changed(GtkAdjustment *adjustment, gpointer user_data) {
 
         int height = 0;
         int dif = vendor.pages.main_page.chat.total_messages - vendor.pages.main_page.chat.page * PER_PAGE;
-		int messages_count = dif >= PER_PAGE ? PER_PAGE : dif;
-		if (messages_count <= 0) return;
+        int messages_count = dif >= PER_PAGE ? PER_PAGE : dif;
+	if (messages_count <= 0) return;
     	t_messages_struct *messages = vendor.database.tables.messages_table.get_messages_by_chat_id(vendor.active_chat.chat->id, PER_PAGE,
 			++vendor.pages.main_page.chat.page, &vendor.pages.main_page.chat.total_messages);
 
@@ -234,8 +234,8 @@ void on_scroll_value_changed(GtkAdjustment *adjustment, gpointer user_data) {
             	height += add_old_chat_message(&messages[i], is_received);
             	vendor.pages.main_page.chat.shown_messages++;
             }
-			vendor.database.tables.messages_table.free_struct(messages);
-		}
+            vendor.database.tables.messages_table.free_struct(messages);
+        }
 
         GtkAdjustment *v_adjustment = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(scrolled_window));
         t_scroll_data *scroll_data = g_malloc(sizeof(t_scroll_data));
