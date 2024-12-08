@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2018 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2015-2022 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the Apache License 2.0 (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -20,7 +20,7 @@
 
 #if defined(_WIN32)
 # if defined(BASETYPES) || defined(_WINDEF_H)
-/* application has to inc <windows.h> to use this */
+/* application has to include <windows.h> to use this */
 #define OSSL_ASYNC_FD       HANDLE
 #define OSSL_BAD_ASYNC_FD   INVALID_HANDLE_VALUE
 # endif
@@ -79,6 +79,14 @@ int ASYNC_WAIT_CTX_clear_fd(ASYNC_WAIT_CTX *ctx, const void *key);
 #endif
 
 int ASYNC_is_capable(void);
+
+typedef void *(*ASYNC_stack_alloc_fn)(size_t *num);
+typedef void (*ASYNC_stack_free_fn)(void *addr);
+
+int ASYNC_set_mem_functions(ASYNC_stack_alloc_fn alloc_fn,
+                            ASYNC_stack_free_fn free_fn);
+void ASYNC_get_mem_functions(ASYNC_stack_alloc_fn *alloc_fn,
+                             ASYNC_stack_free_fn *free_fn);
 
 int ASYNC_start_job(ASYNC_JOB **job, ASYNC_WAIT_CTX *ctx, int *ret,
                     int (*func)(void *), void *args, size_t size);
