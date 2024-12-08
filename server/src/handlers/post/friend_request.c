@@ -85,6 +85,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         if (sender_db_res) PQclear(sender_db_res);
         return;
     }
+
     char *sender_username_str = PQgetvalue(sender_db_res, 0, 1);
     if (!is_valid_username(sender_username_str)) {
         cJSON_AddBoolToObject(response_json, "error", true);
@@ -92,6 +93,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         cJSON_AddStringToObject(response_json, "message", "Invalid sender username");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
@@ -103,6 +105,7 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "404 Not Found", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         if (recipient_db_res) PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
@@ -115,14 +118,20 @@ void friend_request_rout(SSL *ssl, const char *request) {
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
     int recipient_id = atoi(recipient_id_str);
-    char *sender_login= PQgetvalue(recipient_db_res, 0, 2);    // user_login
-    char *sender_about = PQgetvalue(recipient_db_res, 0, 3);    // about
-    char *sender_public_key = PQgetvalue(recipient_db_res, 0, 8); // public_key
-    if (!sender_login || !sender_about || !sender_public_key) {
+    char *sender_login= PQgetvalue(sender_db_res, 0, 2);    // user_login
+    char *sender_about = PQgetvalue(sender_db_res, 0, 3);    // about
+    char *sender_public_key = PQgetvalue(sender_db_res, 0, 8); // public_key
+
+    char *recipient_login= PQgetvalue(recipient_db_res, 0, 2);    // user_login
+    char *recipient_about = PQgetvalue(recipient_db_res, 0, 3);    // about
+    char *recipient_public_key = PQgetvalue(recipient_db_res, 0, 8); // public_key
+    if (!sender_login || !sender_about || !sender_public_key
+        || !recipient_login || !recipient_about || !recipient_public_key) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "GET_USER_INFO_FAILED");
         cJSON_AddStringToObject(response_json, "message", "Failed to get user data from database");
@@ -130,6 +139,8 @@ void friend_request_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         PQfinish(conn);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
@@ -145,6 +156,8 @@ void friend_request_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         PQfinish(conn);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
@@ -159,6 +172,8 @@ void friend_request_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         PQfinish(conn);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
     PQclear(existing_chat);
@@ -173,6 +188,8 @@ void friend_request_rout(SSL *ssl, const char *request) {
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         PQfinish(conn);
+        if (recipient_db_res) PQclear(recipient_db_res);
+        if (sender_db_res) PQclear(sender_db_res);
         return;
     }
 
@@ -201,9 +218,9 @@ void friend_request_rout(SSL *ssl, const char *request) {
     char *timestamp = NULL;
     get_current_timestamp(&timestamp);
     cJSON_AddStringToObject(response_json, "timestamp", timestamp);
-    if (sender_login) cJSON_AddStringToObject(response_json, "sender_login", sender_login);
-    if (sender_about) cJSON_AddStringToObject(response_json, "sender_about", sender_about);
-    if (sender_public_key) cJSON_AddStringToObject(response_json, "sender_public_key", sender_public_key);
+    if (recipient_login) cJSON_AddStringToObject(response_json, "recipient_login", recipient_login);
+    if (recipient_about) cJSON_AddStringToObject(response_json, "recipient_about", recipient_about);
+    if (recipient_public_key) cJSON_AddStringToObject(response_json, "recipient_public_key", recipient_public_key);
     vendor.server.https.send_https_response(ssl, "201 Created", "application/json", cJSON_Print(response_json));
 
     // Cleanup
