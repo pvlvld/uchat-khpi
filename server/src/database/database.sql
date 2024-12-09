@@ -20,7 +20,7 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(32) UNIQUE NOT NULL,
     user_login VARCHAR(32) UNIQUE NOT NULL,
-    password_hash VARCHAR(1024) NOT NULL,
+    password_hash VARCHAR(512) NOT NULL,
     about VARCHAR(1024) DEFAULT NULL,
     locale VARCHAR(6) DEFAULT 'en',
     is_online BOOLEAN NOT NULL DEFAULT FALSE,
@@ -30,6 +30,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP DEFAULT NULL
+    password_salt VARCHAR(256) NOT NULL,
 );
 
 CREATE TABLE user_contacts (

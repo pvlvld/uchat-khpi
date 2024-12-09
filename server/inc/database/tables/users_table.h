@@ -14,8 +14,7 @@
  * @param locale The locale of the user.
  * @return The ID of the created user, or -1 if the user could not be created.
  */
-int create_user(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
-                const char *public_key, const char *locale);
+int create_user(PGconn *conn, const char *username, const char *user_login, const char *password_hash, const char *salt, const char *public_key, const char *locale);
 
 /**
  * Retrieves a user by their login.
@@ -122,8 +121,7 @@ bool update_user_profile_picture(PGconn *conn, int user_id, int profile_picture_
 bool delete_user_profile_picture(PGconn *conn, int user_id);
 
 typedef struct {
-    int (*create_user)(PGconn *conn, const char *username, const char *user_login, const char *password_hash,
-                       const char *public_key, const char *locale);
+    int (*create_user)(PGconn *conn, const char *username, const char *user_login, const char *password_hash, const char *salt, const char *public_key, const char *locale);
     PGresult *(*get_user_by_login)(PGconn *conn, const char *user_login);
     PGresult *(*get_user_by_id)(PGconn *conn, int user_id);
     bool (*update_user_locale)(PGconn *conn, int user_id, const char *locale);

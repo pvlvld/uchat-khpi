@@ -52,7 +52,8 @@ void login_rout(SSL *ssl, const char *request) {
         fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
         PQfinish(conn);
         cJSON_AddStringToObject(response_json, "message", "Database connection failed");
-        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json",
+                                                cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
@@ -62,7 +63,8 @@ void login_rout(SSL *ssl, const char *request) {
     PGresult *res = get_user_by_login(conn, user_login);
     if (res == NULL || PQntuples(res) == 0) {
         cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
-        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
+        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json",
+                                                cJSON_Print(response_json));
         if (res) PQclear(res);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
@@ -72,10 +74,13 @@ void login_rout(SSL *ssl, const char *request) {
 
     // Verify password
     char *stored_password_hash = PQgetvalue(res, 0, 3);
-    char *password_hash = hash_password(password);
+    char *stored_password_salt = PQgetvalue(res, 0, 13);
+    char *password_hash = hash_password(password, stored_password_salt);
+
     if (strcmp(stored_password_hash, password_hash) != 0) {
         cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
-        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json", cJSON_Print(response_json));
+        vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json",
+                                                cJSON_Print(response_json));
         PQclear(res);
         cJSON_Delete(json);
         cJSON_Delete(response_json);

@@ -4,6 +4,13 @@
 // compatabiliby with c99 and c11 (strdup)
 #define _POSIX_C_SOURCE 200809L
 
+#define ARGON_HASH_LENGTH 32 // (256 bits)
+#define ARGON_SALT_LENGTH 16
+#define ARGON_PEPPER "80085 + 69"
+#define ARGON_ITERATIONS 2
+#define ARGON_MEMORY 65536
+#define ARGON_THREADS 1
+
 #include <stdbool.h>
 #include "header.h"
 #include <string.h>
@@ -11,7 +18,8 @@
 char *itoa(int value, char *buffer);
 char *mx_strdup(const char *s1);
 
-char *hash_password(const char *password);
+char *hash_password(const char *password, const char *salt);
+char *generate_salt(void);
 
 char *get_sender_from_token(const char *request);
 

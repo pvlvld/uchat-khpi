@@ -53,14 +53,17 @@ void register_rout(SSL *ssl, const char *request) {
 
     // Validate input
     if (!is_valid_login(user_login)) {
-        cJSON_AddStringToObject(response_json, "message", "Login must be at least 5 characters long and contain only letters and digits.");
+        cJSON_AddStringToObject(response_json, "message",
+                                "Login must be at least 5 characters long and contain only letters and digits.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
     }
 
     if (!is_valid_password(password)) {
-        cJSON_AddStringToObject(response_json, "message", "Password must be at least 8 characters long, contain at least one letter, one digit, and one special character.");
+        cJSON_AddStringToObject(response_json, "message",
+                                "Password must be at least 8 characters long, contain at least one letter, one digit, "
+                                "and one special character.");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
@@ -72,7 +75,8 @@ void register_rout(SSL *ssl, const char *request) {
         fprintf(stderr, "Connection to database failed: %s\n", PQerrorMessage(conn));
         PQfinish(conn);
         cJSON_AddStringToObject(response_json, "message", "Database connection failed");
-        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json",
+                                                cJSON_Print(response_json));
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         return;
@@ -90,24 +94,30 @@ void register_rout(SSL *ssl, const char *request) {
     }
 
     // username validation
-    char *username_validation_result = username_validation(username_item ? username_item->valuestring : NULL, user_login, conn);
+    char *username_validation_result =
+        username_validation(username_item ? username_item->valuestring : NULL, user_login, conn);
 
     if (!username_validation_result) {
-        cJSON_AddStringToObject(response_json, "message", "Username must be at least 3 characters long and contain only letters, digits, and underscores. Try to choose another one");
+        cJSON_AddStringToObject(response_json, "message",
+                                "Username must be at least 3 characters long and contain only letters, digits, and "
+                                "underscores. Try to choose another one");
         vendor.server.https.send_https_response(ssl, "400 Bad Request", "application/json", cJSON_Print(response_json));
         cJSON_Delete(response_json);
         return;
     }
 
     char *username = username_validation_result;
-    char *password_hash = hash_password(password);
+    char *salt = generate_salt();
+    char *password_hash = hash_password(password, salt);
 
     // Insert user into the database
-    int user_id = create_user(conn, username, user_login, password_hash, "public key", "en_US");
+    int user_id = create_user(conn, username, user_login, password_hash, salt, "public key", "en_US");
     if (user_id < 0) {
         cJSON_AddStringToObject(response_json, "message", "Unable to register user");
-        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json",
+                                                cJSON_Print(response_json));
         free(password_hash);
+        free(salt);
         cJSON_Delete(json);
         cJSON_Delete(response_json);
         PQfinish(conn);
@@ -135,7 +145,6 @@ void register_rout(SSL *ssl, const char *request) {
 
     vendor.server.https.send_https_response(ssl, "201 Created", "application/json", cJSON_Print(response_json));
 
-
     free(token);
     PQclear(res);
     cJSON_Delete(json);
@@ -143,4 +152,3 @@ void register_rout(SSL *ssl, const char *request) {
     free(password_hash);
     vendor.database.pool.release_connection(conn);
 }
-
