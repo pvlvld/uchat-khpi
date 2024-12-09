@@ -1,4 +1,7 @@
 #include "../../../libraries/openssl/evp.h"
+#include "../../../libraries/openssl/kdf.h"
+#include "../../../libraries/openssl/rand.h"
+#include "../../inc/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

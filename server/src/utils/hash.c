@@ -1,4 +1,4 @@
-#include <openssl/sha.h>
+#include "../../../libraries/openssl/sha.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
