@@ -29,8 +29,8 @@ CREATE TABLE users (
     premium_until TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP DEFAULT NULL
-    password_salt VARCHAR(256) NOT NULL,
+    deleted_at TIMESTAMP DEFAULT NULL,
+    password_salt VARCHAR(256) NOT NULL
 );
 
 CREATE TABLE user_contacts (
