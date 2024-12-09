@@ -127,6 +127,18 @@ void create_group_chat_rout(SSL *ssl, const char *request) {
     // Insert group chat into the database
     printf("[INFO] Creating group chat with name: %s, picture: %d, background: %d\n", group_name, group_picture, background);
     int chat_id = create_group_chat_no_media(conn, group_name);
+
+    if (!add_chat_member(conn, chat_id, user_id, "owner")) {
+        cJSON_AddBoolToObject(response_json, "error", true);
+        cJSON_AddStringToObject(response_json, "code", "ADD_OWNER_FAILED");
+        cJSON_AddStringToObject(response_json, "message", "Failed to add owner to the group");
+        vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
+        cJSON_Delete(json);
+        cJSON_Delete(response_json);
+        vendor.database.pool.release_connection(conn);
+        return;
+    }
+
     vendor.database.pool.release_connection(conn);
 
     if (chat_id == -1) {

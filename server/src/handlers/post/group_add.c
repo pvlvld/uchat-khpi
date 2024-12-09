@@ -2,10 +2,10 @@
 
 // Helper function prototypes
 static PGresult *get_group_member(PGconn *conn, int chat_id, int user_id);
-static bool add_user_to_group(PGconn *conn, int chat_id, int user_id);
+static bool add_user_to_group_db(PGconn *conn, int chat_id, int user_id);
 static bool personal_chat_exists(PGconn *conn, int user1_id, int user2_id);
 
-void group_add_rout(SSL *ssl, const char *request) {
+void add_user_to_group_rout(SSL *ssl, const char *request) {
     char *body = strstr(request, "\r\n\r\n");
     cJSON *response_json = cJSON_CreateObject();
 
@@ -124,7 +124,7 @@ void group_add_rout(SSL *ssl, const char *request) {
     PQclear(member_check);
 
     // Add user to the group
-    if (!add_user_to_group(conn, chat_id, user_id)) {
+    if (!add_user_to_group_db(conn, chat_id, user_id)) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "ADD_MEMBER_FAILED");
         cJSON_AddStringToObject(response_json, "message", "Failed to add user to the group");
@@ -158,8 +158,8 @@ void group_add_rout(SSL *ssl, const char *request) {
     return;
 }
 
-void protected_group_add_rout(SSL *ssl, const char *request) {
-    jwt_middleware(ssl, request, group_add_rout);
+void protected_add_user_to_group_rout(SSL *ssl, const char *request) {
+    jwt_middleware(ssl, request, add_user_to_group_rout);
 }
 // Database helper functions
 
@@ -174,7 +174,7 @@ static PGresult *get_group_member(PGconn *conn, int chat_id, int user_id) {
     return PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
 }
 
-static bool add_user_to_group(PGconn *conn, int chat_id, int user_id) {
+static bool add_user_to_group_db(PGconn *conn, int chat_id, int user_id) {
     const char *query = "INSERT INTO group_chat_members (chat_id, user_id, role) VALUES ($1, $2, 'member')";
 
     char chat_id_str[12], user_id_str[12];

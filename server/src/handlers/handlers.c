@@ -15,6 +15,7 @@ t_handlers init_handlers(void) {
         ._friend_request = protected_friend_request_rout,
         ._delete_friend = protected_delete_friend_rout,
         ._create_group_chat = protected_create_group_chat_rout,
+        ._add_user_to_group = protected_add_user_to_group_rout,
         .middleware = middleware,
     };
 

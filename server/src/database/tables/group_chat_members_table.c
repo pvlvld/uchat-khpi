@@ -17,10 +17,10 @@ PGresult *get_user_chats_group(PGconn *conn, int user_id) {
     return res; // Caller is responsible for freeing with PQclear.
 }
 
-bool add_chat_member(PGconn *conn, int chat_id, int user_id) {
-    const char *query = "INSERT INTO group_chat_members (chat_id, user_id, role) VALUES ($1, $2)";
+bool add_chat_member(PGconn *conn, int chat_id, int user_id, char *role) {
+    const char *query = "INSERT INTO group_chat_members (chat_id, user_id, role) VALUES ($1, $2, $3)";
     char chat_id_str[12], user_id_str[12];
-    const char *params[3] = {itoa(chat_id, chat_id_str), itoa(user_id, user_id_str)};
+    const char *params[3] = {itoa(chat_id, chat_id_str), itoa(user_id, user_id_str), role};
 
     PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
 
