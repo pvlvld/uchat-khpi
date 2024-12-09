@@ -149,8 +149,6 @@ static GtkWidget *create_edit_input(t_message_info_modal *message_info) {
     GtkWidget *value_entry = gtk_text_view_new();
     message_info->value_entry = value_entry;
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);  // Перенос текста
-    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE); // Отключаем Tab для навигации
     gtk_box_pack_start(GTK_BOX(message_value), value_entry, TRUE, TRUE, 0);
     gtk_text_view_set_left_margin(GTK_TEXT_VIEW(value_entry), 10);
     gtk_text_view_set_right_margin(GTK_TEXT_VIEW(value_entry), 10);

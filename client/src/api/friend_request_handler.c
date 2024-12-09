@@ -1,6 +1,7 @@
 #include "../../inc/header.h"
 
-void friend_request_handler(cJSON *req) {
+gboolean friend_request_handler(gpointer user_data) {
+    cJSON *req = (cJSON *)user_data;
     t_users_struct *friend_struct = malloc(sizeof(t_users_struct));
     friend_struct->user_id = cJSON_GetObjectItem(req, "sender_id")->valueint;
     friend_struct->username = cJSON_GetObjectItem(req, "sender_username")->valuestring;
@@ -36,11 +37,13 @@ void friend_request_handler(cJSON *req) {
     GtkWidget *chatblock = vendor.pages.main_page.sidebar.create_chatblock(chat_info);
     if (!chatblock) {
         printf("[ERROR] Failed to create a block for chat with ID: %d\n", chat_info->id);
-        return;
+        return FALSE;
     }
 
     g_object_set_data(G_OBJECT(chatblock), "chat_info", chat_info);
     gtk_box_pack_start(GTK_BOX(vendor.sidebar.stretchable_box), chatblock, FALSE, FALSE, 0);
     gtk_box_reorder_child(GTK_BOX(vendor.sidebar.stretchable_box), chatblock, 0);
     gtk_widget_show_all(vendor.sidebar.stretchable_box);
+
+    return FALSE;
 }

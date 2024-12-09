@@ -38,15 +38,21 @@ void message_receipt(GtkWidget *widget, t_api_message_struct *message) {
                         message->chat_id, message->sender_id, message->message_encrypted, NULL, message->timestamp);
 
             chat_info->last_message = message_struct;
-            chat_info->unreaded_messages++;
 
             update_chatblock(target_child, chat_info, 1);
 
-            if (vendor.active_chat.chat_sidebar_widget != NULL && vendor.active_chat.chat->id == chat_info->id) {
-                if (chat_info->unreaded_messages >= 1) chat_info->unreaded_messages--;
-                add_chat_message(message_struct, 1);
-            } else {
+            if (chat_info->unreaded_messages < 1) chat_info->unreaded_messages = 0;
 
+            if (vendor.active_chat.chat_sidebar_widget != NULL) {
+                if (vendor.active_chat.chat->id == chat_info->id) {
+                    add_chat_message(message_struct, 1);
+                } else {
+                    chat_info->unreaded_messages++;
+                    vendor.helpers.show_notification("New notification", "New message");
+                    vendor.popup.add_message("New message");
+                }
+            } else {
+                chat_info->unreaded_messages++;
                 vendor.helpers.show_notification("New notification", "New message");
                 vendor.popup.add_message("New message");
             }
@@ -105,20 +111,6 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
-
-        // ssize_t index = 1;
-        // g_print("Element with id %zd updated!\n", index);
-        //
-        // char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, "New message from friend");
-        //
-        // message_receipt(vendor.pages.main_page.sidebar.widget, index, encrypt);
-        vendor.helpers.show_notification("New notification", "New message");
-		vendor.popup.add_message("New message");
-
-        return TRUE;
-    }
-
     return FALSE;
 }
 
@@ -127,6 +119,50 @@ static void on_widget_destroy(GtkWidget *widget, gpointer user_data) {
     (void) widget;
     vendor.active_chat.chat_sidebar_widget = NULL;
     vendor.hover_chat.chat_sidebar_widget = NULL;
+}
+
+void activate_chatblock_by_id(int chat_id) {
+    GtkWidget *stretchable_box = vendor.sidebar.stretchable_box;
+
+    if (!stretchable_box) {
+        if (vendor.debug_mode >= 1) printf("[ERROR] stretchable_box not found in sidebar.\n");
+        return;
+    }
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
+
+    if (!children) {
+        if (vendor.debug_mode >= 1) printf("[INFO] No chatblocks found.\n");
+        return;
+    }
+
+    for (GList *iter = children; iter != NULL; iter = iter->next) {
+        GtkWidget *chatblock = GTK_WIDGET(iter->data);
+        t_chat_info *chat_info = g_object_get_data(G_OBJECT(chatblock), "chat_info");
+
+        if (chat_info && chat_info->id == (unsigned) chat_id) {
+            vendor.active_chat.chat = chat_info;
+
+            if (vendor.active_chat.chat_sidebar_widget != NULL) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
+            }
+
+            vendor.active_chat.chat_sidebar_widget = chatblock;
+            vendor.pages.main_page.chat.change_chat();
+
+            vendor.active_chat.chat->unreaded_messages = 0;
+
+            update_chatblock(chatblock, vendor.active_chat.chat, 0);
+
+            gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
+
+            g_list_free(children);
+            return;
+        }
+    }
+
+    if (vendor.debug_mode >= 1) printf("[INFO] Chatblock with ID %d not found.\n", chat_id);
+    g_list_free(children);
 }
 
 GtkWidget *sidebar_init(void) {
@@ -164,6 +200,7 @@ GtkWidget *sidebar_init(void) {
             }
 
             g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
+
             gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
             gtk_widget_show(chatblock);
             i++;

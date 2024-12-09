@@ -1,10 +1,29 @@
 #include "../../../inc/header.h"
 #include <gtk/gtk.h>
 
+static GtkWidget *message_from_server = NULL;
+
 void on_add_to_group_clicked(GtkButton *button, t_user_block_data *data) {
     (void) button;
-    gtk_widget_destroy(data->userblock);
-    vendor.database.tables.group_chat_members_table.add_member(data->chat_id, data->user_id, "member");
+
+    char chat_id_str[20];
+    sprintf(chat_id_str, "%d", data->chat_id);
+
+    cJSON *json_body = cJSON_CreateObject();
+    cJSON_AddStringToObject(json_body, "chat_id", vendor.helpers.strdup(chat_id_str));
+    cJSON_AddStringToObject(json_body, "username", data->username);
+
+    cJSON *response = vendor.ssl_struct.send_request("POST", "/add_user_to_group", json_body);
+    cJSON *error = cJSON_GetObjectItem(response, "error");
+
+    if (error->valueint == 0) {
+        gtk_widget_destroy(data->userblock);
+        vendor.database.tables.group_chat_members_table.add_member(data->chat_id, data->user_id, "member");
+    } else {
+        gtk_label_set_text(GTK_LABEL(message_from_server), cJSON_GetObjectItem(response, "message")->valuestring);
+    }
+
+
     g_free(data);
 }
 
@@ -32,8 +51,14 @@ static void show_modal(GtkWindow *parent, int user_count, t_users_struct **users
     gtk_widget_set_halign(wrapper, GTK_ALIGN_START);
 
     GtkWidget *title = gtk_label_new("Add users to group");
-    gtk_box_pack_start(GTK_BOX(wrapper), title, FALSE, FALSE, 0);
     vendor.helpers.set_classname_and_id(title, "modal__edit_title");
+
+    GtkWidget *title_wrapper = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    gtk_box_pack_start(GTK_BOX(title_wrapper), title, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(wrapper), title_wrapper, FALSE, FALSE, 0);
+
+    message_from_server = gtk_label_new(" ");
+    gtk_box_pack_start(GTK_BOX(title_wrapper), message_from_server, TRUE, TRUE, 0);
 
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -61,6 +86,7 @@ static void show_modal(GtkWindow *parent, int user_count, t_users_struct **users
         data->userblock = userblock;
         data->user_id = users[i]->user_id;
         data->chat_id = chat_id;
+        data->username = users[i]->username;
 
         g_signal_connect(button, "clicked", G_CALLBACK(on_add_to_group_clicked), data);
 

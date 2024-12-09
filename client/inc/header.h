@@ -2,6 +2,7 @@
 #define HEADER_H
 
 #pragma once
+#define _GNU_SOURCE
 
 #include <unistd.h>
 #include <stdlib.h>

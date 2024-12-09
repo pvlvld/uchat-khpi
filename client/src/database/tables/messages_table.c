@@ -198,14 +198,18 @@ static t_messages_struct *get_messages_by_chat_id(int chat_id, int number_of_ele
 
         msg->path_to_image = results[i * cols + 4] ? vendor.helpers.strdup(results[i * cols + 4]) : NULL;
 
-        if (!msg->path_to_image) {
+        if (msg->path_to_image[0] == '\0') {
+            msg->path_to_image = NULL;
+        }
+
+        if (msg->path_to_image == NULL) {
             char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);
             if (decrypt) {
                 msg->message_text = vendor.helpers.strdup(decrypt);
                 free(decrypt);
             }
         } else {
-            msg->message_text = "Some image 21";
+            msg->message_text = "Some image";
         }
 
         // char *decrypt = vendor.crypto.decrypt_data_from_db(results[i * cols + 3]);

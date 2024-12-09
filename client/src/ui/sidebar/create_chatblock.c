@@ -5,7 +5,6 @@ static char *format_last_message(const char *sender_name, const char *message, i
     if (chat_type == 0 || sender_name == NULL || strlen(sender_name) == 0) {
         return g_strdup(message);
     } else {
-        // Групповой чат с именем отправителя
         const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
         int size = snprintf(NULL, 0, format, sender_name, message);
         if (size < 0) {

@@ -15,6 +15,7 @@ GtkWidget *sidebar_create_bottom(void);
 void message_receipt(GtkWidget *widget, t_api_message_struct *message);
 void delete_chat_sidebar(GtkWidget *widget, ssize_t index);
 void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info, int is_new);
+void activate_chatblock_by_id(int chat_id);
 
 typedef struct {
     GtkWidget *(*init)(void);

@@ -114,18 +114,29 @@ static void send_message(GtkTextView *text_view) {
             free(encrypt);
         }
 
-        encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
-        if (encrypt) {
-            char buffer[50];
-            sprintf(buffer, "%d", vendor.active_chat.chat->id);
+        if (vendor.active_chat.chat->type == PERSONAL) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
+            if (encrypt) {
+                char chat_id_str[50];
+                sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
+
+                cJSON *json_body = cJSON_CreateObject();
+                cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+                cJSON_AddStringToObject(json_body, "message", encrypt);
+
+                vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
+                free(encrypt);
+            }
+        }
+        else {
+            char chat_id_str[50];
+            sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
 
             cJSON *json_body = cJSON_CreateObject();
-            cJSON_AddStringToObject(json_body, "chat_id", buffer);
-            cJSON_AddStringToObject(json_body, "message", encrypt);
-
+            cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+            cJSON_AddStringToObject(json_body, "message", vendor.helpers.strdup(text));
             vendor.ssl_struct.send_request("POST", "/send_message", json_body);
-
-            free(encrypt);
         }
 
         gtk_text_buffer_delete(buffer, &start, &end);
@@ -200,8 +211,6 @@ GtkWidget *create_message_input(GtkWidget *message_send) {
     GtkWidget *value_entry = gtk_text_view_new();
     vendor.helpers.set_classname_and_id(value_entry, "chat__value_input");
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);  // Перенос текста
-    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE); // Отключаем Tab для навигации
     gtk_box_pack_start(GTK_BOX(message_value), value_entry, TRUE, TRUE, 0);
     gtk_text_view_set_left_margin(GTK_TEXT_VIEW(value_entry), 10);
     gtk_text_view_set_right_margin(GTK_TEXT_VIEW(value_entry), 10);

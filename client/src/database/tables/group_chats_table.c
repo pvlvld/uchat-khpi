@@ -46,8 +46,6 @@ static int create_group(int group_id, const char *group_name) {
 
     sqlite3_finalize(stmt);
 
-    vendor.database.tables.group_chat_members_table.add_member(group_id, vendor.current_user.user_id, "owner");
-
     return group_id;
 }
 

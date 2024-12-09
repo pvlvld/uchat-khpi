@@ -11,7 +11,8 @@ typedef struct {
   time_t timestamp;
 } t_api_message_struct;
 
-void friend_request_handler(cJSON *req);
+gboolean friend_request_handler(gpointer user_data);
 gboolean new_message_handler(gpointer user_data);
+gboolean added_to_group_handler(gpointer user_data);
 
 #endif //API_H

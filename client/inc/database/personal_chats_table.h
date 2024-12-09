@@ -13,6 +13,7 @@ typedef struct {
     void (*create_table)(void);
     t_users_struct **(*get_users)(int *user_count, int chat_id);
     int (*create_personal_chat)(int chat_id, int user2_id);
+    int (*get_personal_chat_with_user)(int user_id);
 } t_personal_chats_table;
 t_personal_chats_table init_personal_chats_table(void);
 

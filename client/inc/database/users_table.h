@@ -2,7 +2,6 @@
 #define USERS_TABLE_H
 
 #include "database.h"
-
 typedef struct {
     int user_id;
     char *username;

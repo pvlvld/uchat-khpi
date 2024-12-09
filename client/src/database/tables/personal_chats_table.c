@@ -21,7 +21,6 @@ static t_users_struct **get_users_from_personal_chats(int *user_count, int chat_
         return NULL;
     }
 
-    // Новый SQL-запрос с условием для исключения пользователей, уже в чате
     const char *sql =
         "SELECT DISTINCT u.user_id, u.username, u.user_login, u.about, u.is_online, u.public_key, u.updated_at "
         "FROM personal_chats pc "
@@ -46,7 +45,6 @@ static t_users_struct **get_users_from_personal_chats(int *user_count, int chat_
     t_users_struct **users = NULL;
     int count = 0;
 
-    // Чтение результатов запроса
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         t_users_struct **temp = realloc(users, (count + 1) * sizeof(t_users_struct *));
         if (temp == NULL) {
@@ -122,12 +120,44 @@ static int create_personal_chat(int chat_id, int user2_id) {
     return 0;
 }
 
+static int get_personal_chat_with_user(int user_id) {
+    if (vendor.current_user.user_id == 0) {
+        printf("[ERROR] Current user ID is not set.\n");
+        return 0;
+    }
+
+    const char *sql =
+        "SELECT chat_id "
+        "FROM personal_chats "
+        "WHERE (user1_id = ? AND user2_id = ?) "
+        "   OR (user1_id = ? AND user2_id = ?);";
+
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return 0;
+    }
+
+    sqlite3_bind_int(stmt, 1, vendor.current_user.user_id);
+    sqlite3_bind_int(stmt, 2, user_id);
+    sqlite3_bind_int(stmt, 3, user_id);
+    sqlite3_bind_int(stmt, 4, vendor.current_user.user_id);
+
+    int chat_id = 0;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        chat_id = sqlite3_column_int(stmt, 0);
+    }
+
+    sqlite3_finalize(stmt);
+    return chat_id;
+}
 
 t_personal_chats_table init_personal_chats_table(void) {
     t_personal_chats_table table = {
         .create_table = create_table,
         .get_users = get_users_from_personal_chats,
         .create_personal_chat = create_personal_chat,
+        .get_personal_chat_with_user = get_personal_chat_with_user,
     };
 
     return table;

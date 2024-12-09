@@ -4,7 +4,11 @@ static void on_sender_event_box_click(GtkWidget *widget, GdkEventButton *event, 
     (void) widget;
     (void) event;
     t_users_struct *sender_struct = (t_users_struct *) user_data;
-    g_print("sender id = %d\n", sender_struct->user_id);
+
+    int chat_id = vendor.database.tables.personal_chats_table.get_personal_chat_with_user(sender_struct->user_id);
+    if (chat_id != 0) {
+        activate_chatblock_by_id(chat_id);
+    }
 }
 
 static GtkWidget *create_sender_event_box(t_messages_struct *message_struct, int *add_to_height, int *min_width, int width) {

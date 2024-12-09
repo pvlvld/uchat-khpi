@@ -111,28 +111,23 @@ static char *get_peer_public_key(int chat_id) {
 
     int current_user_id = vendor.current_user.user_id;
 
-    // Подготовка SQL-запроса
     if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(vendor.database.db));
         return NULL;
     }
 
-    // Привязка параметров
     sqlite3_bind_int(stmt, 1, chat_id);
     sqlite3_bind_int(stmt, 2, current_user_id);
 
-    // Выполнение запроса
     if (sqlite3_step(stmt) == SQLITE_ROW) {
         const unsigned char *col_text = sqlite3_column_text(stmt, 0);
         if (col_text) {
-            // Копируем данные в новую строку
             public_key = vendor.helpers.strdup((const char *)col_text);
         }
     } else {
         fprintf(stderr, "No peer found for chat_id: %d\n", chat_id);
     }
 
-    // Освобождение ресурсов
     sqlite3_finalize(stmt);
 
     return public_key;

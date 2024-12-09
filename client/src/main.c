@@ -4,7 +4,6 @@
 
 static void activate(GtkApplication *app, gpointer user_data) {
     (void) user_data;
-    // Создание окна при первом запуске
     // if (vendor.window == NULL) {
         vendor.window = init_window(app);
 
@@ -43,7 +42,7 @@ int main(int argc, char **argv) {
 
     GtkApplication *app;
     int status;
-    app = gtk_application_new("org.example.GtkApplication", 0);
+    app = gtk_application_new("org.example.GtkApplication", G_APPLICATION_NON_UNIQUE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
 
     status = g_application_run(G_APPLICATION(app), 0, NULL);

@@ -28,6 +28,7 @@ typedef struct {
     GtkWidget *userblock;
     int user_id;
     int chat_id;
+    char *username;
 } t_user_block_data;
 
 typedef struct {
