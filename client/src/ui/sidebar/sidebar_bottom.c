@@ -81,6 +81,7 @@ GtkWidget *sidebar_create_bottom(void) {
     gtk_widget_set_size_request(button_block, 230, 32);
     vendor.helpers.set_classname_and_id(button_block, "sidebar__bottom_button-block");
 
+    gtk_fixed_put(GTK_FIXED(box), button_block, 15, 6);
 
     GtkWidget *button_friend = gtk_button_new_with_label("Add friend");
     gtk_widget_set_size_request(button_friend, 115, -1);

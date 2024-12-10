@@ -90,7 +90,9 @@ cJSON *send_request(const char *method, const char *path, cJSON *json_body) {
                  "Host: %s:%d\r\n"
                  "Content-Type: application/json\r\n"
                  "Content-Length: %zu\r\n"
+                 "%s"
                  "\r\n"
+                 "%s",
                  path, vendor.server.address, vendor.server.port,
                  json_str ? strlen(json_str) : 0,
                  auth_header,
@@ -99,9 +101,15 @@ cJSON *send_request(const char *method, const char *path, cJSON *json_body) {
         snprintf(request, sizeof(request),
                  "GET %s HTTP/1.1\r\n"
                  "Host: %s:%d\r\n"
-                 "\r\n",
+                 "Content-Type: application/json\r\n"
+                 "Content-Length: %zu\r\n"
+                 "%s"
+                 "\r\n"
+                 "%s",
                  path, vendor.server.address, vendor.server.port,
-                 auth_header);
+                 json_str ? strlen(json_str) : 0,
+                 auth_header,
+                 json_str ? json_str : "");
     } else {
         fprintf(stderr, "Unsupported HTTP method: %s\n", method);
         if (json_str) free(json_str);
@@ -164,7 +172,7 @@ void *websocket_thread(void *arg) {
     char buffer[BUFFER_SIZE];
     int bytes;
 
-    printf("WebSocket thread started.\n");
+    if (vendor.debug_mode >= 1) printf("[INFO] WebSocket thread started.\n");
 
     while (1) {
         pthread_mutex_lock(&vendor.current_user.ws_client.lock);
@@ -177,7 +185,6 @@ void *websocket_thread(void *arg) {
         bytes = SSL_read(vendor.current_user.ws_client.ssl, buffer, sizeof(buffer) - 1);
         if (bytes > 0) {
             buffer[bytes] = '\0';
-
             char *json_start = strchr(buffer, '{');
             if (json_start) {
                 while (*(json_start + 1) == '{') {
@@ -185,6 +192,8 @@ void *websocket_thread(void *arg) {
                 }
 
                 cJSON *json_message = cJSON_Parse(json_start);
+
+                if (vendor.debug_mode == 1) g_print("[DEBUG] json_message\n%s\n", cJSON_Print(json_message));
                 if (json_message) {
                     char *message = cJSON_GetObjectItem(json_message, "message")->valuestring;
 
@@ -195,6 +204,7 @@ void *websocket_thread(void *arg) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)new_message_handler, (gpointer)json_message_copy);
                     } else if (strcmp(message, "You have been added to the group") == 0) {
+                        g_print("Here\n");
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)added_to_group_handler, (gpointer)json_message_copy);
                     }
@@ -315,7 +325,7 @@ void *connect_websocket(void *arg) {
             continue;
         }
 
-        printf("WebSocket connection established.\n");
+        if (vendor.debug_mode >= 1) printf("[INFO] WebSocket connection established.\n");
 
         pthread_t thread_id;
         if (pthread_create(&thread_id, NULL, websocket_thread, NULL) != 0) {
@@ -333,11 +343,11 @@ void *connect_websocket(void *arg) {
         SSL_free(vendor.current_user.ws_client.ssl);
         SSL_CTX_free(ctx);
 
-        printf("Reconnecting in %d seconds...\n", retry_interval);
+        if (vendor.debug_mode >= 1) printf("[INFO] Reconnecting in %d seconds...\n", retry_interval);
         sleep(retry_interval);
     }
 
-    printf("WebSocket client terminated.\n");
+    if (vendor.debug_mode >= 1) printf("[INFO] WebSocket client terminated.\n");
     return NULL;
 }
 

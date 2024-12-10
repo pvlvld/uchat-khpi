@@ -69,7 +69,7 @@ t_chat_info *parse_chat_info_by_id(int chat_id) {
             printf("  Name: %s\n", chat_info->name);
         }
     } else {
-        printf("[INFO] No chat found with ID: %d\n", chat_id);
+       if (vendor.debug_mode >= 1) printf("[INFO] No chat found with ID: %d\n", chat_id);
     }
 
     sqlite3_finalize(stmt);

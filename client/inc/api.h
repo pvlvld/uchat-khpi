@@ -14,5 +14,6 @@ typedef struct {
 gboolean friend_request_handler(gpointer user_data);
 gboolean new_message_handler(gpointer user_data);
 gboolean added_to_group_handler(gpointer user_data);
+gboolean get_all_updates(gpointer user_data);
 
 #endif //API_H

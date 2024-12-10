@@ -35,7 +35,7 @@ static void add_member(int chat_id, int user_id, const char *role) {
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         printf("[ERROR] Failed to add member: %s\n", sqlite3_errmsg(vendor.database.db));
     } else {
-        printf("[INFO] User %d added to chat %d with role '%s'.\n", user_id, chat_id, role);
+        if (vendor.debug_mode >= 1) printf("[INFO] User %d added to chat %d with role '%s'.\n", user_id, chat_id, role);
     }
 
     sqlite3_finalize(stmt);

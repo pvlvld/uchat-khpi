@@ -101,18 +101,8 @@ static void send_message(GtkTextView *text_view) {
 
     if (g_strcmp0(text, "") != 0) {
         // local encrypting
-        char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
-        if (encrypt) {
-            t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
-			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, NULL, 0);
-            ++vendor.pages.main_page.chat.temp_message_counter;
-            add_chat_message(message_struct, 0);
-
-            vendor.active_chat.chat->last_message = message_struct;
-
-            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 1);
-            free(encrypt);
-        }
+        char *encrypt = NULL;
+        int is_good = 1;
 
         if (vendor.active_chat.chat->type == PERSONAL) {
             encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
@@ -124,7 +114,12 @@ static void send_message(GtkTextView *text_view) {
                 cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
                 cJSON_AddStringToObject(json_body, "message", encrypt);
 
-                vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+                cJSON *response = vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
+                cJSON *error = cJSON_GetObjectItem(response, "error");
+                if (error->valueint != 0) {
+                    is_good = 0;
+                }
 
                 free(encrypt);
             }
@@ -136,7 +131,27 @@ static void send_message(GtkTextView *text_view) {
             cJSON *json_body = cJSON_CreateObject();
             cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
             cJSON_AddStringToObject(json_body, "message", vendor.helpers.strdup(text));
-            vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+            cJSON *response = vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
+            cJSON *error = cJSON_GetObjectItem(response, "error");
+            if (error->valueint != 0) {
+                is_good = 0;
+            }
+        }
+
+        if (is_good) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
+            if (encrypt) {
+                t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
+                            vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, NULL, 0);
+                ++vendor.pages.main_page.chat.temp_message_counter;
+                add_chat_message(message_struct, 0);
+
+                vendor.active_chat.chat->last_message = message_struct;
+
+                update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 1);
+                free(encrypt);
+            }
         }
 
         gtk_text_buffer_delete(buffer, &start, &end);
@@ -211,6 +226,8 @@ GtkWidget *create_message_input(GtkWidget *message_send) {
     GtkWidget *value_entry = gtk_text_view_new();
     vendor.helpers.set_classname_and_id(value_entry, "chat__value_input");
 
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);
+    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE);
     gtk_box_pack_start(GTK_BOX(message_value), value_entry, TRUE, TRUE, 0);
     gtk_text_view_set_left_margin(GTK_TEXT_VIEW(value_entry), 10);
     gtk_text_view_set_right_margin(GTK_TEXT_VIEW(value_entry), 10);

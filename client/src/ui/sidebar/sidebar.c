@@ -45,6 +45,7 @@ void message_receipt(GtkWidget *widget, t_api_message_struct *message) {
 
             if (vendor.active_chat.chat_sidebar_widget != NULL) {
                 if (vendor.active_chat.chat->id == chat_info->id) {
+                    g_print("message_struct == NULL: %d\n", message_struct == NULL);
                     add_chat_message(message_struct, 1);
                 } else {
                     chat_info->unreaded_messages++;

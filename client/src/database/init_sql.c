@@ -73,7 +73,7 @@ static int record_exists(const char *sql) {
 
 static time_t get_oldest_timestamp(void) {
     const char *sql =
-        "SELECT MIN(timestamp) FROM ("
+        "SELECT MAX(timestamp) FROM ("
         "SELECT timestamp FROM messages "
         "UNION ALL "
         "SELECT updated_at AS timestamp FROM users"

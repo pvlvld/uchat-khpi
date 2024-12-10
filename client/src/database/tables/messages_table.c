@@ -24,28 +24,10 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
         timestamp = time(NULL);
     }
 
-    size_t check_sql_size = snprintf(NULL, 0,
-             "SELECT 1 FROM messages WHERE message_id = %d AND chat_id = %d;", message_id, chat_id) + 1;
-
-    char *check_sql = malloc(check_sql_size);
-    if (check_sql == NULL) {
-        fprintf(stderr, "Memory allocation failed\n");
-        return NULL;
-    }
-
-    snprintf(check_sql, check_sql_size,
-             "SELECT 1 FROM messages WHERE message_id = %d AND chat_id = %d;", message_id, chat_id);
-
-    if (vendor.database.sql.record_exists(check_sql)) {
-        free(check_sql);
-        return NULL;
-    }
-
-    free(check_sql);
-
     size_t sql_size = snprintf(NULL, 0,
-             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
-             "VALUES (%d, %d, %d, '%s', '%s', %ld);", message_id, chat_id, sender_id, message_text,
+             "INSERT OR REPLACE INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
+             "VALUES (%d, %d, %d, '%s', '%s', %ld);",
+             message_id, chat_id, sender_id, message_text,
              path_to_image ? path_to_image : "", timestamp) + 1;
 
     char *sql = malloc(sql_size);
@@ -55,8 +37,9 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     }
 
     snprintf(sql, sql_size,
-             "INSERT INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
-             "VALUES (%d, %d, %d, '%s', '%s', %ld);", message_id, chat_id, sender_id, message_text,
+             "INSERT OR REPLACE INTO messages (message_id, chat_id, sender_id, message_text, path_to_image, timestamp) "
+             "VALUES (%d, %d, %d, '%s', '%s', %ld);",
+             message_id, chat_id, sender_id, message_text,
              path_to_image ? path_to_image : "", timestamp);
 
     vendor.database.sql.execute_sql(sql);
@@ -87,6 +70,7 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     free(sql);
     return message;
 }
+
 
 static void edit_message(int message_id, const char *new_message_text) {
     char sql[1024];

@@ -18,6 +18,7 @@ typedef struct {
     void (*free_struct)(t_users_struct *user);
     int (*add_user)(t_users_struct *user);
     char *(*get_peer_public_key)(int chat_id);
+    t_users_struct *(*get_user_by_username)(const char *username);
 } t_users_table;
 t_users_table init_users_table(void);
 

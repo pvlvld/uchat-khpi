@@ -64,8 +64,8 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
 
         if (vendor.active_chat.chat->last_message->message_id == message_info_struct->message_id
                 && vendor.active_chat.chat->id == (unsigned int) message_info_struct->chat_id) {
-                	vendor.active_chat.chat->last_message = NULL;
-            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
+            vendor.active_chat.chat->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(message_info_struct->chat_id, 1, 1, NULL);;
+            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
         }
     }
 }

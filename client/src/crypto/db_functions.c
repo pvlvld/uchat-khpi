@@ -52,10 +52,35 @@ static void free_split_result(char **result, int count) {
 
 char *encrypt_data_for_db(char *public_key_str, const char *text) {
     char *key = vendor.crypto.generate_random_key();
-    char *encrypted_key = vendor.crypto.encrypt(public_key_str, key);
-    char *encrypted_text = vendor.crypto.encrypt_text(text, key);
+    if (!key) {
+        printf("Error generating random key\n");
+        return strdup(text);
+    }
 
-    char *result = malloc((strlen(encrypted_key) + strlen(encrypted_text) + 1) * sizeof(char *));
+    char *encrypted_key = vendor.crypto.encrypt(public_key_str, key);
+    if (!encrypted_key) {
+        printf("Error encrypting key\n");
+        free(key);
+        return strdup(text);
+    }
+
+    char *encrypted_text = vendor.crypto.encrypt_text(text, key);
+    if (!encrypted_text) {
+        printf("Error encrypting text\n");
+        free(encrypted_key);
+        free(key);
+        return strdup(text);
+    }
+
+    char *result = malloc((strlen(encrypted_key) + strlen(encrypted_text) + 2) * sizeof(char));
+    if (!result) {
+        printf("Memory allocation failed\n");
+        free(encrypted_key);
+        free(encrypted_text);
+        free(key);
+        return strdup(text);
+    }
+
     sprintf(result, "%s\n%s", encrypted_key, encrypted_text);
 
     free(encrypted_key);
@@ -64,6 +89,7 @@ char *encrypt_data_for_db(char *public_key_str, const char *text) {
 
     return result;
 }
+
 
 char *decrypt_data_from_db(const char *text) {
     int count = 0;
