@@ -10,6 +10,7 @@ CFLAGS = -std=c11 \
         -I../libraries/sqlite/inc \
         -I../libraries/cJSON/inc \
         -I../libraries/openssl \
+        -I../libraries/libpq \
         -I./inc \
         $(shell pkg-config --cflags gtk+-3.0) \
         # -I../libraries/glibc/include \
@@ -22,6 +23,7 @@ LDFLAGS = -L../libraries/sqlite/lib \
         -lcjson \
         -lssl \
         -lcrypto \
+        -lpq \
         $(shell pkg-config --libs gtk+-3.0) \
         -Wl,-rpath,../libraries/sqlite/lib \
         -Wl,-rpath,../libraries/cJSON/lib \
