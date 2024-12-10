@@ -3,6 +3,8 @@
 #pragma once
 
 #include <libpq-fe.h>
+#include <stdbool.h>
+
 
 /** Creates a user.
  *
