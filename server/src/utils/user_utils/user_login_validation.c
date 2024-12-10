@@ -3,6 +3,7 @@
 #include <string.h>
 
 bool is_valid_login(const char *login) {
+    if (login == NULL) return false;
     // Check if the login is at least 5 characters long
     if (strlen(login) < 5 || strlen(login) > 50) return false;
 

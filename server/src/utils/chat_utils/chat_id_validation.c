@@ -1,6 +1,6 @@
-#include <ctype.h>
 #include <stdbool.h>
-#include <time.h>
+#include <ctype.h>
+#include "../../../inc/utils.h"
 
 bool is_valid_chat_id(const char *chat_id_str) {
     if (chat_id_str == NULL || *chat_id_str == '\0') return false;

@@ -16,6 +16,12 @@ char *_base64url_encode(const unsigned char *data, size_t length) {
     BIO_get_mem_ptr(b64, &bptr);
 
     buff = malloc(bptr->length + 1);
+
+    if (!buff) {
+        fprintf(stderr, "Failed to allocate memory for buffer.\n");
+        return NULL;
+    }
+
     if (buff == NULL) {
         BIO_free_all(b64);
         return NULL;

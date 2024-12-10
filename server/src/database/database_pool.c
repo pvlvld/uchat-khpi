@@ -6,7 +6,7 @@ static pthread_mutex_t pool_mutex = PTHREAD_MUTEX_INITIALIZER;
 // TODO: Take connection parameters from environment variables.
 void init_postgres_pool_connections(void) {
     for (int i = 0; i < POOL_SIZE; i++) {
-        pool[i].conn = PQconnectdb("user=postgres dbname=uchat password=uchat host=0.0.0.0 port=5432");
+        pool[i].conn = PQconnectdb("user=postgres dbname=uchat password=uchat host=localhost port=5432");
         if (PQstatus(pool[i].conn) != CONNECTION_OK) {
             fprintf(stderr, "Connection to database failed: %s", PQerrorMessage(pool[i].conn));
             exit(1);

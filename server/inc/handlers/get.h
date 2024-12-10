@@ -5,10 +5,12 @@
 
 void hello_rout(SSL *ssl, const char *request);
 void secret_rout(SSL *ssl, const char *request);
+void protected_get_all_updates_rout(SSL *ssl, const char *request);
 
 typedef struct {
     void (*secret)(SSL *ssl, const char *request); // No underscores because this will be middleware.
     void (*_hello)(SSL *ssl, const char *request);
+    void (*_get_all_updates)(SSL *ssl, const char *request);
     t_middleware middleware;
 } t_get_handler;
 

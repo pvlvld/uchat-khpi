@@ -1,6 +1,5 @@
-#include "../../../../../libraries/cJSON/cJSON.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "utils.h"
+#include <../../../libraries/cJSON/cJSON.h>
 #include <string.h>
 
 char *strdup(const char *src) {
@@ -10,6 +9,7 @@ char *strdup(const char *src) {
     return dst;
 }
 
+
 char *extract_recipient_login(cJSON *json) {
     if (!json) { return NULL; }
 
@@ -18,6 +18,16 @@ char *extract_recipient_login(cJSON *json) {
 
     // Duplicate the recipient login string to return (remember to free it later)
     return strdup(recipient_login_item->valuestring);
+}
+
+char *extract_recipient_username(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *recipient_username_item = cJSON_GetObjectItem(json, "username");
+    if (!cJSON_IsString(recipient_username_item)) { return NULL; }
+
+    // Duplicate the recipient login string to return (remember to free it later)
+    return strdup(recipient_username_item->valuestring);
 }
 
 char *extract_message(cJSON *json) {
@@ -41,3 +51,39 @@ char *extract_chat_id(cJSON *json) {
     // Duplicate the chat_id string to return (remember to free it later)
     return strdup(chat_id_item->valuestring);
 }
+
+char *extract_message_id(cJSON *json) {
+    if (!json) {
+        return NULL;
+    }
+
+    // Get the message_id field
+    cJSON *message_id_item = cJSON_GetObjectItem(json, "message_id");
+    if (!cJSON_IsString(message_id_item)) {
+        return NULL;
+    }
+
+    // Duplicate the message_id string to return (remember to free it later)
+    return strdup(message_id_item->valuestring);
+}
+
+char *extract_user_id(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *user_id_item = cJSON_GetObjectItem(json, "user_id");
+    if (!cJSON_IsString(user_id_item)) { return NULL; }
+
+    // Duplicate the recipient login string to return (remember to free it later)
+    return strdup(user_id_item->valuestring);
+}
+
+char *extract_timestamp(cJSON *json) {
+    if (!json) { return NULL; }
+
+    cJSON *timestamp_item = cJSON_GetObjectItem(json, "timestamp");
+    if (!cJSON_IsString(timestamp_item)) { return NULL; }
+
+    // Duplicate the timestamp string to return (remember to free it later)
+    return strdup(timestamp_item->valuestring);
+}
+

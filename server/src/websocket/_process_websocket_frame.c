@@ -8,7 +8,7 @@ void _process_websocket_frame(SSL *ssl, const unsigned char *frame, ssize_t fram
 
     if ((frame[0] & 0x0F) == 0x08) {
         if (vendor.env.dev_mode) printf("Received WebSocket close frame\n");
-        _send_close_frame(ssl, 1000); // Используем стандартный код 1000 для нормального закрытия
+        _send_close_frame(ssl, 1000);
         return;
     }
 
@@ -34,5 +34,6 @@ void _process_websocket_frame(SSL *ssl, const unsigned char *frame, ssize_t fram
 
     payload[payload_length] = '\0';
 
-   if (vendor.env.dev_mode) printf("Received WebSocket message: %s\n", payload);
+    if (vendor.env.dev_mode) printf("Received WebSocket message: %s\n", payload);
 }
+

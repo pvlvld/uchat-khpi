@@ -1,10 +1,11 @@
 #include "../inc/env.h"
+#include "sys/socket.h"
 
 t_env init_env(int port) {
     const t_env env = {
         .port = port,
-        .max_clients = 256,
-        .dev_mode = 1,
+	.max_clients = SOMAXCONN,
+	.dev_mode = 1,
         .db_name = "name.db",
         .jwt_secret_key = "your_secret_key",
         .sms_dev_mode = 1,

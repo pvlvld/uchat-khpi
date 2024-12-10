@@ -1,4 +1,4 @@
-#include "../../inc/utils.h"
+#include "../../../inc/utils.h"
 
 const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id) {
     const char *query = "SELECT role FROM group_chat_members WHERE chat_id = $1 AND user_id = $2";
@@ -13,7 +13,7 @@ const char *get_user_role_in_group(PGconn *conn, int chat_id, int user_id) {
     PGresult *res = PQexecParams(conn, query, 2, NULL, params, NULL, NULL, 0);
     const char *role = NULL;
 
-    if (PQntuples(res) > 0) { role = mx_strdup(PQgetvalue(res, 0, 0)); }
+    if (PQntuples(res) > 0) { role = strdup(PQgetvalue(res, 0, 0)); }
 
     PQclear(res);
     return role; // Caller is responsible for freeing this memory

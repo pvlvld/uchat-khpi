@@ -45,8 +45,9 @@ bool delete_message(PGconn *conn, int chat_id, int message_id) {
     return true;
 }
 
+
 bool edit_message_text(PGconn *conn, int chat_id, int message_id, const char *new_message_text) {
-    const char *query = "UPDATE messages SET message_text = $1, edited = true WHERE chat_id = $2 AND message_id = $3";
+    const char *query = "UPDATE messages SET message_text = $1, edited_at = CURRENT_TIMESTAMP WHERE chat_id = $2 AND message_id = $3";
     char chat_id_str[12], message_id_str[12];
     const char *params[3] = {new_message_text, itoa(chat_id, chat_id_str), itoa(message_id, message_id_str)};
 
@@ -94,12 +95,12 @@ PGresult *get_messages(PGconn *conn, int chat_id, int limit, int offset) {
 }
 
 PGresult *get_new_messages(PGconn *conn, int chat_id, int limit, int offset, time_t timestamp) {
-    const char *query = "SELECT * FROM messages WHERE chat_id = $1 AND COALESCE(edited_at, timestamp) > $2 ORDER BY "
+    const char *query = "SELECT * FROM messages WHERE chat_id = $1 AND COALESCE(edited_at, timestamp) > to_timestamp($2) ORDER BY "
                         "timestamp DESC LIMIT $3 OFFSET $4";
     char chat_id_str[12], timestamp_str[12], limit_str[12], offset_str[12];
     const char *params[4] = {itoa(chat_id, chat_id_str), itoa(timestamp, timestamp_str), itoa(limit, limit_str),
                              itoa(offset, offset_str)};
-    PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
+    PGresult *res = PQexecParams(conn, query, 4, NULL, params, NULL, NULL, 0);
 
     if (PQresultStatus(res) != PGRES_TUPLES_OK) {
         fprintf(stderr, "Get new messages failed: %s", PQerrorMessage(conn));

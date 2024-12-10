@@ -58,6 +58,12 @@ char *_generate_jwt_token(cJSON *payload) {
     }
 
     // Encoding in base64url
+    printf("Input to base64url_decode: %s\n", header_str);
+    if (!vendor.jwt.helpers.base64url_encode || !vendor.jwt.helpers.base64url_decode) {
+        fprintf(stderr, "JWT helper functions are not initialized.\n");
+        exit(EXIT_FAILURE);
+    }
+
     encoded_header = vendor.jwt.helpers.base64url_encode((unsigned char*)header_str, strlen(header_str));
     encoded_payload = vendor.jwt.helpers.base64url_encode((unsigned char*)payload_str, strlen(payload_str));
 
@@ -151,7 +157,6 @@ jwt_verification_result _verify_jwt_token(const char *token) {
         free(token_copy);
         return result;
     }
-
     cJSON *header = cJSON_Parse((const char *)decoded_header);
     cJSON *payload = cJSON_Parse((const char *)decoded_payload);
 
@@ -164,7 +169,6 @@ jwt_verification_result _verify_jwt_token(const char *token) {
         free(token_copy);
         return result;
     }
-
     // Check if the token has expired
     cJSON *exp_item = cJSON_GetObjectItem(payload, "exp");
     if (cJSON_IsString(exp_item)) {
@@ -179,7 +183,6 @@ jwt_verification_result _verify_jwt_token(const char *token) {
             return result;
         }
     }
-
     // Forming a signature string
     size_t data_to_sign_len = strlen(header_b64) + strlen(payload_b64) + 2;
     char *data_to_sign = malloc(data_to_sign_len);
@@ -192,7 +195,6 @@ jwt_verification_result _verify_jwt_token(const char *token) {
         free(token_copy);
         return result;
     }
-
     snprintf(data_to_sign, data_to_sign_len, "%s.%s", header_b64, payload_b64);
 
     // Creating a signature
@@ -206,16 +208,15 @@ jwt_verification_result _verify_jwt_token(const char *token) {
     if (verified) {
         // Check if “exp” and “phone_number” fields are present
         cJSON *exp_check = cJSON_GetObjectItem(payload, "exp");
-        cJSON *phone_number_check = cJSON_GetObjectItem(payload, "phone_number");
+        //cJSON *phone_number_check = cJSON_GetObjectItem(payload, "phone_number");
 
-        if (exp_check && phone_number_check) {
+        if (exp_check /*&& phone_number_check*/) {
             result.status = 1;
             result.payload = cJSON_Duplicate(payload, 1);
         } else {
             result.status = 0;
         }
     }
-
     // Memory Release
     free(data_to_sign);
     cJSON_Delete(header);

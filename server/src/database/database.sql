@@ -50,7 +50,7 @@ CREATE TABLE personal_chats (
     chat_id INT PRIMARY KEY REFERENCES chats(chat_id) ON DELETE CASCADE,
     user1_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     user2_id INT REFERENCES users(user_id) ON DELETE CASCADE,
-    backgroung INT REFERENCES media(media_id) DEFAULT NULL,
+    background INT REFERENCES media(media_id) DEFAULT NULL,
     UNIQUE (user1_id, user2_id)
 );
 
@@ -59,7 +59,7 @@ CREATE TABLE group_chats (
     group_name VARCHAR(120),
     about VARCHAR(1024) DEFAULT NULL,
     group_picture INT REFERENCES media(media_id) DEFAULT NULL,
-    backgroung INT REFERENCES media(media_id) DEFAULT NULL
+    background INT REFERENCES media(media_id) DEFAULT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

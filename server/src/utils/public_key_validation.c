@@ -1,8 +1,8 @@
-#include "../../../libraries/openssl/err.h"
 #include "../../../libraries/openssl/evp.h"
 #include "../../../libraries/openssl/pem.h"
-#include <stdio.h>
+#include "../../../libraries/openssl/err.h"
 #include <string.h>
+#include <stdio.h>
 
 // The length of the public key string must be between 200 and 450 characters.
 // The key must be in PEM format.
