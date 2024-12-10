@@ -982,7 +982,7 @@ uint32_t SSL_get_recv_max_early_data(const SSL *s);
 
 # include "ssl2.h"
 # include "ssl3.h"
-# include "tls1.h"     /* This is mostly sslv3 with a few tweaks */
+# include "tls1.h"      /* This is mostly sslv3 with a few tweaks */
 # include "dtls1.h"     /* Datagram TLS */
 # include "srtp.h"      /* Support for the use_srtp extension */
 # include "quic.h"
