@@ -1,0 +1,11 @@
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y build-essential pkg-config clang openssl libssl-dev libpq-dev
+
+COPY . /app
+
+WORKDIR /app/server
+
+RUN make
+
+CMD cp uchat_server /app/out
