@@ -6,10 +6,10 @@
 int create_user(PGconn *conn, const char *username, const char *user_login, const char *password_hash, const char *salt,
                 const char *public_key, const char *locale) {
     const char *query =
-        "INSERT INTO users (username, user_login, password_hash, public_key, locale, salt) VALUES ($1, $2, "
+        "INSERT INTO users (username, user_login, password_hash, public_key, locale, password_salt) VALUES ($1, $2, "
         "$3, $4, $5, $6) RETURNING user_id";
     const char *params[6] = {username, user_login, password_hash, public_key, locale, salt};
-    PGresult *res = PQexecParams(conn, query, 5, NULL, params, NULL, NULL, 0);
+    PGresult *res = PQexecParams(conn, query, 6, NULL, params, NULL, NULL, 0);
 
     if (PQresultStatus(res) == PGRES_TUPLES_OK) {
         int user_id = atoi(PQgetvalue(res, 0, 0));
