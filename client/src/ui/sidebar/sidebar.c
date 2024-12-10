@@ -22,7 +22,49 @@ static GtkWidget *init_search(void) {
     return entry_wrapper;
 }
 
-void swap_sidebar(GtkWidget *widget, ssize_t index) {
+void message_receipt(GtkWidget *widget, t_api_message_struct *message, int is_new) {
+    GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
+
+    if (children != NULL) {
+        for (ssize_t i = 0; i < g_list_length(children); i++) {
+            GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
+            t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
+            if (chat_info->id != (unsigned int)message->chat_id) continue;
+            gtk_box_reorder_child(GTK_BOX(stretchable_box), target_child, 0);
+
+            t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(message->message_id,
+                        message->chat_id, message->sender_id, message->message_encrypted, NULL, message->timestamp);
+
+            chat_info->last_message = message_struct;
+
+            update_chatblock(target_child, chat_info, 1);
+
+            if (chat_info->unreaded_messages < 1) chat_info->unreaded_messages = 0;
+
+            if (vendor.active_chat.chat_sidebar_widget != NULL) {
+                if (vendor.active_chat.chat->id == chat_info->id) {
+                    g_print("message_struct == NULL: %d\n", message_struct == NULL);
+                    add_chat_message(message_struct, 1);
+                } else if (is_new) {
+                    chat_info->unreaded_messages++;
+                    vendor.helpers.show_notification("New notification", "New message");
+                    vendor.popup.add_message("New message");
+                }
+            } else if (is_new) {
+                chat_info->unreaded_messages++;
+                vendor.helpers.show_notification("New notification", "New message");
+                vendor.popup.add_message("New message");
+            }
+
+            break;
+        }
+        g_list_free(children);
+    }
+}
+
+void delete_chat_sidebar(GtkWidget *widget, ssize_t index) {
     GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
 
     GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
@@ -32,7 +74,23 @@ void swap_sidebar(GtkWidget *widget, ssize_t index) {
             GtkWidget *target_child = GTK_WIDGET(g_list_nth_data(children, i));
             t_chat_info *chat_info = g_object_get_data(G_OBJECT(target_child), "chat_info");
             if (chat_info->id != index) continue;
-            gtk_box_reorder_child(GTK_BOX(stretchable_box), target_child, 0);
+
+            if (vendor.active_chat.chat_sidebar_widget == target_child) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(target_child), "active");
+                vendor.active_chat.chat_sidebar_widget = NULL;
+                vendor.pages.main_page.chat.change_chat();
+                vendor.active_chat.chat = NULL;
+            }
+
+            if (vendor.hover_chat.chat_sidebar_widget == target_child) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(target_child), "hover");
+                vendor.hover_chat.chat_sidebar_widget = NULL;
+                vendor.hover_chat.chat = NULL;
+            }
+
+            gtk_widget_destroy(GTK_WIDGET(target_child));
+
+            gtk_widget_show_all(stretchable_box);
             break;
         }
         g_list_free(children);
@@ -54,18 +112,6 @@ static gboolean key_press_handler(GtkWidget *widget, GdkEventKey *event, gpointe
         return TRUE;
     }
 
-    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_e)) {
-
-        ssize_t index = rand() % 3 + 1;
-        g_print("Element with id %zd updated!\n", index);
-
-        swap_sidebar(vendor.pages.main_page.sidebar.widget, index);
-        vendor.helpers.show_notification("New notification", "New message");
-		vendor.popup.add_message("New message");
-
-        return TRUE;
-    }
-
     return FALSE;
 }
 
@@ -74,6 +120,50 @@ static void on_widget_destroy(GtkWidget *widget, gpointer user_data) {
     (void) widget;
     vendor.active_chat.chat_sidebar_widget = NULL;
     vendor.hover_chat.chat_sidebar_widget = NULL;
+}
+
+void activate_chatblock_by_id(int chat_id) {
+    GtkWidget *stretchable_box = vendor.sidebar.stretchable_box;
+
+    if (!stretchable_box) {
+        if (vendor.debug_mode >= 1) printf("[ERROR] stretchable_box not found in sidebar.\n");
+        return;
+    }
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
+
+    if (!children) {
+        if (vendor.debug_mode >= 1) printf("[INFO] No chatblocks found.\n");
+        return;
+    }
+
+    for (GList *iter = children; iter != NULL; iter = iter->next) {
+        GtkWidget *chatblock = GTK_WIDGET(iter->data);
+        t_chat_info *chat_info = g_object_get_data(G_OBJECT(chatblock), "chat_info");
+
+        if (chat_info && chat_info->id == (unsigned) chat_id) {
+            vendor.active_chat.chat = chat_info;
+
+            if (vendor.active_chat.chat_sidebar_widget != NULL) {
+                gtk_style_context_remove_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
+            }
+
+            vendor.active_chat.chat_sidebar_widget = chatblock;
+            vendor.pages.main_page.chat.change_chat();
+
+            vendor.active_chat.chat->unreaded_messages = 0;
+
+            update_chatblock(chatblock, vendor.active_chat.chat, 0);
+
+            gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
+
+            g_list_free(children);
+            return;
+        }
+    }
+
+    if (vendor.debug_mode >= 1) printf("[INFO] Chatblock with ID %d not found.\n", chat_id);
+    g_list_free(children);
 }
 
 GtkWidget *sidebar_init(void) {
@@ -91,6 +181,7 @@ GtkWidget *sidebar_init(void) {
 
     GtkWidget *stretchable_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_vexpand(stretchable_box, TRUE);
+    vendor.sidebar.stretchable_box = stretchable_box;
 
     gtk_container_add(GTK_CONTAINER(scrolled_window), stretchable_box);
 
@@ -110,6 +201,7 @@ GtkWidget *sidebar_init(void) {
             }
 
             g_object_set_data(G_OBJECT(chatblock), "chat_info", chats_info[i]);
+
             gtk_box_pack_start(GTK_BOX(stretchable_box), chatblock, FALSE, FALSE, 0);
             gtk_widget_show(chatblock);
             i++;

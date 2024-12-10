@@ -5,7 +5,6 @@ static char *format_last_message(const char *sender_name, const char *message, i
     if (chat_type == 0 || sender_name == NULL || strlen(sender_name) == 0) {
         return g_strdup(message);
     } else {
-        // Групповой чат с именем отправителя
         const char *format = "<span foreground='#047857'><b>%s: </b></span>%s";
         int size = snprintf(NULL, 0, format, sender_name, message);
         if (size < 0) {
@@ -35,12 +34,15 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
         }
         vendor.active_chat.chat_sidebar_widget = widget;
         vendor.pages.main_page.chat.change_chat();
+        vendor.active_chat.chat->unreaded_messages = 0;
+        update_chatblock(widget, vendor.active_chat.chat, 0);
         gtk_style_context_add_class(gtk_widget_get_style_context(vendor.active_chat.chat_sidebar_widget), "active");
     } else if (event->button == GDK_BUTTON_SECONDARY) {
         int x = event->x_root;
         int y = event->y_root;
+        t_chat_info *chat_info = g_object_get_data(G_OBJECT(widget), "chat_info");
+
         if (vendor.active_chat.chat_sidebar_widget != widget) {
-            t_chat_info *chat_info = g_object_get_data(G_OBJECT(widget), "chat_info");
 
             if (chat_info != NULL) {
                 vendor.hover_chat.chat = chat_info;
@@ -52,7 +54,7 @@ static gboolean click_handler(GtkWidget *widget, GdkEventButton *event) {
             gtk_style_context_add_class(gtk_widget_get_style_context(vendor.hover_chat.chat_sidebar_widget), "hover");
         }
 
-        vendor.modal.chat_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y);
+        vendor.modal.chat_info.show(GTK_WINDOW(gtk_widget_get_toplevel(widget)), x, y, chat_info);
     }
 
     return TRUE;
@@ -193,18 +195,18 @@ static void update_avatar(GtkWidget *chatblock, t_chat_info *new_chat_info) {
     gtk_widget_show_all(chatblock);
 }
 
-
-void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info) {
+void update_chatblock(GtkWidget *event_box, t_chat_info *chat_info, int is_new) {
     GtkWidget *chatblock = g_object_get_data(G_OBJECT(event_box), "chatblock");
 
     update_chat_message(chatblock, create_formatted_last_message(chat_info));
     update_chat_time(chatblock, create_chat_time_string(chat_info));
     update_avatar(chatblock, chat_info);
 
-    GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(vendor.pages.main_page.sidebar.widget), "stretchable_box");
-    gtk_box_reorder_child(GTK_BOX(stretchable_box), event_box, 0);
+    if (is_new) {
+        GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(vendor.pages.main_page.sidebar.widget), "stretchable_box");
+        gtk_box_reorder_child(GTK_BOX(stretchable_box), event_box, 0);
+    }
 }
-
 
 GtkWidget *sidebar_create_chatblock(t_chat_info *chat_info) {
     GtkWidget *chatblock = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

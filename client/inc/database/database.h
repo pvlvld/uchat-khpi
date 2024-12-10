@@ -26,6 +26,8 @@ typedef struct {
     void (*execute_sql)(const char *sql);
     int (*execute_query)(const char *sql, char ***results, int *rows, int *cols);
     char *(*get_column_value)(const char *sql, const char *column_name);
+    int (*record_exists)(const char *sql);
+    time_t (*get_oldest_timestamp)(void);
     void (*free)(void*);
 } t_sql;
 t_sql init_sql(void);

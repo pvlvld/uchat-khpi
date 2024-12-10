@@ -48,6 +48,39 @@ static t_users_struct *get_user_by_id(int user_id) {
     return user;
 }
 
+static int add_user(t_users_struct *user) {
+    if (user == NULL) {
+        printf("[ERROR] User structure is NULL.\n");
+        return -1;
+    }
+
+    const char *sql =
+        "INSERT INTO users (user_id, username, user_login, about, is_online, public_key) "
+        "VALUES (?, ?, ?, ?, 0, ?);";
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return -1;
+    }
+
+    sqlite3_bind_int(stmt, 1, user->user_id);
+    sqlite3_bind_text(stmt, 2, user->username, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, user->user_login, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, user->about ? user->about : NULL, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 5, user->public_key, -1, SQLITE_TRANSIENT);
+
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("[ERROR] Failed to insert user: %s\n", sqlite3_errmsg(vendor.database.db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    sqlite3_finalize(stmt);
+    return 0;
+}
+
 static void free_struct(t_users_struct *user) {
     if (user != NULL) {
         if (user->username != NULL) {
@@ -66,11 +99,89 @@ static void free_struct(t_users_struct *user) {
     }
 }
 
+static char *get_peer_public_key(int chat_id) {
+    const char *sql =
+        "SELECT u.public_key "
+        "FROM users u "
+        "JOIN personal_chats pc ON (u.user_id = pc.user1_id OR u.user_id = pc.user2_id) "
+        "WHERE pc.chat_id = ? AND u.user_id != ?;";
+
+    sqlite3_stmt *stmt;
+    char *public_key = NULL;
+
+    int current_user_id = vendor.current_user.user_id;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, chat_id);
+    sqlite3_bind_int(stmt, 2, current_user_id);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char *col_text = sqlite3_column_text(stmt, 0);
+        if (col_text) {
+            public_key = vendor.helpers.strdup((const char *)col_text);
+        }
+    } else {
+        fprintf(stderr, "No peer found for chat_id: %d\n", chat_id);
+    }
+
+    sqlite3_finalize(stmt);
+
+    return public_key;
+}
+
+static t_users_struct *get_user_by_username(const char *username) {
+    if (username == NULL) {
+        printf("[ERROR] Username is NULL.\n");
+        return NULL;
+    }
+
+    char sql[512];
+    snprintf(sql, sizeof(sql),
+             "SELECT user_id, username, user_login, about, is_online, public_key, updated_at "
+             "FROM users WHERE username = '%s';",
+             username);
+
+    char **results = NULL;
+    int rows, cols;
+    int rc = vendor.database.sql.execute_query(sql, &results, &rows, &cols);
+
+    if (rc != 0 || rows == 0) {
+        printf("No results found for username: %s\n", username);
+        return NULL;
+    }
+
+    t_users_struct *user = (t_users_struct *)malloc(sizeof(t_users_struct));
+    if (user == NULL) {
+        printf("[ERROR] Memory allocation failed\n");
+        return NULL;
+    }
+
+    user->user_id = atoi(results[cols]);
+    user->username = vendor.helpers.strdup(results[cols + 1]);
+    user->user_login = vendor.helpers.strdup(results[cols + 2]);
+    user->about = results[cols + 3] ? vendor.helpers.strdup(results[cols + 3]) : NULL;
+    user->is_online = atoi(results[cols + 4]);
+    user->public_key = vendor.helpers.strdup(results[cols + 5]);
+
+    time_t timestamp = (time_t)atoll(results[cols + 6]);
+    localtime_r(&timestamp, &user->updated_at);
+
+    return user;
+}
+
+
 t_users_table init_users_table(void) {
     t_users_table table = {
         .create_table = create_users_table,
         .get_user_by_id = get_user_by_id,
         .free_struct = free_struct,
+        .add_user = add_user,
+        .get_peer_public_key = get_peer_public_key,
+        .get_user_by_username = get_user_by_username,
     };
 
     return table;

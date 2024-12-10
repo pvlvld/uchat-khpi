@@ -61,7 +61,7 @@ SSL *create_ssl_connection(int sock) {
     return ssl;
 }
 
-cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
+cJSON *send_request(const char *method, const char *path, cJSON *json_body) {
     SSL *ssl = create_ssl_connection(create_socket());
     if (!ssl) {
         return NULL;
@@ -74,13 +74,11 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
     int bytes;
     int headers_end = 0;
 
-    // Подготовка заголовка Authorization (если JWT существует)
     char auth_header[BUFFER_SIZE] = {0};
     if (vendor.current_user.jwt) {
         snprintf(auth_header, sizeof(auth_header), "Authorization: Bearer %s\r\n", vendor.current_user.jwt);
     }
 
-    // Подготовка тела запроса (для POST)
     char *json_str = NULL;
     if (json_body) {
         json_str = cJSON_PrintUnformatted(json_body);
@@ -92,9 +90,9 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
                  "Host: %s:%d\r\n"
                  "Content-Type: application/json\r\n"
                  "Content-Length: %zu\r\n"
-                 "%s" // Добавляем заголовок Authorization, если он есть
+                 "%s"
                  "\r\n"
-                 "%s", // Тело запроса
+                 "%s",
                  path, vendor.server.address, vendor.server.port,
                  json_str ? strlen(json_str) : 0,
                  auth_header,
@@ -103,17 +101,21 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
         snprintf(request, sizeof(request),
                  "GET %s HTTP/1.1\r\n"
                  "Host: %s:%d\r\n"
-                 "%s" // Добавляем заголовок Authorization, если он есть
-                 "\r\n",
+                 "Content-Type: application/json\r\n"
+                 "Content-Length: %zu\r\n"
+                 "%s"
+                 "\r\n"
+                 "%s",
                  path, vendor.server.address, vendor.server.port,
-                 auth_header);
+                 json_str ? strlen(json_str) : 0,
+                 auth_header,
+                 json_str ? json_str : "");
     } else {
         fprintf(stderr, "Unsupported HTTP method: %s\n", method);
         if (json_str) free(json_str);
         exit(1);
     }
 
-    // Отправка запроса
     if (SSL_write(ssl, request, strlen(request)) <= 0) {
         perror("SSL_write failed");
         if (json_str) free(json_str);
@@ -122,7 +124,6 @@ cJSON* send_request(const char *method, const char *path, cJSON *json_body) {
 
     if (json_str) free(json_str);
 
-    // Чтение ответа
     while ((bytes = SSL_read(ssl, buffer, sizeof(buffer) - 1)) > 0) {
         buffer[bytes] = '\0';
 
@@ -167,11 +168,11 @@ void disconnect_websocket(void) {
 }
 
 void *websocket_thread(void *arg) {
-    (void) arg;
+    (void)arg;
     char buffer[BUFFER_SIZE];
     int bytes;
 
-    printf("WebSocket thread started.\n");
+    if (vendor.debug_mode >= 1) printf("[INFO] WebSocket thread started.\n");
 
     while (1) {
         pthread_mutex_lock(&vendor.current_user.ws_client.lock);
@@ -179,23 +180,42 @@ void *websocket_thread(void *arg) {
             pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
             break;
         }
-        pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
 
+        pthread_mutex_unlock(&vendor.current_user.ws_client.lock);
         bytes = SSL_read(vendor.current_user.ws_client.ssl, buffer, sizeof(buffer) - 1);
         if (bytes > 0) {
             buffer[bytes] = '\0';
+            char *json_start = strchr(buffer, '{');
+            if (json_start) {
+                while (*(json_start + 1) == '{') {
+                    json_start++;
+                }
 
-            char *json_start = strchr(buffer, '{');  // Locate the first JSON character
-			if (json_start) {
-				cJSON *json_message = cJSON_Parse(json_start);
-    			if (json_message) {
-        			cJSON_Delete(json_message);
-    			} else {
-        			fprintf(stderr, "Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
-    			}
-			} else {
-    			fprintf(stderr, "No JSON detected in message: %s\n", buffer);
-			}
+                cJSON *json_message = cJSON_Parse(json_start);
+
+                if (vendor.debug_mode == 1) g_print("[DEBUG] json_message\n%s\n", cJSON_Print(json_message));
+                if (json_message) {
+                    char *message = cJSON_GetObjectItem(json_message, "message")->valuestring;
+
+                    if (strcmp(message, "Friend request") == 0) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)friend_request_handler, (gpointer)json_message_copy);
+                    } else if (strcmp(message, "Send message") == 0) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)new_message_handler, (gpointer)json_message_copy);
+                    } else if (strcmp(message, "You have been added to the group") == 0) {
+                        g_print("Here\n");
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)added_to_group_handler, (gpointer)json_message_copy);
+                    }
+
+                    cJSON_Delete(json_message);
+                } else {
+                    fprintf(stderr, "[ERROR] Failed to parse JSON: %s\n", json_start);
+                }
+            } else {
+                fprintf(stderr, "[ERROR] No valid JSON found in: %s\n", buffer);
+            }
         } else if (bytes == 0) {
             printf("Server closed connection.\n");
             break;
@@ -305,7 +325,7 @@ void *connect_websocket(void *arg) {
             continue;
         }
 
-        printf("WebSocket connection established.\n");
+        if (vendor.debug_mode >= 1) printf("[INFO] WebSocket connection established.\n");
 
         pthread_t thread_id;
         if (pthread_create(&thread_id, NULL, websocket_thread, NULL) != 0) {
@@ -323,11 +343,11 @@ void *connect_websocket(void *arg) {
         SSL_free(vendor.current_user.ws_client.ssl);
         SSL_CTX_free(ctx);
 
-        printf("Reconnecting in %d seconds...\n", retry_interval);
+        if (vendor.debug_mode >= 1) printf("[INFO] Reconnecting in %d seconds...\n", retry_interval);
         sleep(retry_interval);
     }
 
-    printf("WebSocket client terminated.\n");
+    if (vendor.debug_mode >= 1) printf("[INFO] WebSocket client terminated.\n");
     return NULL;
 }
 

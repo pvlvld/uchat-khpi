@@ -54,12 +54,58 @@ static char *get_column_value(const char *sql, const char *column_name) {
     return value; // Caller is responsible for freeing with free.
 }
 
+static int record_exists(const char *sql) {
+    sqlite3_stmt *stmt;
+    int exists = 0;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return 0;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        exists = 1;
+    }
+
+    sqlite3_finalize(stmt);
+    return exists;
+}
+
+static time_t get_oldest_timestamp(void) {
+    const char *sql =
+        "SELECT MAX(timestamp) FROM ("
+        "SELECT timestamp FROM messages "
+        "UNION ALL "
+        "SELECT updated_at AS timestamp FROM users"
+        ");";
+
+    sqlite3_stmt *stmt;
+    time_t oldest_time = 0;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return 0;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        oldest_time = sqlite3_column_int64(stmt, 0);
+    } else {
+        fprintf(stderr, "No data found or query failed.\n");
+    }
+
+    sqlite3_finalize(stmt);
+    return oldest_time;
+}
+
+
 t_sql init_sql(void) {
     t_sql sql = {
         .execute_sql = execute_sql,
         .execute_query = execute_query,
         .get_column_value = get_column_value,
         .free = sqlite3_free,
+        .record_exists = record_exists,
+        .get_oldest_timestamp = get_oldest_timestamp,
     };
 
     return sql;

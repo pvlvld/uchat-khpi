@@ -75,5 +75,30 @@
     background: $emerald-900;
     padding: 8px;
     font-size: 20px;
+    transition: background-color .3s ease;
+    &.hover {
+      background: $emerald-800;
+    }
+  }
+}
+
+.modal__create-group_input {
+  border: 1px solid $emerald-900;
+}
+
+.modal__add_to_group {
+  background: $emerald-900;
+  transition: background-color .3s ease;
+  &.hover {
+    background: $emerald-800;
+  }
+}
+
+.message__image {
+  margin-top: 10px;
+  &__wrapper {
+    background: $emerald-950;
+    border-radius: 16px;
+    padding-top: 12px;
   }
 }

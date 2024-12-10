@@ -100,17 +100,58 @@ static void send_message(GtkTextView *text_view) {
     gchar *text = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 
     if (g_strcmp0(text, "") != 0) {
-        char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
-        if (encrypt) {
-            t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
-			vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt);
-            ++vendor.pages.main_page.chat.temp_message_counter;
-            add_chat_message(message_struct, 0);
+        // local encrypting
+        char *encrypt = NULL;
+        int is_good = 1;
 
-            vendor.active_chat.chat->last_message = message_struct;
+        if (vendor.active_chat.chat->type == PERSONAL) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
+            if (encrypt) {
+                char chat_id_str[50];
+                sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
 
-            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
-            free(encrypt);
+                cJSON *json_body = cJSON_CreateObject();
+                cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+                cJSON_AddStringToObject(json_body, "message", encrypt);
+
+                cJSON *response = vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
+                cJSON *error = cJSON_GetObjectItem(response, "error");
+                if (error->valueint != 0) {
+                    is_good = 0;
+                }
+
+                free(encrypt);
+            }
+        }
+        else {
+            char chat_id_str[50];
+            sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
+
+            cJSON *json_body = cJSON_CreateObject();
+            cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+            cJSON_AddStringToObject(json_body, "message", vendor.helpers.strdup(text));
+            cJSON *response = vendor.ssl_struct.send_request("POST", "/send_message", json_body);
+
+            cJSON *error = cJSON_GetObjectItem(response, "error");
+            if (error->valueint != 0) {
+                is_good = 0;
+            }
+        }
+
+        if (is_good) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
+            if (encrypt) {
+                t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
+                            vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, NULL, 0);
+                ++vendor.pages.main_page.chat.temp_message_counter;
+                add_chat_message(message_struct, 0);
+
+                vendor.active_chat.chat->last_message = message_struct;
+
+                update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 1);
+                free(encrypt);
+            }
         }
 
         gtk_text_buffer_delete(buffer, &start, &end);
@@ -150,6 +191,13 @@ static gboolean chat_input_on_key_press(GtkWidget *text_view, GdkEventKey *event
     return FALSE;
 }
 
+static gboolean button_send_message_clicked(GtkWidget *widget, GtkWidget *text_view) {
+    (void) widget;
+    send_message(GTK_TEXT_VIEW(text_view));
+
+    return FALSE;
+}
+
 // Tracking changes in the buffer for altitude updates
 static void on_text_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
     (void) buffer;
@@ -157,7 +205,7 @@ static void on_text_buffer_changed(GtkTextBuffer *buffer, gpointer user_data) {
     update_text_view_height(text_view);
 }
 
-GtkWidget *create_message_input(void) {
+GtkWidget *create_message_input(GtkWidget *message_send) {
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled_window), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     vendor.helpers.set_classname_and_id(scrolled_window, "chat__value_scroll");
@@ -178,8 +226,8 @@ GtkWidget *create_message_input(void) {
     GtkWidget *value_entry = gtk_text_view_new();
     vendor.helpers.set_classname_and_id(value_entry, "chat__value_input");
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);  // Перенос текста
-    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE); // Отключаем Tab для навигации
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);
+    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE);
     gtk_box_pack_start(GTK_BOX(message_value), value_entry, TRUE, TRUE, 0);
     gtk_text_view_set_left_margin(GTK_TEXT_VIEW(value_entry), 10);
     gtk_text_view_set_right_margin(GTK_TEXT_VIEW(value_entry), 10);
@@ -202,6 +250,8 @@ GtkWidget *create_message_input(void) {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(value_entry));
     g_signal_connect(buffer, "changed", G_CALLBACK(on_text_buffer_changed), value_entry);
     g_signal_connect(value_entry, "key-press-event", G_CALLBACK(chat_input_on_key_press), NULL);
+
+    g_signal_connect(message_send, "clicked", G_CALLBACK(button_send_message_clicked), value_entry);
 
     gtk_widget_show(value_placeholder);
     return scrolled_window;

@@ -3,6 +3,7 @@
 #include <gdk/gdk.h>
 
 GtkWidget *create_main_page(void) {
+    g_print("jwt:\n%s\n", vendor.current_user.jwt);
     pthread_mutex_init(&vendor.current_user.ws_client.lock, NULL);
     vendor.current_user.ws_client.running = 1;
     pthread_t websocket_main_thread;

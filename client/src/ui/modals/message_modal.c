@@ -64,8 +64,8 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
 
         if (vendor.active_chat.chat->last_message->message_id == message_info_struct->message_id
                 && vendor.active_chat.chat->id == (unsigned int) message_info_struct->chat_id) {
-                	vendor.active_chat.chat->last_message = NULL;
-            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+            vendor.active_chat.chat->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(message_info_struct->chat_id, 1, 1, NULL);;
+            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
         }
     }
 }
@@ -73,7 +73,8 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
 static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_struct, int x, int y, const char *text, gboolean is_full) {
     int width = 201;
 //    int height = 176;
-    int height = 126;
+    // int height = 126;
+    int height = 96;
     int window_width;
     gtk_window_get_size(GTK_WINDOW(vendor.window), &window_width, NULL);
     GtkWidget *dialog = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -98,26 +99,31 @@ static void show_modal(GtkWindow *parent, t_message_info_struct *message_info_st
     gtk_widget_set_size_request(content, width, height);
     gtk_container_add(GTK_CONTAINER(dialog), content);
 
-    GtkWidget *add_reaction_event = create_modal_button("Add Reaction", "resources/images/static/add_reaction.svg");
+    // GtkWidget *add_reaction_event = create_modal_button("Add Reaction", "resources/images/static/add_reaction.svg");
 
     GtkWidget *copy_event = create_modal_button(is_full ? "Copy text" : "Copy selected text", "resources/images/static/copy.svg");
     GtkWidget *delete_event = create_modal_button("Delete", "resources/images/static/delete.svg");
 
-    gtk_widget_set_margin_top(add_reaction_event, 8);
+ //    gtk_widget_set_margin_top(add_reaction_event, 8);
+
     gtk_widget_set_margin_bottom(delete_event, 8);
-	t_message_info_modal *message_info = malloc(sizeof(t_message_info_modal *));
+    t_message_info_modal *message_info = malloc(sizeof(t_message_info_modal *));
 
     g_signal_connect(copy_event, "button-press-event", G_CALLBACK(on_copy_clicked), (gpointer)text);
     g_signal_connect(delete_event, "button-press-event", G_CALLBACK(on_delete_clicked), message_info_struct);
 
-    gtk_box_pack_start(GTK_BOX(content), add_reaction_event, FALSE, FALSE, 0);
+    // gtk_box_pack_start(GTK_BOX(content), add_reaction_event, FALSE, FALSE, 0);
     if (vendor.current_user.user_id == message_info_struct->sender_id) {
+
         GtkWidget *edit_event = create_modal_button("Edit", "resources/images/static/edit.svg");
+        gtk_widget_set_margin_top(edit_event, 8);
         message_info->text = vendor.helpers.strdup(text);
         message_info->info = message_info_struct;
         g_signal_connect(edit_event, "button-press-event", G_CALLBACK(on_edit_clicked), message_info);
         gtk_box_pack_start(GTK_BOX(content), edit_event, FALSE, FALSE, 0);
         gtk_window_set_default_size(GTK_WINDOW(dialog), width, height + 30);
+    } else {
+        gtk_widget_set_margin_top(copy_event, 8);
     }
 
     gtk_box_pack_start(GTK_BOX(content), copy_event, FALSE, FALSE, 0);

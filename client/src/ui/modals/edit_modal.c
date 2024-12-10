@@ -82,7 +82,7 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
             if (vendor.active_chat.chat->last_message->message_id == message_struct->message_id
                 && vendor.active_chat.chat->id == (unsigned int) message_struct->chat_struct->chat_id) {
                 	vendor.active_chat.chat->last_message = message_struct;
-            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat);
+            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
                 }
             free(encrypt);
         }
@@ -91,6 +91,7 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
         vendor.modal.message_info.edit_modal.destroy();
     } else {
         g_print("Empty message, not sending.\n");
+
     }
 
     g_free(text);
@@ -148,8 +149,8 @@ static GtkWidget *create_edit_input(t_message_info_modal *message_info) {
     GtkWidget *value_entry = gtk_text_view_new();
     message_info->value_entry = value_entry;
 
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);  // Перенос текста
-    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE); // Отключаем Tab для навигации
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(value_entry), GTK_WRAP_WORD_CHAR);
+    gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(value_entry), FALSE);
     gtk_box_pack_start(GTK_BOX(message_value), value_entry, TRUE, TRUE, 0);
     gtk_text_view_set_left_margin(GTK_TEXT_VIEW(value_entry), 10);
     gtk_text_view_set_right_margin(GTK_TEXT_VIEW(value_entry), 10);

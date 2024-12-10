@@ -8,6 +8,7 @@ typedef struct {
     t_chats_struct *chat_struct;
     t_users_struct *sender_struct;
     char *message_text;
+    char *path_to_image;
     struct tm timestamp;
     struct tm edited_at;
     struct tm read_at;
@@ -15,7 +16,7 @@ typedef struct {
 
 typedef struct {
     void (*create_table)(void);
-    t_messages_struct *(*add_message)(int message_id, int chat_id, int sender_id, const char *message_text);
+    t_messages_struct *(*add_message)(int message_id, int chat_id, int sender_id, const char *message_text, const char *path_to_image, time_t timestamp);
     void (*edit_message)(int message_id, const char *new_message_text);
     t_messages_struct *(*get_messages_by_chat_id)(int chat_id, int number_of_elements, int page, int *total_messages);
     void (*free_struct)(t_messages_struct *message);

@@ -1,5 +1,82 @@
 #include "../../inc/header.h"
 
+t_chat_info *parse_chat_info_by_id(int chat_id) {
+    const char *sql =
+        "SELECT chat_id, chat_type, created_at "
+        "FROM chats WHERE chat_id = ?;";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, chat_id);
+
+    t_chat_info *chat_info = NULL;
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        chat_info = malloc(sizeof(t_chat_info));
+        if (!chat_info) {
+            printf("[ERROR] Memory allocation failed for t_chat_info structure.\n");
+            sqlite3_finalize(stmt);
+            return NULL;
+        }
+
+        chat_info->id = sqlite3_column_int(stmt, 0);
+
+        const char *type_str = (const char *)sqlite3_column_text(stmt, 1);
+        chat_info->type = (strcmp(type_str, "personal") == 0) ? PERSONAL :
+                          (strcmp(type_str, "group") == 0) ? GROUP : CHANNEL;
+
+        chat_info->timestamp = (time_t)sqlite3_column_int64(stmt, 2);
+
+        if (vendor.debug_mode == 1) {
+            printf("[DEBUG] Chat ID: %d\n", chat_info->id);
+            printf("[DEBUG] Chat Type: %d\n", chat_info->type);
+            printf("[DEBUG] Timestamp: %ld\n", chat_info->timestamp);
+        }
+
+        chat_info->path_to_logo = vendor.helpers.strdup("logo_2.jpg");
+        chat_info->unreaded_messages = 0;
+
+        if (chat_info->type == PERSONAL) {
+
+            if (vendor.debug_mode == 1) printf("[DEBUG] It's a personalized chat room\n");
+
+            int other_user_id = get_other_user_id(chat_info->id);
+            chat_info->name = get_user_name(other_user_id);
+            chat_info->path_to_logo = vendor.helpers.strdup(chat_info->name);
+            chat_info->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chat_info->id, 1, 1, NULL);
+
+        } else if (chat_info->type == GROUP) {
+            if (vendor.debug_mode == 1) printf("[DEBUG] It's a group chat\n");
+
+            chat_info->name = get_group_name_by_chat_id(chat_info->id);
+            chat_info->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chat_info->id, 1, 1, NULL);
+
+        } else {
+            chat_info->name = vendor.helpers.strdup("Unknown chat room");
+            chat_info->last_message = malloc(sizeof(t_messages_struct));
+            chat_info->last_message->message_text = vendor.helpers.strdup("No messages");
+        }
+
+        if (vendor.debug_mode == 1) {
+            printf("[DEBUG] Chat Info:\n");
+            printf("  ID: %d\n", chat_info->id);
+            printf("  Type: %d\n", chat_info->type);
+            printf("  Timestamp: %ld\n", chat_info->timestamp);
+            printf("  Name: %s\n", chat_info->name);
+        }
+    } else {
+       if (vendor.debug_mode >= 1) printf("[INFO] No chat found with ID: %d\n", chat_id);
+    }
+
+    sqlite3_finalize(stmt);
+    return chat_info;
+}
+
+
 t_chat_info **parse_chats_info(void) {
     const char *sql = "SELECT chat_id, chat_type, created_at FROM chats ORDER BY created_at DESC;";
     char **results = NULL;
@@ -55,6 +132,7 @@ t_chat_info **parse_chats_info(void) {
             if (vendor.debug_mode == 1) printf("[DEBUG] It's a personalized chat room\n");
             int other_user_id = get_other_user_id(chats_info[i]->id);
             chats_info[i]->name = get_user_name(other_user_id);
+            chats_info[i]->path_to_logo = vendor.helpers.strdup(chats_info[i]->name);
 
             chats_info[i]->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(chats_info[i]->id, 1, 1, NULL);
 

@@ -75,6 +75,8 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
     cJSON_Delete(response);
     cJSON_Delete(json_body);
 
+    g_idle_add((GSourceFunc)get_all_updates, NULL);
+
     g_task_return_boolean(task, success);
 }
 

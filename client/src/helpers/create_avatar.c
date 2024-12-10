@@ -22,15 +22,27 @@ static gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
 }
 
 GtkWidget *create_avatar(const char *path, int width, int height) {
-    GtkWidget *image = gtk_image_new_from_file(path);
+    char full_path[512];
+
+    if (!g_str_has_suffix(path, ".jpg")) {
+        snprintf(full_path, sizeof(full_path), "resources/images/avatars/%s.jpg", path);
+    } else {
+        snprintf(full_path, sizeof(full_path), "resources/images/avatars/%s", path);
+    }
+
+    if (!g_file_test(full_path, G_FILE_TEST_EXISTS)) {
+        snprintf(full_path, sizeof(full_path), "resources/images/avatars/logo_%lu.jpg", strlen(path) % 4 + 1);
+    }
+
+    GtkWidget *image = gtk_image_new_from_file(full_path);
     gtk_widget_set_size_request(image, width, height);
 
     GtkWidget *drawing_area = gtk_drawing_area_new();
-    gtk_widget_set_size_request(drawing_area, width + 10, height + 10);
+    gtk_widget_set_size_request(drawing_area, width, height);
     gtk_widget_set_valign(drawing_area, GTK_ALIGN_END);
 
     g_signal_connect(drawing_area, "draw", G_CALLBACK(on_draw), image);
 
-//    gtk_box_pack_start(GTK_BOX(message_wrapper), drawing_area, FALSE, FALSE, 4);
     return drawing_area;
 }
+
