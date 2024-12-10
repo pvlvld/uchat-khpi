@@ -35,7 +35,9 @@ static gboolean on_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data) {
 
 
 GtkWidget *create_image(const char *path, GtkWidget *message, int width) {
-    GtkWidget *image = gtk_image_new_from_file(path);
+    char full_path[512];
+    snprintf(full_path, sizeof(full_path), "resources/images/images/%s", path);
+    GtkWidget *image = gtk_image_new_from_file(full_path);
 
     GdkPixbuf *pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
     int original_width = gdk_pixbuf_get_width(pixbuf);

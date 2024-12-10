@@ -203,10 +203,15 @@ void *websocket_thread(void *arg) {
                     } else if (strcmp(message, "Send message") == 0) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)new_message_handler, (gpointer)json_message_copy);
-                    } else if (strcmp(message, "You have been added to the group") == 0) {
-                        g_print("Here\n");
+                    } else if (strcmp(message, "group_info") == 0) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)added_to_group_handler, (gpointer)json_message_copy);
+                    } else if (strcmp(message, "Edit message") == 0) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)get_edited_message_handler, (gpointer)json_message_copy);
+                    } else if (strcmp(message, "Delete message") == 0) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)delete_message_handler, (gpointer)json_message_copy);
                     }
 
                     cJSON_Delete(json_message);

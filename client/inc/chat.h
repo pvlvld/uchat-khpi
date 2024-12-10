@@ -21,6 +21,7 @@ typedef struct {
     int page;
     int shown_messages;
     int chat_id;
+    GHashTable *chat_widgets_table;
 } t_chat;
 
 typedef struct {
@@ -57,4 +58,7 @@ GtkWidget *create_message_input(GtkWidget *message_send);
 GtkWidget *create_message_box(const char *message_txt, t_message_info_struct *message_info_struct);
 gboolean set_scroll_to_bottom(gpointer data);
 void redraw_message_wrapper(t_message_info_struct *info, t_messages_struct *message_struct);
+
+GtkWidget *get_chat_widget(int chat_id);
+void remove_chat_widget(int chat_id);
 #endif //CHAT_H

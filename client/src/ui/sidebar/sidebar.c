@@ -2,15 +2,40 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 
+// static void custom_input_handler(GtkEntry *entry, gpointer user_data) {
+//     const gchar *text = gtk_entry_get_text(entry);
+//     g_print("Custom Handler: Typed Text: %s\n", text);
+//
+//     if (user_data) {
+//         g_print("Supplemental Data: %s\n", (const gchar *)user_data);
+//     }
+// }
+
 static void custom_input_handler(GtkEntry *entry, gpointer user_data) {
     const gchar *text = gtk_entry_get_text(entry);
     g_print("Custom Handler: Typed Text: %s\n", text);
 
+    GtkWidget *stretchable_box = vendor.sidebar.stretchable_box;
+
+    GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
+
+    if (children != NULL) {
+        for (GList *iter = children; iter != NULL; iter = iter->next) {
+            GtkWidget *chatblock = GTK_WIDGET(iter->data);
+            t_chat_info *chat_info = g_object_get_data(G_OBJECT(chatblock), "chat_info");
+
+            if (chat_info && chat_info->name && strstr(chat_info->name, text) != NULL) {
+                gtk_widget_show(chatblock);
+            } else {
+                gtk_widget_hide(chatblock);
+            }
+        }
+        g_list_free(children);
+    }
+
     if (user_data) {
         g_print("Supplemental Data: %s\n", (const gchar *)user_data);
     }
-
-    gtk_entry_set_text(entry, "");
 }
 
 static GtkWidget *init_search(void) {

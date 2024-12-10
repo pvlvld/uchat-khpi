@@ -54,11 +54,17 @@ static t_messages_struct *add_message(int message_id, int chat_id, int sender_id
     message->message_id = message_id;
     message->chat_struct = vendor.database.tables.chats_table.get_chat_by_id(chat_id);
     message->sender_struct = vendor.database.tables.users_table.get_user_by_id(sender_id);
-    char *decrypt = vendor.crypto.decrypt_data_from_db(message_text);
-    if (decrypt) {
-        message->message_text = vendor.helpers.strdup(decrypt);
-        free(decrypt);
+
+    if (!path_to_image) {
+        char *decrypt = vendor.crypto.decrypt_data_from_db(message_text);
+        if (decrypt) {
+            message->message_text = vendor.helpers.strdup(decrypt);
+            free(decrypt);
+        }
+    } else {
+        message->message_text = "";
     }
+
 
     message->path_to_image = path_to_image ? vendor.helpers.strdup(path_to_image) : NULL;
 
@@ -114,6 +120,10 @@ static t_messages_struct *get_message_by_chat_id_and_message_id(int chat_id, int
 
     message->path_to_image = results[cols * 1 + 4] ? vendor.helpers.strdup(results[cols * 1 + 4]) : NULL;
 
+    if (message->path_to_image[0] == '\0') {
+        message->path_to_image = NULL;
+    }
+
     time_t timestamp = (time_t)(atoll(results[cols * 1 + 5]));
     localtime_r(&timestamp, &message->timestamp);
 
@@ -128,8 +138,6 @@ static t_messages_struct *get_message_by_chat_id_and_message_id(int chat_id, int
         time_t edited_at_timestamp = (time_t)(atoll(results[cols * 1 + 7]));
         localtime_r(&edited_at_timestamp, &message->edited_at);
     }
-
-    g_print("Here\n");
 
     return message;
 }

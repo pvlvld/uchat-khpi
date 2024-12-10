@@ -2,6 +2,7 @@ CC = clang
 
 # Path for header files, including GTK3+ via pkg-config
 CFLAGS = -std=c11 \
+         -g \
          -Wall \
          -Wextra \
          -Werror \

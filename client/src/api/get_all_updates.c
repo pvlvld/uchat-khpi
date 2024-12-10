@@ -96,19 +96,24 @@ gboolean get_all_updates(gpointer user_data) {
 
     cJSON *response = vendor.ssl_struct.send_request("GET", "/get_all_updates", json_body);
     cJSON *code = cJSON_GetObjectItem(response, "code");
-    if (strcmp(code->valuestring, "SUCCESS") == 0) {
-        cJSON *updates = cJSON_GetObjectItem(response, "updates");
+    if (code != NULL) {
+        if (strcmp(code->valuestring, "SUCCESS") == 0) {
+            cJSON *updates = cJSON_GetObjectItem(response, "updates");
 
-        if (updates != NULL) {
-            cJSON *personal_chats_json = cJSON_GetObjectItem(updates, "personal_chats");
-            update_chats(personal_chats_json);
+            if (updates != NULL) {
+                cJSON *personal_chats_json = cJSON_GetObjectItem(updates, "personal_chats");
+                update_chats(personal_chats_json);
 
-            cJSON *group_chats_json = cJSON_GetObjectItem(updates, "group_chats");
-            update_chats(group_chats_json);
+                cJSON *group_chats_json = cJSON_GetObjectItem(updates, "group_chats");
+                update_chats(group_chats_json);
+            }
+        } else {
+            g_print("Error with updates\n");
         }
     } else {
         g_print("Error with updates\n");
     }
+
 
     return FALSE;
 }

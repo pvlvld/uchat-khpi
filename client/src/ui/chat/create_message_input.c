@@ -103,6 +103,7 @@ static void send_message(GtkTextView *text_view) {
         // local encrypting
         char *encrypt = NULL;
         int is_good = 1;
+        int message_id = 0;
 
         if (vendor.active_chat.chat->type == PERSONAL) {
             encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
@@ -119,6 +120,8 @@ static void send_message(GtkTextView *text_view) {
                 cJSON *error = cJSON_GetObjectItem(response, "error");
                 if (error->valueint != 0) {
                     is_good = 0;
+                } else {
+                    message_id = cJSON_GetObjectItem(response, "message_id")->valueint;
                 }
 
                 free(encrypt);
@@ -136,13 +139,15 @@ static void send_message(GtkTextView *text_view) {
             cJSON *error = cJSON_GetObjectItem(response, "error");
             if (error->valueint != 0) {
                 is_good = 0;
+            } else {
+                message_id = cJSON_GetObjectItem(response, "message_id")->valueint;
             }
         }
 
         if (is_good) {
             encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
             if (encrypt) {
-                t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(vendor.database.tables.messages_table.get_total_messages() + 1,
+                t_messages_struct *message_struct = vendor.database.tables.messages_table.add_message(message_id,
                             vendor.active_chat.chat->id, vendor.current_user.user_id, encrypt, NULL, 0);
                 ++vendor.pages.main_page.chat.temp_message_counter;
                 add_chat_message(message_struct, 0);

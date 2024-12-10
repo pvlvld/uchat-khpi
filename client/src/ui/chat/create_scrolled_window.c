@@ -1,5 +1,37 @@
 #include "../../../inc/header.h"
 
+static void init_chat_widgets_table(void) {
+    if (vendor.pages.main_page.chat.chat_widgets_table == NULL) {
+        vendor.pages.main_page.chat.chat_widgets_table = g_hash_table_new_full(g_int_hash, g_int_equal, g_free, NULL);
+    }
+}
+
+static void add_chat_widget(int chat_id, GtkWidget *message_wrapper) {
+    if (vendor.pages.main_page.chat.chat_widgets_table == NULL) {
+        init_chat_widgets_table();
+    }
+
+    int *key = g_new(int, 1);
+    *key = chat_id;
+
+    g_hash_table_insert(vendor.pages.main_page.chat.chat_widgets_table, key, message_wrapper);
+}
+
+GtkWidget *get_chat_widget(int chat_id) {
+    if (vendor.pages.main_page.chat.chat_widgets_table == NULL) {
+        g_warning("Chat widgets table is not initialized.");
+        return NULL;
+    }
+
+    return GTK_WIDGET(g_hash_table_lookup(vendor.pages.main_page.chat.chat_widgets_table, &chat_id));
+}
+
+void remove_chat_widget(int chat_id) {
+    if (vendor.pages.main_page.chat.chat_widgets_table != NULL) {
+        g_hash_table_remove(vendor.pages.main_page.chat.chat_widgets_table, &chat_id);
+    }
+}
+
 static void on_sender_event_box_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
     (void) widget;
     (void) event;
@@ -79,6 +111,8 @@ static int draw_chat(GtkWidget *message_wrapper, t_messages_struct *message_stru
     }
 
     gtk_box_pack_start(GTK_BOX(message_wrapper), event_box, FALSE, FALSE, 0);
+
+    add_chat_widget(message_struct->message_id, message_wrapper);
 
     if (message_struct->path_to_image == NULL) {
         t_message_info_struct *message_info_struct = g_new(t_message_info_struct, 1);
@@ -174,20 +208,19 @@ static void clear_widget(GtkWidget *container) {
     g_list_free(children);
 }
 
-
 void redraw_message_wrapper(t_message_info_struct *info, t_messages_struct *message_struct) {
     clear_widget(info->widget);
-    draw_chat(info->widget, message_struct, 0, 0);
+    draw_chat(info->widget, message_struct, info->sender_id != vendor.current_user.user_id, 0);
 
     gtk_widget_queue_resize(info->widget);
     gtk_widget_show_all(info->widget);
 
-    GtkWidget *stretchable_box = info->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+    // GtkWidget *stretchable_box = info->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
 
-    int height = gtk_widget_get_allocated_height(info->widget);
-    int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
-
-    gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
+    // int height = gtk_widget_get_allocated_height(info->widget);
+    // int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+    //
+    // gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
 }
 
 void add_chat_message(t_messages_struct *message, int is_received) {

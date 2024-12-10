@@ -74,17 +74,65 @@ static void update_message(GtkTextView *text_view, t_message_info_modal *message
 
     if (g_strcmp0(text, "") != 0) {
 
-        char *encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
-        if (encrypt) {
-            t_messages_struct *message_struct = vendor.database.tables.messages_table.edit_message_and_get(message_info->info->message_id, message_info->info->chat_id, encrypt);
-            redraw_message_wrapper(message_info->info, message_struct);
+        char *encrypt = NULL;
+        int is_good = 1;
 
-            if (vendor.active_chat.chat->last_message->message_id == message_struct->message_id
-                && vendor.active_chat.chat->id == (unsigned int) message_struct->chat_struct->chat_id) {
-                	vendor.active_chat.chat->last_message = message_struct;
-            		update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
+        if (vendor.active_chat.chat->type == PERSONAL) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.active_chat.recipient_public_key, text);
+            if (encrypt) {
+                char chat_id_str[50];
+                sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
+
+                char message_id_str[50];
+                sprintf(message_id_str, "%d", message_info->info->message_id);
+
+                cJSON *json_body = cJSON_CreateObject();
+                cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+                cJSON_AddStringToObject(json_body, "message_id", message_id_str);
+                cJSON_AddStringToObject(json_body, "message", encrypt);
+
+                cJSON *response = vendor.ssl_struct.send_request("POST", "/edit_message", json_body);
+
+                cJSON *error = cJSON_GetObjectItem(response, "error");
+                if (error->valueint != 0) {
+                    is_good = 0;
+                    g_print("message_id: %s\nchat_id: %s\n", chat_id_str, message_id_str);
                 }
-            free(encrypt);
+
+                free(encrypt);
+            }
+        }
+        else {
+            char chat_id_str[50];
+            sprintf(chat_id_str, "%d", vendor.active_chat.chat->id);
+
+            char message_id_str[50];
+            sprintf(message_id_str, "%d", message_info->info->message_id);
+
+            cJSON *json_body = cJSON_CreateObject();
+            cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+            cJSON_AddStringToObject(json_body, "message_id", message_id_str);
+            cJSON_AddStringToObject(json_body, "message", vendor.helpers.strdup(text));
+            cJSON *response = vendor.ssl_struct.send_request("POST", "/edit_message", json_body);
+
+            cJSON *error = cJSON_GetObjectItem(response, "error");
+            if (error->valueint != 0) {
+                is_good = 0;
+            }
+        }
+        if (is_good) {
+            encrypt = vendor.crypto.encrypt_data_for_db(vendor.crypto.public_key_str, text);
+            if (encrypt) {
+                t_messages_struct *message_struct = vendor.database.tables.messages_table.edit_message_and_get(message_info->info->message_id, message_info->info->chat_id, encrypt);
+                redraw_message_wrapper(message_info->info, message_struct);
+
+                if (vendor.active_chat.chat->last_message->message_id == message_struct->message_id
+                    && vendor.active_chat.chat->id == (unsigned int) message_struct->chat_struct->chat_id) {
+                    vendor.active_chat.chat->last_message = message_struct;
+                    update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
+                    }
+                free(encrypt);
+            }
         }
 
         gtk_text_buffer_delete(buffer, &start, &end);
