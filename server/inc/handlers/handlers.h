@@ -1,6 +1,8 @@
 #ifndef HANDLERS_H
 #define HANDLERS_H
 
+#pragma once
+
 #include "../header.h"
 #include "middleware.h"
 #include "post.h"
