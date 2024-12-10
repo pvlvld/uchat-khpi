@@ -17,5 +17,6 @@ gboolean added_to_group_handler(gpointer user_data);
 gboolean get_all_updates(gpointer user_data);
 gboolean get_edited_message_handler(gpointer user_data);
 gboolean delete_message_handler(gpointer user_data);
+gboolean delete_friend_handler(gpointer user_data);
 
 #endif //API_H

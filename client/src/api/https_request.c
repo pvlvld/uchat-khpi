@@ -159,7 +159,6 @@ cJSON *send_request(const char *method, const char *path, cJSON *json_body) {
     return json_response;
 }
 
-
 void disconnect_websocket(void) {
     pthread_mutex_lock(&vendor.current_user.ws_client.lock);
     vendor.current_user.ws_client.running = 0;
@@ -203,7 +202,7 @@ void *websocket_thread(void *arg) {
                     } else if (strcmp(message, "Send message") == 0) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)new_message_handler, (gpointer)json_message_copy);
-                    } else if (strcmp(message, "group_info") == 0) {
+                    } else if (strcmp(message, "Added to the group") == 0) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)added_to_group_handler, (gpointer)json_message_copy);
                     } else if (strcmp(message, "Edit message") == 0) {
@@ -212,6 +211,9 @@ void *websocket_thread(void *arg) {
                     } else if (strcmp(message, "Delete message") == 0) {
                         cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
                         g_idle_add((GSourceFunc)delete_message_handler, (gpointer)json_message_copy);
+                    } else if (strcmp(message, "Delete friend") == 0) {
+                        cJSON *json_message_copy = cJSON_Duplicate(json_message, 1);
+                        g_idle_add((GSourceFunc)delete_friend_handler, (gpointer)json_message_copy);
                     }
 
                     cJSON_Delete(json_message);

@@ -14,9 +14,19 @@ static void on_invite_clicked(GtkWidget *widget, GdkEventButton *event, t_chat_i
 static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, t_chat_info *chat_info) {
     (void) widget;
     if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
-        delete_chat_sidebar(vendor.pages.main_page.sidebar.widget, chat_info->id);
-        vendor.modal.chat_info.destroy();
-        vendor.database.tables.chats_table.delete_chat_and_related_data(chat_info->id, chat_info->type);
+        if (chat_info->type == PERSONAL) {
+            t_users_struct *user_struct = vendor.database.tables.users_table.get_user_from_chat(chat_info->id);
+            cJSON *json_body = cJSON_CreateObject();
+            cJSON_AddStringToObject(json_body, "username", vendor.helpers.strdup(user_struct->username));
+
+            cJSON *response = vendor.ssl_struct.send_request("POST", "/delete_friend", json_body);
+            cJSON *error = cJSON_GetObjectItem(response, "error");
+            if (error->valueint == 0) {
+                delete_chat_sidebar(vendor.pages.main_page.sidebar.widget, chat_info->id);
+                vendor.modal.chat_info.destroy();
+                vendor.database.tables.chats_table.delete_chat_and_related_data(chat_info->id, chat_info->type);
+            }
+        }
     }
 }
 
