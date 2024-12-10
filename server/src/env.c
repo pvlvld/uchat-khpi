@@ -1,9 +1,9 @@
 #include "../inc/env.h"
-
+#include "sys/socket.h"
 t_env init_env(void) {
     const t_env env = {
         .port = 8080,
-		.max_clients = 256,
+		.max_clients = SOMAXCONN,
 		.dev_mode = 1,
         .db_name = "name.db",
         .jwt_secret_key = "your_secret_key",

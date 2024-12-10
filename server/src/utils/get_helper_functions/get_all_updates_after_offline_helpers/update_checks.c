@@ -66,7 +66,7 @@ PGresult *get_group_members(PGconn *conn, int chat_id) {
 
 PGresult *is_group_updated(PGconn *conn, int chat_id, time_t timestamp) {
     const char *query =
-        "SELECT chat_id, group_name, about "
+        "SELECT chat_id, group_name "
         "FROM group_chats "
         "WHERE chat_id = $1 AND updated_at > to_timestamp($2)";
 

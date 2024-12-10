@@ -137,7 +137,7 @@ void get_all_updates_rout(SSL *ssl, const char *request) {
     // Extract the user ID, timestamp, and token
     char *user_id_str = extract_user_id(json);
     char *timestamp = extract_timestamp(json);
-    char *jwt_token = get_sender_id_from_token(request);
+    char *jwt_token = extract_bearer_token(request);
 
     if (!user_id_str || !timestamp || !jwt_token) {
         cJSON_AddBoolToObject(response_json, "error", true);

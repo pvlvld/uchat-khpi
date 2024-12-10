@@ -107,7 +107,7 @@ void is_user_allowed_to_edit(PGconn *conn, int chat_id, int req_sender_id, int m
 }
 
 EditMessageResult_t perform_message_edit(PGconn *conn, int chat_id, int req_sender_id, int message_id, char *new_message_text_str) {
-    EditMessageResult_t edit_message_result = {.Error = 0, .error_code = NULL, .message_id = -1, .timestamp = NULL};
+    EditMessageResult_t edit_message_result = {.Error = 0, .error_code = NULL, .message_id = -1, .timestamp = NULL, .new_message_text = NULL};
     is_user_allowed_to_edit(conn, chat_id, req_sender_id, message_id, &edit_message_result);
     if (edit_message_result.Error == 1) {
         return edit_message_result;
@@ -129,7 +129,7 @@ EditMessageResult_t perform_message_edit(PGconn *conn, int chat_id, int req_send
         edit_message_result.error_code = "EDIT_MESSAGE_TIMESTAMP_ERROR";
         return edit_message_result;
     }
-
+    edit_message_result.new_message_text = new_message_text_str;
     return edit_message_result;
 }
 

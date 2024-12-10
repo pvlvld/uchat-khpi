@@ -51,7 +51,7 @@ bool send_ws_delete_message(PGconn *conn, int chat_id, int sender_id, deleteMess
     const char *chat_type = get_chat_type_ptr(conn, chat_id);
     if (strcmp(chat_type, "personal") == 0) {
         int recipient_id = get_dm_recipient_id(conn, chat_id, sender_id);
-        if (!is_user_online(recipient_id)) { return 0; }
+        if (!is_user_online(recipient_id)) { printf ("recipient not online\n"); return 0; }
         cJSON *json_message = create_message_json(sender_id, "Delete message");
         cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
         cJSON_AddNumberToObject(json_message, "message_id", result.message_id);

@@ -7,6 +7,7 @@ bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id, EditMessageR
         cJSON *json_message = create_message_json(sender_id, "Edit message");
         cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
         cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+        cJSON_AddStringToObject(json_message, "new_message_text", result.new_message_text);
         cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
         _send_message_to_client(recipient_id, json_message);
         cJSON_Delete(json_message);
@@ -20,6 +21,7 @@ bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id, EditMessageR
             cJSON *json_message = create_message_json(sender_id, "Edit message");
             cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
             cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "new_message_text", result.new_message_text);
             cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
@@ -35,6 +37,7 @@ bool send_ws_edit_message(PGconn *conn, int chat_id, int sender_id, EditMessageR
             cJSON *json_message = create_message_json(sender_id, "Edit message");
             cJSON_AddNumberToObject(json_message, "chat_id", chat_id);
             cJSON_AddNumberToObject(json_message, "message_id", result.message_id);
+            cJSON_AddStringToObject(json_message, "new_message_text", result.new_message_text);
             cJSON_AddStringToObject(json_message, "timestamp", result.timestamp);
             _send_message_to_client(recipient_id, json_message);
             cJSON_Delete(json_message);
@@ -100,6 +103,7 @@ void send_edit_message_response(SSL *ssl, EditMessageResult_t *edit_message_resu
         cJSON_AddStringToObject(response_json, "code", "SUCCESS");
         cJSON_AddStringToObject(response_json, "message", "Message edited successfully.");
         cJSON_AddNumberToObject(response_json, "message_id", edit_message_result->message_id);
+        cJSON_AddStringToObject(response_json, "new_message_text", edit_message_result->new_message_text);
         cJSON_AddStringToObject(response_json, "timestamp", edit_message_result->timestamp);
         vendor.server.https.send_https_response(ssl, "200 OK", "application/json", cJSON_Print(response_json));
     }

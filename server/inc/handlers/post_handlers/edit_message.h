@@ -9,6 +9,7 @@ typedef struct {
     char *error_code;
     int message_id;        // ID of the message being edited
     char *timestamp;    // Timestamp of the last operation
+    char *new_message_text;
 } EditMessageResult_t;
 
 EditMessageResult_t perform_message_edit(PGconn *conn, int chat_id, int req_sender_id, int message_id, char *new_message_text_str);
