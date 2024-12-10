@@ -19,6 +19,7 @@ LDFLAGS = -L../libraries/sqlite/lib \
           -L../libraries/precompiled/ubuntu/lib \
           -lsqlite3 \
           -lcjson \
+          -lc \
           -lssl \
           -lcrypto \
           $(shell pkg-config --libs gtk+-3.0) \
