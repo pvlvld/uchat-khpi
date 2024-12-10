@@ -220,7 +220,6 @@ cJSON *get_full_group_info(PGconn *conn, int chat_id, int sender_id) {
     }
 
     // Add group details to group_info JSON
-    cJSON_AddStringToObject(group_info, "message", "group_info");
     cJSON_AddStringToObject(group_info, "message", "Added to the group");
     cJSON_AddNumberToObject(group_info, "sender_id", sender_id);
     cJSON_AddNumberToObject(group_info, "chat_id", chat_id);
