@@ -19,7 +19,7 @@ void start_server(void) {
     }
 
     if (pid > 0) {
-        printf("Daemon PID: %d\n", pid);
+        printf("Uchat Server started with PID %d on port %d\n", pid, vendor.server.port);
         exit(EXIT_SUCCESS);
     }
 

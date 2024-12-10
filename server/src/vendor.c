@@ -4,8 +4,8 @@
 
 t_vendor vendor;
 
-void init_vendor(t_vendor *vendor) {
-    vendor->env = init_env();
+void init_vendor(t_vendor *vendor, int port) {
+    vendor->env = init_env(port);
 
     vendor->database = *init_database();
     vendor->server = init_server();

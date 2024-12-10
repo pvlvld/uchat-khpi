@@ -28,6 +28,6 @@ typedef struct {
 // Declaring a global variable
 extern t_vendor vendor;
 
-void init_vendor(t_vendor *vendor);
+void init_vendor(t_vendor *vendor, int port);
 
 #endif //HEADER_H

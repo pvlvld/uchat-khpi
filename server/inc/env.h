@@ -18,6 +18,6 @@ typedef struct {
     const char *recipient_phone_number;
 } t_env;
 
-t_env init_env(void);
+t_env init_env(int port);
 
 #endif //ENV_H
