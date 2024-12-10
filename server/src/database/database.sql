@@ -62,6 +62,12 @@ CREATE TABLE group_chats (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE group_chat_members (
+    chat_id INT REFERENCES group_chats(chat_id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    role e_chat_member_type DEFAULT 'member',
+    PRIMARY KEY (chat_id, user_id)
+);
 
 
 CREATE TABLE messages (

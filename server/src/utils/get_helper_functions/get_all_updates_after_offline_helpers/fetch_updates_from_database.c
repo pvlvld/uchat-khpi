@@ -171,7 +171,7 @@ void get_updates_personal_chats(PGconn *conn, PGresult *chat_list, cJSON *person
                 char *content = PQgetvalue(messages, k, 3);               // message_text (Column 4)
                 char *edited_at = PQgetvalue(messages, k, 5);             // edited_at (Column 6)
                 char *deleted_at = PQgetvalue(messages, k, 6);            // deleted_at (Column 7)
-                char *timestamp = PQgetvalue(messages, k, 11);            // timestamp (Column 12)
+                char *timestamp = PQgetvalue(messages, k, 12);            // timestamp (Column 12)
 
                 printf("[DEBUG] message_id %d\n", message_id);
 
