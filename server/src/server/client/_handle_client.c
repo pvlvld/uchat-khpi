@@ -158,7 +158,6 @@ void *_handle_client(void *client_socket) {
     }
 
     vendor.server.client_settings.remove_client(ssl);
-    SSL_shutdown(ssl);
     SSL_free(ssl);
     close(sock);
 
