@@ -16,7 +16,7 @@ CFLAGS = -std=c11 \
 # Path for libraries, including GTK3+ via pkg-config
 LDFLAGS = -L../libraries/sqlite/lib \
           -L../libraries/cJSON/lib \
-          -L../libraries/precompilied/ubuntu/lib \
+          -L../libraries/precompiled/ubuntu/lib \
           -lsqlite3 \
           -lcjson \
           -lssl \
@@ -24,7 +24,7 @@ LDFLAGS = -L../libraries/sqlite/lib \
           $(shell pkg-config --libs gtk+-3.0) \
           -Wl,-rpath,../libraries/sqlite/lib \
           -Wl,-rpath,../libraries/cJSON/lib \
-          -Wl,-rpath,../libraries/precompilied/ubuntu/lib
+          -Wl,-rpath,../libraries/precompiled/ubuntu/lib
 
 SRC_DIR = src
 OBJ_DIR = obj
