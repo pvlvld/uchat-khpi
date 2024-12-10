@@ -27,7 +27,7 @@ static time_t parse_timestamp(const char *timestamp_str) {
 static gboolean delayed_message_receipt(gpointer user_data) {
     t_api_message_struct *api_message = (t_api_message_struct *)user_data;
 
-    message_receipt(vendor.pages.main_page.sidebar.widget, api_message);
+    message_receipt(vendor.pages.main_page.sidebar.widget, api_message, 0);
 
     return G_SOURCE_REMOVE;
 }
@@ -109,7 +109,6 @@ gboolean get_all_updates(gpointer user_data) {
     } else {
         g_print("Error with updates\n");
     }
-
 
     return FALSE;
 }

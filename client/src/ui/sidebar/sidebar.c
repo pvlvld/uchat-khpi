@@ -22,7 +22,7 @@ static GtkWidget *init_search(void) {
     return entry_wrapper;
 }
 
-void message_receipt(GtkWidget *widget, t_api_message_struct *message) {
+void message_receipt(GtkWidget *widget, t_api_message_struct *message, int is_new) {
     GtkWidget *stretchable_box = g_object_get_data(G_OBJECT(widget), "stretchable_box");
 
     GList *children = gtk_container_get_children(GTK_CONTAINER(stretchable_box));
@@ -47,12 +47,12 @@ void message_receipt(GtkWidget *widget, t_api_message_struct *message) {
                 if (vendor.active_chat.chat->id == chat_info->id) {
                     g_print("message_struct == NULL: %d\n", message_struct == NULL);
                     add_chat_message(message_struct, 1);
-                } else {
+                } else if (is_new) {
                     chat_info->unreaded_messages++;
                     vendor.helpers.show_notification("New notification", "New message");
                     vendor.popup.add_message("New message");
                 }
-            } else {
+            } else if (is_new) {
                 chat_info->unreaded_messages++;
                 vendor.helpers.show_notification("New notification", "New message");
                 vendor.popup.add_message("New message");
