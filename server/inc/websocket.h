@@ -1,8 +1,8 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
-#include <openssl/ssl.h>
-#include <openssl/err.h>
+#include "../../libraries/openssl/err.h"
+#include "../../libraries/openssl/ssl.h"
 #include "../../libraries/cJSON/cJSON.h"
 
 #define BUFFER_SIZE 4096

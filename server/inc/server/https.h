@@ -1,7 +1,8 @@
 #ifndef HTTPS_H
 #define HTTPS_H
 
-#include <openssl/ssl.h>
+#include "../../../libraries/openssl/ssl.h"
+
 
 typedef struct {
     void (*handle_https_request)(SSL *ssl, const char *request);

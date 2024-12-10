@@ -2,10 +2,10 @@
 #define JSON_WEB_TOKEN_H
 
 #include "../../libraries/cJSON/cJSON.h"
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
-#include <openssl/bio.h>
-#include <openssl/buffer.h>
+#include "../../libraries/openssl/hmac.h"
+#include "../../libraries/openssl/evp.h"
+#include "../../libraries/openssl/bio.h"
+#include "../../libraries/openssl/buffer.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <openssl/err.h>
+#include "../../../libraries/openssl/err.h"
 #include "../../../libraries/cJSON/cJSON.h"
 
 typedef struct {
