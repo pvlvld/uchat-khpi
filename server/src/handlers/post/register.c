@@ -118,6 +118,7 @@ void register_rout(SSL *ssl, const char *request) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "USER_CREATION_FAILED");
         cJSON_AddStringToObject(response_json, "message", "Unable to register user.");
+        cJSON_AddNumberToObject(response_json, "user_id", user_id);
         vendor.server.https.send_https_response(ssl, "500 Internal Server Error", "application/json", cJSON_Print(response_json));
         free(password_hash);
         free(salt);

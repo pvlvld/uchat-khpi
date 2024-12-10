@@ -30,7 +30,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP DEFAULT NULL,
-    password_salt VARCHAR(256) NOT NULL
+    password_salt BYTEA NOT NULL
 );
 
 CREATE TABLE user_contacts (
