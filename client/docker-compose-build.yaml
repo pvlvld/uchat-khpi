@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+    client:
+        build:
+            context: ../
+            dockerfile: client/build-client
+        volumes:
+            - ./:/app/out
