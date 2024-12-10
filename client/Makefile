@@ -8,6 +8,7 @@ CFLAGS = -std=c11 \
          -Wpedantic \
          -I/usr/include \
          -I../libraries/sqlite/inc \
+         -I../libraries/glibc/include \
          -I../libraries/cJSON/inc \
          -I../libraries/openssl \
          -I./inc \
