@@ -20,6 +20,7 @@ char *mx_strdup(const char *s1);
 
 char *hash_password(const char *password, const char *salt);
 char *generate_salt(void);
+int timing_safe_compare(const void *a, const void *b, unsigned long len);
 
 char *get_sender_from_token(const char *request);
 

@@ -77,7 +77,7 @@ void login_rout(SSL *ssl, const char *request) {
     char *stored_password_salt = PQgetvalue(res, 0, 13);
     char *password_hash = hash_password(password, stored_password_salt);
 
-    if (strcmp(stored_password_hash, password_hash) != 0) {
+    if (timing_safe_compare(stored_password_hash, password_hash, strlen(stored_password_hash)) != 0) {
         cJSON_AddStringToObject(response_json, "message", "Invalid login or password.");
         vendor.server.https.send_https_response(ssl, "401 Unauthorized", "application/json",
                                                 cJSON_Print(response_json));
