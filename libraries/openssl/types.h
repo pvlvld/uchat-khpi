@@ -29,9 +29,9 @@
 extern "C" {
 # endif
 
-# include <openssl/e_os2.h>
-# include <openssl/safestack.h>
-# include <openssl/macros.h>
+# include "e_os2.h"
+# include "safestack.h"
+# include "macros.h"
 
 # if OPENSSL_VERSION_MAJOR >= 4
 #  define OSSL_FUTURE_CONST const
