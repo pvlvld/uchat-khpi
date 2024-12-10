@@ -4,6 +4,7 @@
 #pragma once
 
 #include "../../libraries/cJSON/cJSON.h"
+#include "database/tables/user_contacts_table.h"
 #include "database/database_pool.h"
 #include "database/tables/messages_table.h"
 #include "database/tables/personal_chat_table.h"
@@ -22,6 +23,7 @@ typedef struct {
     t_chats_table chat_table;
     t_group_chats_table group_chats_table;
     t_group_chat_members_table group_chat_members_table;
+    t_user_contacts_table user_contacts_table;
 } t_database;
 
 t_database *init_database(void);
