@@ -81,11 +81,9 @@ gboolean added_to_group_handler(gpointer user_data) {
 
         t_users_struct *user = vendor.database.tables.users_table.get_user_by_username(member_username);
         if (user == NULL) {
-            g_print("User is null 1\n");
             user = add_friend(member_username);
         }
         if (user == NULL) {
-            g_print("User is null 2\n");
             continue;
         } else {
             g_print("Add member\n");

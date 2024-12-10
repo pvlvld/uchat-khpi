@@ -48,7 +48,6 @@ gboolean new_message_handler(gpointer user_data) {
 
     char *decrypted_message = message;
 
-
     if (vendor.database.tables.chats_table.get_chat_by_id(api_message->chat_id)->chat_type == PERSONAL) {
         decrypted_message = vendor.helpers.strdup(vendor.crypto.decrypt_data_from_db(message));
     }

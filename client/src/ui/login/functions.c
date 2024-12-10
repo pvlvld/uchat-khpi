@@ -70,12 +70,11 @@ static void perform_request_async(GTask *task, gpointer source_object, gpointer 
     if (token != NULL) {
         vendor.current_user.jwt = vendor.helpers.strdup(token->valuestring);
         success = TRUE;
+        g_idle_add((GSourceFunc)get_all_updates, NULL);
     }
 
     cJSON_Delete(response);
     cJSON_Delete(json_body);
-
-    g_idle_add((GSourceFunc)get_all_updates, NULL);
 
     g_task_return_boolean(task, success);
 }

@@ -173,6 +173,54 @@ static t_users_struct *get_user_by_username(const char *username) {
     return user;
 }
 
+static t_users_struct *get_user_from_chat(int chat_id) {
+    if (vendor.current_user.user_id == 0) {
+        printf("[ERROR] Current user ID is not set.\n");
+        return NULL;
+    }
+
+    const char *sql =
+        "SELECT u.user_id, u.username, u.user_login, u.about, u.is_online, u.public_key, u.updated_at "
+        "FROM personal_chats pc "
+        "JOIN users u ON (pc.user1_id = u.user_id OR pc.user2_id = u.user_id) "
+        "WHERE pc.chat_id = ? AND u.user_id != ?;";
+
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare_v2(vendor.database.db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("[ERROR] Failed to prepare SQL statement: %s\n", sqlite3_errmsg(vendor.database.db));
+        return NULL;
+    }
+
+    sqlite3_bind_int(stmt, 1, chat_id);
+    sqlite3_bind_int(stmt, 2, vendor.current_user.user_id);
+
+    t_users_struct *user = NULL;
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        user = (t_users_struct *)malloc(sizeof(t_users_struct));
+        if (user == NULL) {
+            printf("[ERROR] Memory allocation failed.\n");
+            sqlite3_finalize(stmt);
+            return NULL;
+        }
+
+        user->user_id = sqlite3_column_int(stmt, 0);
+        user->username = vendor.helpers.strdup((const char *)sqlite3_column_text(stmt, 1));
+        user->user_login = vendor.helpers.strdup((const char *)sqlite3_column_text(stmt, 2));
+        user->about = sqlite3_column_text(stmt, 3) ? vendor.helpers.strdup((const char *)sqlite3_column_text(stmt, 3)) : NULL;
+        user->is_online = sqlite3_column_int(stmt, 4);
+        user->public_key = vendor.helpers.strdup((const char *)sqlite3_column_text(stmt, 5));
+
+        time_t timestamp = (time_t)sqlite3_column_int64(stmt, 6);
+        localtime_r(&timestamp, &user->updated_at);
+    } else {
+        printf("[INFO] No user found for chat_id: %d.\n", chat_id);
+    }
+
+    sqlite3_finalize(stmt);
+    return user;
+}
+
 
 t_users_table init_users_table(void) {
     t_users_table table = {
@@ -182,6 +230,7 @@ t_users_table init_users_table(void) {
         .add_user = add_user,
         .get_peer_public_key = get_peer_public_key,
         .get_user_by_username = get_user_by_username,
+        .get_user_from_chat = get_user_from_chat,
     };
 
     return table;

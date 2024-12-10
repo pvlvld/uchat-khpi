@@ -51,22 +51,44 @@ static void on_delete_clicked(GtkWidget *widget, GdkEventButton *event, gpointer
     if (event->type == GDK_BUTTON_PRESS && event->button == 1) {
         t_message_info_struct *message_info_struct = (t_message_info_struct *)user_data;
 
-        GtkWidget *stretchable_box = message_info_struct->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+        char chat_id_str[32];
+        sprintf(chat_id_str, "%d", message_info_struct->chat_id);
 
-        int height = gtk_widget_get_allocated_height(message_info_struct->widget);
-        int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+        char message_id_str[32];
+        sprintf(message_id_str, "%d", message_info_struct->message_id);
 
-        gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
-        gtk_widget_destroy(message_info_struct->widget);
+        cJSON *json_body = cJSON_CreateObject();
+        cJSON_AddStringToObject(json_body, "chat_id", chat_id_str);
+        cJSON_AddStringToObject(json_body, "message_id", message_id_str);
 
-        vendor.modal.message_info.destroy();
-        vendor.database.tables.messages_table.delete_message(message_info_struct->message_id, message_info_struct->chat_id);
+        g_print("%s\n", cJSON_Print(json_body));
 
-        if (vendor.active_chat.chat->last_message->message_id == message_info_struct->message_id
-                && vendor.active_chat.chat->id == (unsigned int) message_info_struct->chat_id) {
-            vendor.active_chat.chat->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(message_info_struct->chat_id, 1, 1, NULL);;
-            update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
+        cJSON *response = vendor.ssl_struct.send_request("POST", "/delete_message", json_body);
+
+        g_print("response\n:%s\n", cJSON_Print(response));
+
+        cJSON *error = cJSON_GetObjectItem(response, "error");
+
+        if (error->valueint == 0) {
+            GtkWidget *stretchable_box = message_info_struct->is_new ? vendor.pages.main_page.chat.stretchable_box_new_messages : vendor.pages.main_page.chat.stretchable_box_old_messages;
+
+            int height = gtk_widget_get_allocated_height(message_info_struct->widget);
+            int content_box_height = gtk_widget_get_allocated_height(stretchable_box);
+
+            gtk_widget_set_size_request(stretchable_box, -1, content_box_height - height);
+            gtk_widget_destroy(message_info_struct->widget);
+
+            vendor.database.tables.messages_table.delete_message(message_info_struct->message_id, message_info_struct->chat_id);
+
+            if (vendor.active_chat.chat->last_message->message_id == message_info_struct->message_id
+                    && vendor.active_chat.chat->id == (unsigned int) message_info_struct->chat_id) {
+                vendor.active_chat.chat->last_message = vendor.database.tables.messages_table.get_messages_by_chat_id(message_info_struct->chat_id, 1, 1, NULL);;
+                update_chatblock(vendor.active_chat.chat_sidebar_widget, vendor.active_chat.chat, 0);
+            }
+        } else {
+            g_print("[ERROR]: Error with deletig message\n");
         }
+        vendor.modal.message_info.destroy();
     }
 }
 
