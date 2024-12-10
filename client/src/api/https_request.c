@@ -3,6 +3,8 @@
 #include <signal.h>
 #include <unistd.h>
 
+static int is_losted = 0;
+
 void init_openssl(void) {
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
@@ -172,6 +174,10 @@ void *websocket_thread(void *arg) {
     int bytes;
 
     if (vendor.debug_mode >= 1) printf("[INFO] WebSocket thread started.\n");
+    if (is_losted) {
+        vendor.popup.add_message("Connection established");
+        is_losted = 0;
+    }
 
     while (1) {
         pthread_mutex_lock(&vendor.current_user.ws_client.lock);
@@ -351,6 +357,8 @@ void *connect_websocket(void *arg) {
         SSL_CTX_free(ctx);
 
         if (vendor.debug_mode >= 1) printf("[INFO] Reconnecting in %d seconds...\n", retry_interval);
+        vendor.popup.add_message("Connection lost");
+        is_losted = 1;
         sleep(retry_interval);
     }
 

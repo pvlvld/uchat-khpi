@@ -20,29 +20,29 @@ int init_server(int argc, char **argv) {
     (void) argv;
     (void) is_valid_ip;
     (void) is_valid_port;
-//    if (argc != 3) {
-//        printf("Usage: ./client <server address> <server port>\n");
-//        return -1;
-//    }
-//
-//    char *server_address = argv[1];
-//    char *server_port = argv[2];
-//
-//    if (!is_valid_ip(server_address)) {
-//        printf("Error: Invalid IP address or domain.\n");
-//        return -1;
-//    }
-//
-//    if (!is_valid_port(server_port)) {
-//        printf("Error: Port must be a number between 1 and 65535.\n");
-//        return -1;
-//    }
-//
-//    vendor.server.address = server_address;
-//    vendor.server.port = atoi(server_port);
+    if (argc != 3) {
+        printf("Usage: ./client <server address> <server port>\n");
+        return -1;
+    }
 
-    vendor.server.address = "127.0.0.1";
-    vendor.server.port = 8080;
+    char *server_address = argv[1];
+    char *server_port = argv[2];
+
+    if (!is_valid_ip(server_address)) {
+        printf("Error: Invalid IP address or domain.\n");
+        return -1;
+    }
+
+    if (!is_valid_port(server_port)) {
+        printf("Error: Port must be a number between 1 and 65535.\n");
+        return -1;
+    }
+
+    vendor.server.address = server_address;
+    vendor.server.port = atoi(server_port);
+
+    // vendor.server.address = "127.0.0.1";
+    // vendor.server.port = 8080;
 
     return 1;
 }

@@ -31,6 +31,7 @@ void register_rout(SSL *ssl, const char *request) {
     cJSON *username_item = cJSON_GetObjectItem(json, "name");
     cJSON *public_key_item = cJSON_GetObjectItem(json, "public_key");
 
+
     if (!cJSON_IsString(login_item) || !cJSON_IsString(password_item)) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "MISSING_CREDENTIALS");
@@ -113,7 +114,7 @@ void register_rout(SSL *ssl, const char *request) {
     char *password_hash = hash_password(password, salt);
 
     // Insert user into the database
-    int user_id = create_user(conn, username, user_login, password_hash, salt, "public key", "en_US");
+    int user_id = create_user(conn, username, user_login, password_hash, salt, public_key_item->valuestring, "en_US");
     if (user_id < 0) {
         cJSON_AddBoolToObject(response_json, "error", true);
         cJSON_AddStringToObject(response_json, "code", "USER_CREATION_FAILED");
