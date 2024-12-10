@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include "database.h"
 #include "../../libraries/cJSON/cJSON.h"
 #include "env.h"
