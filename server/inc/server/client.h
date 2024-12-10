@@ -1,6 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include <pthread.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "../../../libraries/openssl/err.h"

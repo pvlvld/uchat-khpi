@@ -3,6 +3,8 @@
 
 #include "../../libraries/openssl/ssl.h"
 #include "../../libraries/openssl/err.h"
+#include "../../libraries/cJSON/cJSON.h"
+#include <bits/pthreadtypes.h>
 
 #define BUFFER_SIZE 4096
 
