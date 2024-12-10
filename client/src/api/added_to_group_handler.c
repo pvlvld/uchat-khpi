@@ -60,13 +60,11 @@ static t_users_struct *add_friend(char *username) {
 
 gboolean added_to_group_handler(gpointer user_data) {
     cJSON *req = (cJSON *)user_data;
-    g_print("added_to_group_handler\n");
 
     int chat_id = cJSON_GetObjectItem(req, "chat_id")->valueint;
 //    int sender_id = cJSON_GetObjectItem(req, "sender_id")->valueint;
     char *group_name = cJSON_GetObjectItem(req, "group_name")->valuestring;
     vendor.database.tables.group_chats_table.create_group(chat_id, group_name);
-    g_print("create_group\n");
 
     cJSON *group_members_json = cJSON_GetObjectItem(req, "group_members");
     if (!cJSON_IsArray(group_members_json)) {
@@ -86,7 +84,6 @@ gboolean added_to_group_handler(gpointer user_data) {
         if (user == NULL) {
             continue;
         } else {
-            g_print("Add member\n");
             vendor.database.tables.group_chat_members_table.add_member(chat_id, user->user_id, member_id == 1 ? "owner" : "member");
         }
     }

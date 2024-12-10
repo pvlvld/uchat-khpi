@@ -150,7 +150,6 @@ static t_users_struct *get_user_by_username(const char *username) {
     int rc = vendor.database.sql.execute_query(sql, &results, &rows, &cols);
 
     if (rc != 0 || rows == 0) {
-        printf("No results found for username: %s\n", username);
         return NULL;
     }
 
