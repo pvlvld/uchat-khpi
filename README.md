@@ -4,7 +4,7 @@ UChat "Shadow Talk"
 
 ## Description
   <p align="center">Secure real-time messaging app in pure C.</p>
-  <p align="center">An academic team project developed at Kharkiv Polytechnic National University.</p>
+  <p align="center">An academic team project developed at National Technical University «Kharkiv Polytechnic Institute»</p>
   <p>Built using:
     <ul>
       <li><a href="https://en.wikipedia.org/wiki/C_(programming_language)" target="_blank">C lang</a></li>
