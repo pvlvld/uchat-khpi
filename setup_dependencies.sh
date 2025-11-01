@@ -2,12 +2,17 @@
 
 # Script to install all dependencies for UChat
 # This replaces the bundled libraries in ./libraries with system packages
+#
+# Note: This script is designed for Debian/Ubuntu systems and requires sudo access
 
 set -e
 
 echo "=========================================="
 echo "UChat Dependency Installation Script"
 echo "=========================================="
+echo ""
+echo "This script will install system packages using apt-get."
+echo "You may be prompted for your password to use sudo."
 echo ""
 
 # Check if running with sufficient privileges for apt

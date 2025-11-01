@@ -1,8 +1,5 @@
 CC = clang
 
-export CPATH=/usr/include/postgresql:$CPATH
-export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
-
 # Path for header files
 CFLAGS = -std=c11 \
          -Wall \
@@ -17,12 +14,10 @@ CFLAGS = -std=c11 \
          $(shell pkg-config --cflags libcjson) \
          $(shell pkg-config --cflags openssl)
 
-# Path for libraries
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu \
-          -lsqlite3 \
-          -lcjson \
-          -lssl \
-          -lcrypto \
+# Path for libraries - using pkg-config for portability
+LDFLAGS = $(shell pkg-config --libs sqlite3) \
+          $(shell pkg-config --libs libcjson) \
+          $(shell pkg-config --libs openssl) \
           -lpq
 
 SRC_DIR = src
