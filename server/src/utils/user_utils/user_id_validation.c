@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <limits.h>
-#include "../../../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 
 bool is_valid_user_id(const char *user_id) {
     if (user_id == NULL) return false;

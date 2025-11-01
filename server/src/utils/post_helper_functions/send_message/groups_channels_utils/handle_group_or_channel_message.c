@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../../../../../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 #include "../../../../../inc/utils.h"
 
 MessageResult_t store_message_return_message_info(PGconn *conn, int chat_id, int sender_id, const char *message_text,

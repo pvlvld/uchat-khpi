@@ -5,7 +5,7 @@
 
 #include <stdbool.h>
 #include "database.h"
-#include "../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 #include "env.h"
 #include "database.h"
 #include "server/server.h"

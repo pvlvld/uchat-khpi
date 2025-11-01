@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "../../../../../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 #include "../../../../../inc/utils.h"
 #include "../../../../../inc/database/tables/messages_table.h"
 

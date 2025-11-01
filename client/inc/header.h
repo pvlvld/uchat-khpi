@@ -15,8 +15,8 @@
 #include <glib.h>
 #include <arpa/inet.h>
 #include <ctype.h>
-#include "../../libraries/sqlite/inc/sqlite3.h"
-#include "../../libraries/cJSON/cJSON.h"
+#include <sqlite3.h>
+#include <cjson/cJSON.h>
 
 #include "api.h"
 #include "program.h"

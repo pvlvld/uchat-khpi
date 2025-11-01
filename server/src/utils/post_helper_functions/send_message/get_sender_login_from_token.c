@@ -1,4 +1,4 @@
-#include "../../../../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 #include "../../../../inc/utils.h"
 
 char *get_sender_login_from_token(const char *request) {

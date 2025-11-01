@@ -1,4 +1,4 @@
-#include "../../../../../libraries/cJSON/cJSON.h"
+#include <cjson/cJSON.h>
 #include "utils.h"
 
 cJSON *create_message_json(int sender_id, const char *message_text) {

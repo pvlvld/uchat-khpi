@@ -1,36 +1,26 @@
 CC = clang
 
-# Path for header files, including GTK3+ via pkg-config and static glibc
+# Path for header files, including GTK3+ via pkg-config
 CFLAGS = -std=c11 \
         -Wall \
         -Wextra \
         -Werror \
         -Wpedantic \
         -I/usr/include \
-        -I../libraries/sqlite/inc \
-        -I../libraries/cJSON/inc \
-        -I../libraries/openssl \
-        -I../libraries/libpq \
         -I./inc \
         $(shell pkg-config --cflags gtk+-3.0) \
-        # -I../libraries/glibc/include \
+        $(shell pkg-config --cflags sqlite3) \
+        $(shell pkg-config --cflags libcjson) \
+        $(shell pkg-config --cflags openssl) \
+        -I/usr/include/postgresql
 
-# Path for libraries, including GTK3+ via pkg-config and static glibc
-LDFLAGS = -L../libraries/sqlite/lib \
-        -L../libraries/cJSON/lib \
-        -L../libraries/precompiled/ubuntu/lib \
-        -lsqlite3 \
+# Path for libraries, including GTK3+ via pkg-config
+LDFLAGS = -lsqlite3 \
         -lcjson \
         -lssl \
         -lcrypto \
         -lpq \
-        $(shell pkg-config --libs gtk+-3.0) \
-        -Wl,-rpath,../libraries/sqlite/lib \
-        -Wl,-rpath,../libraries/cJSON/lib \
-        -Wl,-rpath,../libraries/precompiled/ubuntu/lib \
-        -Wl,-rpath,../libraries/glibc/lib
-        # -lc \
-        # -L../libraries/glibc/lib \
+        $(shell pkg-config --libs gtk+-3.0)
 
 SRC_DIR = src
 OBJ_DIR = obj

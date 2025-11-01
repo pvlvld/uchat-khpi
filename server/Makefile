@@ -1,13 +1,5 @@
 CC = clang
 
-export CPATH=/usr/include/postgresql:$CPATH
-export LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
-
-LDFLAGS += -L/usr/lib/x86_64-linux-gnu
-LIBS += -lpq
-
-CFLAGS += -I/usr/include/postgresql
-
 # Path for header files
 CFLAGS = -std=c11 \
          -Wall \
@@ -15,31 +7,23 @@ CFLAGS = -std=c11 \
          -Werror \
          -Wpedantic \
          -I/usr/include \
-         -I../libraries/sqlite/inc \
-         -I../libraries/cJSON/inc \
-         -I../libraries/openssl \
          -I./libmx/inc \
          -I/usr/include/postgresql \
-         -I./inc
+         -I./inc \
+         $(shell pkg-config --cflags sqlite3) \
+         $(shell pkg-config --cflags libcjson) \
+         $(shell pkg-config --cflags openssl)
 
-# Path for libraries
-LDFLAGS = -L../libraries/sqlite/lib \
-          -L../libraries/cJSON/lib \
-          -L../libraries/precompilied/ubuntu/lib \
-          -lssl \
-          -lcrypto \
-          -Wl,-rpath,../libraries/sqlite/lib \
-          -Wl,-rpath,../libraries/cJSON/lib \
-          -Wl,-rpath,../libraries/precompilied/ubuntu/lib \
+# Path for libraries - using pkg-config for portability
+LDFLAGS = $(shell pkg-config --libs sqlite3) \
+          $(shell pkg-config --libs libcjson) \
+          $(shell pkg-config --libs openssl) \
           -lpq
 
 SRC_DIR = src
-CJSON_DIR = ../libraries/cJSON
-CJSON_SRC = $(CJSON_DIR)/cJSON.c
 OBJ_DIR = obj
 SRC = $(shell find $(SRC_DIR) -name '*.c')
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRC))
-CJSON_OBJ = $(OBJ_DIR)/cJSON.o
 
 TARGET = uchat_server
 
@@ -51,19 +35,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D) # Create the necessary subdirectories in obj
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compile cJSON
-$(CJSON_OBJ): $(CJSON_SRC)
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(CJSON_DIR)/libcjson.so: $(CJSON_OBJ)
-	$(CC) -shared -o $@ $< -fPIC
-
-$(TARGET): $(OBJ) $(CJSON_OBJ)
+$(TARGET): $(OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # Clean up build files
 clean:
-	rm -rf $(OBJ_DIR) $(TARGET) $(CJSON_DIR)/libcjson.so
+	rm -rf $(OBJ_DIR) $(TARGET)
 
-.PHONY: all clean openssl
+.PHONY: all clean
