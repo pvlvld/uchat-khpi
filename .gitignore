@@ -1,6 +1,7 @@
 .idea
 .vscode/
 installs/
+libraries/
 obj/
 uchat_server
 uchat

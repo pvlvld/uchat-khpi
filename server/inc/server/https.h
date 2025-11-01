@@ -1,7 +1,7 @@
 #ifndef HTTPS_H
 #define HTTPS_H
 
-#include "../../../libraries/openssl/ssl.h"
+#include <openssl/ssl.h>
 
 
 typedef struct {

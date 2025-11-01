@@ -20,3 +20,30 @@ UChat "Shadow Talk"
 
   <p>You can check the project presentation here: <a href="https://docs.google.com/presentation/d/1ng2m_G3ktHo27M_-F9t4N70ayVjV2O1xMmYYBKj1yO0/">*click*</a></p>
   <p>And main functionality demonstration here: <a href="https://youtu.be/4mgRneekkX0">*click*</a></p>
+
+## Installation
+
+### Prerequisites
+This project requires several dependencies. Run the following script to install all required system packages:
+
+```bash
+./setup_dependencies.sh
+```
+
+This will install:
+- Build essentials (clang, make)
+- SQLite development files
+- PostgreSQL client library development files
+- OpenSSL development files
+- cJSON library
+- GTK3 development files (for the client)
+- pkg-config
+
+### Building
+After installing dependencies, build the project:
+
+```bash
+make all
+```
+
+This will build both the client and server applications.

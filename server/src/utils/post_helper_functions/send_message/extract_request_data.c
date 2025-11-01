@@ -1,5 +1,5 @@
 #include "utils.h"
-#include <../../../libraries/cJSON/cJSON.h>
+#include <cjson/cJSON.h>
 #include <string.h>
 
 char *strdup(const char *src) {

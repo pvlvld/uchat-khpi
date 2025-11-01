@@ -4,8 +4,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include "../../../libraries/openssl/err.h"
-#include "../../../libraries/cJSON/cJSON.h"
+#include <openssl/err.h>
+#include <cjson/cJSON.h>
 
 typedef struct {
     int socket;

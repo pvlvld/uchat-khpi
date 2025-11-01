@@ -1,9 +1,9 @@
 #ifndef SERVER_CONNECT_H
 #define SERVER_CONNECT_H
 
-#include "../../libraries/openssl/ssl.h"
-#include "../../libraries/openssl/err.h"
-#include "../../libraries/cJSON/cJSON.h"
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <cjson/cJSON.h>
 #include <bits/pthreadtypes.h>
 
 #define BUFFER_SIZE 4096

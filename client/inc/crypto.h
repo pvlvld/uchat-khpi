@@ -3,13 +3,13 @@
 
 #include "header.h"
 
-#include "../../libraries/openssl/rsa.h"
-#include "../../libraries/openssl/pem.h"
-#include "../../libraries/openssl/err.h"
-#include "../../libraries/openssl/bio.h"
-#include "../../libraries/openssl/evp.h"
-#include "../../libraries/openssl/rand.h"
-#include "../../libraries/openssl/aes.h"
+#include <openssl/rsa.h>
+#include <openssl/pem.h>
+#include <openssl/err.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
+#include <openssl/aes.h>
 
 #define KEY_LENGTH 4096
 #define PADDING RSA_PKCS1_PADDING
